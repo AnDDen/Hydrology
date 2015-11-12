@@ -1,0 +1,5 @@
+D:\3 Курс\Курсовая\HydrologyCore\bin\Debug\HydrologyCore.dll
+D:\3 Курс\Курсовая\HydrologyCore\bin\Debug\HydrologyCore.pdb
+D:\3 Курс\Курсовая\HydrologyCore\HydrologyCore\obj\Debug\HydrologyCore.csprojResolveAssemblyReference.cache
+D:\3 Курс\Курсовая\HydrologyCore\HydrologyCore\obj\Debug\HydrologyCore.dll
+D:\3 Курс\Курсовая\HydrologyCore\HydrologyCore\obj\Debug\HydrologyCore.pdb
