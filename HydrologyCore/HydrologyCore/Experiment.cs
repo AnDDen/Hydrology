@@ -31,7 +31,7 @@ namespace HydrologyCore
         {
             for (int i = 0; i < algorithms.Count; i++) {
                 algorithms[i].Run();
-                DataSet res = algorithms[0].Results;
+                DataSet res = algorithms[i].Results;
                 if (i < algorithms.Count - 1)
                     algorithms[i + 1].Init(res);
                 else result = res;

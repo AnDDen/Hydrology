@@ -1,0 +1,33 @@
+; CSV-1203 file syntax 
+
+<csvfile> 		= csvheader *datarecord [EOF] 
+csvheader 		= csvrecord 
+datarecord 		= csvrecord 
+csvrecord 		= recordpayload EOR 
+recordpayload 		= fieldcolumn COMMA fieldcolumn *(COMMA fieldcolumn) 
+fieldcolumn 		= protectedfield / unprotectedfield 
+protectedfield 		= DQUOTE [EXP] fieldpayload DQUOTE 
+unprotectedfield 	= [EXP] rawfieldpayload 
+fieldpayload 		= 1*anychar 
+rawfieldpayload 	= safechar / (safechar *char safechar) 
+
+; Character collections 
+
+anychar  = char / COMMA / DDQUOTE / CR / LF / TAB 
+char 	 = safechar / SPACE 
+EOR 	 = CRLF / CR / LF 
+safechar = %x21 / %x23-2B / %x2D-FF 
+
+; Literal terminals 
+
+CRLF 	= CR LF 
+COMMA 	= "," 
+EXP 	= "~" 		; Excel protection marker 
+
+CR 	= %x0D 
+DQUOTE 	= %x22 
+DDQUOTE = %x22 %x22 
+EOF 	= %x1A 
+LF 	= %x0A 
+SPACE 	= %x20 
+TAB 	= %x09

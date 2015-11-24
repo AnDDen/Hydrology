@@ -51,7 +51,7 @@ namespace HydrologyCore
                 }
                 catch (Exception ex)
                 {
-                    
+                    Console.Error.WriteLine("Error loading plugin {0}", assemblyFile);
                 }
             }
         }

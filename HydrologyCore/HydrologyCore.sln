@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HydrologyCore", "HydrologyC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlgorithmInterface", "AlgorithmInterface\AlgorithmInterface.csproj", "{AC761097-354B-4063-865D-54D614530A94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsvParser", "CsvParser\CsvParser.csproj", "{EDDF0213-12C3-457D-BD2C-05D2F368B9A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AC761097-354B-4063-865D-54D614530A94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC761097-354B-4063-865D-54D614530A94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC761097-354B-4063-865D-54D614530A94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDDF0213-12C3-457D-BD2C-05D2F368B9A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDDF0213-12C3-457D-BD2C-05D2F368B9A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDDF0213-12C3-457D-BD2C-05D2F368B9A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDDF0213-12C3-457D-BD2C-05D2F368B9A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
