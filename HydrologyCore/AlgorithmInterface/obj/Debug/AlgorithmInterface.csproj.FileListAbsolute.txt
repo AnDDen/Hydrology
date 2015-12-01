@@ -1,5 +1,0 @@
-D:\3 Курс\Курсовая\HydrologyCore\bin\Debug\AlgorithmInterface.dll
-D:\3 Курс\Курсовая\HydrologyCore\bin\Debug\AlgorithmInterface.pdb
-D:\3 Курс\Курсовая\HydrologyCore\AlgorithmInterface\obj\Debug\AlgorithmInterface.dll
-D:\3 Курс\Курсовая\HydrologyCore\AlgorithmInterface\obj\Debug\AlgorithmInterface.pdb
-D:\3 Курс\Курсовая\HydrologyCore\AlgorithmInterface\obj\Debug\AlgorithmInterface.csprojResolveAssemblyReference.cache
