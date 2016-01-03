@@ -5,42 +5,66 @@ using System.Text;
 using System.Threading.Tasks;
 using AlgorithmInterface;
 using System.Data;
+using System.IO;
+using CsvParser;
 
 namespace HydrologyCore
 {
     public class Experiment
     {
-        private IList<IAlgorithm> algorithms;
-        private DataSet result;
+        private IList<AlgorithmNode> algorithms = new List<AlgorithmNode>();
+        public IList<AlgorithmNode> Algorithms { get { return algorithms; } }
 
-        public Experiment(params IAlgorithm[] algorithms)
+        public Experiment()
         {
-            this.algorithms = new List<IAlgorithm>();
-            foreach (IAlgorithm alg in algorithms)
-            {
-                this.algorithms.Add(alg);
-            } 
+            this.algorithms = new List<AlgorithmNode>();
         }
 
-        public void Init(DataSet data)
+        public Experiment(IList<AlgorithmNode> algorithms)
+            : this()
+        {            
+            foreach (AlgorithmNode alg in algorithms)
+                this.algorithms.Add(alg);
+        }
+
+        private IList<AlgorithmNode> TopologicalSort(IList<AlgorithmNode> nodes)
         {
-            algorithms[0].Init(data);
+            IList<AlgorithmNode> sorted = new List<AlgorithmNode>();
+
+            ISet<AlgorithmNode> s = new HashSet<AlgorithmNode>();
+            var a = new Dictionary<AlgorithmNode, IList<AlgorithmNode>>();
+
+            foreach (AlgorithmNode node in nodes)
+            {
+                a[node] = new List<AlgorithmNode>(node.Prev);
+                if (a[node].Count == 0)
+                    s.Add(node);
+            }
+
+            while (s.Count > 0)
+            {
+                AlgorithmNode node = s.First();
+                s.Remove(node);
+                sorted.Add(node);
+                foreach (AlgorithmNode child in node.Next)
+                {
+                    a[child].Remove(node);
+                    if (a[child].Count == 0)
+                        s.Add(child);
+                }
+            }
+
+            return sorted;
         }
 
         public void Run()
         {
-            for (int i = 0; i < algorithms.Count; i++) {
-                algorithms[i].Run();
-                DataSet res = algorithms[i].Results;
-                if (i < algorithms.Count - 1)
-                    algorithms[i + 1].Init(res);
-                else result = res;
+            IList<AlgorithmNode> algs = TopologicalSort(algorithms);
+            foreach (AlgorithmNode alg in algs) {
+                alg.Init();
+                alg.Run();
+                alg.WriteToFile();
             }
-        }
-
-        public DataSet Result
-        {
-            get { return result; }
         }
     }
 }

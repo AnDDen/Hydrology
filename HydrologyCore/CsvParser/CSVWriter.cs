@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
+using System.IO;
 
 namespace CsvParser
 {
@@ -31,7 +32,7 @@ namespace CsvParser
             return s;
         }
 
-        public static string Write(DataTable table)
+        private static string WriteDataTable(DataTable table)
         {
             string output = "";
 
@@ -49,6 +50,30 @@ namespace CsvParser
             }
 
             return output;
+        }
+
+        public static void Write(DataTable table, string filePath)
+        {
+            FileStream fs = null;
+            StreamWriter writer = null;
+            try
+            {
+                fs = new FileStream(filePath, FileMode.Create);
+                writer = new StreamWriter(fs);
+
+                writer.Write(WriteDataTable(table));
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                if (writer != null)
+                    writer.Close();
+                if (fs != null)
+                    fs.Close();
+            }
         }
     }
 }

@@ -55,9 +55,8 @@ namespace CsvParser
             anychar = list.ToArray();
         }
 
-        public CSVParser(string str) 
+        public CSVParser() 
         {
-            this.str = str;
             InitChars();
         }
 
@@ -111,22 +110,42 @@ namespace CsvParser
             return result != null;
         }
 
-        public DataTable Parse()
+        public DataTable Parse(string filePath)
         {
-            index = 0;
-            DataTable table = new DataTable();
-            IList<string> columnNames = ParseRecord();
-            foreach (string column in columnNames)
-                table.Columns.Add(column);
-            while (!End)
+            FileStream fs = null;
+            StreamReader reader = null;
+            try
             {
-                IList<string> row = ParseRecord();
-                DataRow dataRow = table.NewRow();
-                for (int i = 0; i < row.Count; i++)
-                    dataRow[columnNames[i]] = row[i];
-                table.Rows.Add(dataRow);
+                fs = new FileStream(filePath, FileMode.Open);
+                reader = new StreamReader(fs);
+                str = reader.ReadToEnd();
+
+                index = 0;
+                DataTable table = new DataTable();
+                IList<string> columnNames = ParseRecord();
+                foreach (string column in columnNames)
+                    table.Columns.Add(column);
+                while (!End)
+                {
+                    IList<string> row = ParseRecord();
+                    DataRow dataRow = table.NewRow();
+                    for (int i = 0; i < row.Count; i++)
+                        dataRow[columnNames[i]] = row[i];
+                    table.Rows.Add(dataRow);
+                }
+                return table;
             }
-            return table;
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                if (reader != null)
+                    reader.Close();
+                if (fs != null)
+                    fs.Close();
+            }            
         }
 
         private IList<string> ParseRecord()
@@ -140,7 +159,9 @@ namespace CsvParser
                     Match(COMMA);
                     record.Add(ParseFieldColumn());
                 }
-                else throw new CSVParserException("Waited for comma or end of line at position " + index);
+                else
+                    if (!End) throw new CSVParserException("Waited for comma or end of line at position " + index);
+                    else return record;
             }
             Match(CRLF, CR, LF);
             return record;

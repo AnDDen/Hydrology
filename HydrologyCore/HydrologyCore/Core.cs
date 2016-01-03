@@ -12,27 +12,26 @@ namespace HydrologyCore
 {
     public class Core
     {
-        private const string pluginRelativeDir = @"\Plugins",
-                             assemblyPattern = ".dll";
+        private const string pluginRelativeDir = @"\Algorithms",
+                             assemblyPattern = "*.dll";
 
-        private IList<IAlgorithm> algorithms;
+        private IList<Type> algorithmTypes;
 
-        public IList<IAlgorithm> Algorithms
+        public IList<Type> AlgorithmTypes
         {
-            get { return algorithms; }
+            get { return algorithmTypes; }
         }
-
-        public IList<Experiment> Experiments { get; set; }
 
         public Core()
         {
-            algorithms = new List<IAlgorithm>();
+            algorithmTypes = new List<Type>();
             LoadPlugins();
         }
 
         private void LoadPlugins()
         {
             string pluginDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + pluginRelativeDir;
+            string[] files = Directory.GetFiles(pluginDir);
             string[] assemblyFiles = Directory.GetFiles(pluginDir, assemblyPattern);
 
             foreach (string assemblyFile in assemblyFiles)
@@ -45,7 +44,7 @@ namespace HydrologyCore
                     {
                         if (type.GetInterfaces().Contains(typeof(IAlgorithm)) && type.IsClass && !type.IsAbstract)
                         {
-                            algorithms.Add((IAlgorithm)Activator.CreateInstance(type));
+                            algorithmTypes.Add(type);
                         }
                     }
                 }
@@ -54,13 +53,6 @@ namespace HydrologyCore
                     Console.Error.WriteLine("Error loading plugin {0}", assemblyFile);
                 }
             }
-        }
-
-        public DataSet RunExperiment(Experiment experiment, DataSet data)
-        {
-            experiment.Init(data);
-            experiment.Run();
-            return experiment.Result;
         }
     }
 }
