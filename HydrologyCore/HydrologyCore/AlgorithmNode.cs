@@ -80,9 +80,9 @@ namespace HydrologyCore
             get { return Algorithm.Results; }
         }
 
-        public void Run()
+        public void Run(Context ctx)
         {
-            Algorithm.Run();
+            Algorithm.Run(ctx);
         }
 
         public void WriteToFile()
@@ -94,6 +94,11 @@ namespace HydrologyCore
         {
             from.Next.Add(to);
             to.Prev.Add(from);
+        }
+
+        public AlgorithmNode InitFromFolder(string p)
+        {
+            return this;
         }
     }
 }

@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Context.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="Experiment.cs" />
     <Compile Include="AlgorithmNode.cs" />

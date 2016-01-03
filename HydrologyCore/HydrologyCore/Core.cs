@@ -54,5 +54,10 @@ namespace HydrologyCore
                 }
             }
         }
+
+        public AlgorithmNode Algorithm(string p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

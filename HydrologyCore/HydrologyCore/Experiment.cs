@@ -59,12 +59,27 @@ namespace HydrologyCore
 
         public void Run()
         {
+            var ctx = new Context();
             IList<AlgorithmNode> algs = TopologicalSort(algorithms);
             foreach (AlgorithmNode alg in algs) {
                 alg.Init();
-                alg.Run();
+                alg.Run(ctx);
                 alg.WriteToFile();
+                ctx.History.Add(alg);
             }
         }
+
+        public Experiment StartFrom(string initFolder)
+        {
+            //read data from folder and store in the context as initial data
+            return this;
+        }
+
+        public Experiment Then(AlgorithmNode node)
+        {
+            //link to prev node
+            return this;
+        }
+
     }
 }

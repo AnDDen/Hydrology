@@ -10,7 +10,7 @@ namespace AlgorithmInterface
     public interface IAlgorithm
     {
         void Init (DataSet data);
-        void Run();
+        void Run(IContext ctx);
         DataSet Results { get; }
     }
 }

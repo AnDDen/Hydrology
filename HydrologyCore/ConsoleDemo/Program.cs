@@ -21,6 +21,12 @@ namespace ConsoleDemo
             AlgorithmNode.Connect(algs[1], algs[2]);
 
             Experiment experiment = new Experiment(algs);
+            //Experiment experiment = new Experiment();
+            experiment.StartFrom("experiment/initial")
+                .Then(core.Algorithm("RepresentationCheck").InitFromFolder("experiment/alg1/input/"))
+                .Then(core.Algorithm("Statistics").InitFromFolder("experiment/alg2/input/"));
+
+
             Console.WriteLine("Starting experiment");
             experiment.Run();
             Console.WriteLine("Experiment finished");

@@ -18,7 +18,7 @@ namespace RepresentationCheck
             this.data = data;
         }
 
-        public void Run()
+        public void Run(IContext ctx)
         {
             resultSet = data;
         }
