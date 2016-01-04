@@ -33,7 +33,7 @@ namespace HydrologyCore
             }
         }
 
-        DataSet InitialData
+        public DataSet InitialData
         {
             get;
             set;
@@ -57,6 +57,12 @@ namespace HydrologyCore
         /// <returns></returns>
         public DataSet GetData(string algorithmName)
         {
+            //todo
+            AlgorithmNode node = Top;
+            while (node.Name != algorithmName && node.Prev != null)
+                node = node.Prev;
+            if (node.Name == algorithmName)
+                return node.Results;
             return null;
         }
 
@@ -68,9 +74,12 @@ namespace HydrologyCore
         /// <returns></returns>
         public DataSet GetData(string algorithmName, int step)
         {
-
             //возможно метод лишний
-            return null;
+            if (step > HistoryLength || step <= 0) 
+                throw new IndexOutOfRangeException(string.Format("Can not find step {0}", step));
+            if (History[step].Name != algorithmName) 
+                throw new ApplicationException(string.Format("Algorithm on step {0} does not match {1}", step, algorithmName));
+            return History[step].Results;
         }
 
         /// <summary>
@@ -80,7 +89,11 @@ namespace HydrologyCore
         /// <returns></returns>
         public DataSet GetData(int step)
         {
-            return null;
+            if (step == 0) 
+                return InitialData;
+            if (step > HistoryLength || step < 0) 
+                throw new IndexOutOfRangeException(string.Format("Can not find step {0}", step));
+            return History[step].Results;
         }
 
         /// <summary>
@@ -93,6 +106,5 @@ namespace HydrologyCore
                 return History.Count;
             }
         }
-
     }
 }

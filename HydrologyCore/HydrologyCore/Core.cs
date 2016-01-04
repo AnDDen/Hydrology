@@ -15,21 +15,22 @@ namespace HydrologyCore
         private const string pluginRelativeDir = @"\Algorithms",
                              assemblyPattern = "*.dll";
 
-        private IList<Type> algorithmTypes;
+        private IDictionary<string, Type> algorithmTypes;
 
-        public IList<Type> AlgorithmTypes
+        public IDictionary<string, Type> AlgorithmTypes
         {
             get { return algorithmTypes; }
         }
 
         public Core()
         {
-            algorithmTypes = new List<Type>();
             LoadPlugins();
         }
 
         private void LoadPlugins()
         {
+            algorithmTypes = new Dictionary<string, Type>();
+
             string pluginDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + pluginRelativeDir;
             string[] files = Directory.GetFiles(pluginDir);
             string[] assemblyFiles = Directory.GetFiles(pluginDir, assemblyPattern);
@@ -44,7 +45,7 @@ namespace HydrologyCore
                     {
                         if (type.GetInterfaces().Contains(typeof(IAlgorithm)) && type.IsClass && !type.IsAbstract)
                         {
-                            algorithmTypes.Add(type);
+                            algorithmTypes[type.Name] = type;
                         }
                     }
                 }
@@ -55,9 +56,11 @@ namespace HydrologyCore
             }
         }
 
-        public AlgorithmNode Algorithm(string p)
+        public AlgorithmNode Algorithm(string name)
         {
-            throw new NotImplementedException();
+            if (algorithmTypes.ContainsKey(name))
+                return new AlgorithmNode(algorithmTypes[name]);
+            throw new ApplicationException("Can not find algorithm " + name);
         }
     }
 }

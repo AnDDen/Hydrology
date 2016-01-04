@@ -12,74 +12,67 @@ namespace HydrologyCore
 {
     public class Experiment
     {
-        private IList<AlgorithmNode> algorithms = new List<AlgorithmNode>();
+        private IList<AlgorithmNode> algorithms;
         public IList<AlgorithmNode> Algorithms { get { return algorithms; } }
+
+        private Context context;
+
+        private string outDir;
 
         public Experiment()
         {
-            this.algorithms = new List<AlgorithmNode>();
-        }
-
-        public Experiment(IList<AlgorithmNode> algorithms)
-            : this()
-        {            
-            foreach (AlgorithmNode alg in algorithms)
-                this.algorithms.Add(alg);
-        }
-
-        private IList<AlgorithmNode> TopologicalSort(IList<AlgorithmNode> nodes)
-        {
-            IList<AlgorithmNode> sorted = new List<AlgorithmNode>();
-
-            ISet<AlgorithmNode> s = new HashSet<AlgorithmNode>();
-            var a = new Dictionary<AlgorithmNode, IList<AlgorithmNode>>();
-
-            foreach (AlgorithmNode node in nodes)
-            {
-                a[node] = new List<AlgorithmNode>(node.Prev);
-                if (a[node].Count == 0)
-                    s.Add(node);
-            }
-
-            while (s.Count > 0)
-            {
-                AlgorithmNode node = s.First();
-                s.Remove(node);
-                sorted.Add(node);
-                foreach (AlgorithmNode child in node.Next)
-                {
-                    a[child].Remove(node);
-                    if (a[child].Count == 0)
-                        s.Add(child);
-                }
-            }
-
-            return sorted;
+            algorithms = new List<AlgorithmNode>();
+            context = new Context();
         }
 
         public void Run()
         {
-            var ctx = new Context();
-            IList<AlgorithmNode> algs = TopologicalSort(algorithms);
-            foreach (AlgorithmNode alg in algs) {
+            outDir = string.Format("Experiment.{0}", DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+
+            foreach (AlgorithmNode alg in algorithms) {
                 alg.Init();
-                alg.Run(ctx);
-                alg.WriteToFile();
-                ctx.History.Add(alg);
+                alg.Run(context);
+
+                string algOutDir = outDir + "/" + alg.Name;
+                if (Directory.Exists(algOutDir))
+                {
+                    int i = 2;
+                    while (Directory.Exists(algOutDir + i.ToString())) i++;
+                    algOutDir = algOutDir + i.ToString();
+                }
+
+                alg.WriteToFile(algOutDir);
+                context.History.Add(alg);
             }
         }
 
         public Experiment StartFrom(string initFolder)
         {
             //read data from folder and store in the context as initial data
+            string[] files = Directory.GetFiles(initFolder, "*.csv");
+            DataSet data = new DataSet();
+            for (int i = 0; i < files.Length; i++)
+            {
+                CSVParser parser = new CSVParser();
+                DataTable table = parser.Parse(files[i]);
+                string name = files[i].Substring(0, files[i].Length - 4);
+                name = name.Substring(name.LastIndexOf(initFolder) + initFolder.Length);
+                table.TableName = name;
+                data.Tables.Add(table);
+            }
+            context.InitialData = data;
+
             return this;
         }
 
         public Experiment Then(AlgorithmNode node)
         {
             //link to prev node
+            algorithms.Add(node);
+            if (algorithms.Count > 1)
+                AlgorithmNode.Connect(algorithms[algorithms.Count - 2], algorithms[algorithms.Count - 1]);
+
             return this;
         }
-
     }
 }
