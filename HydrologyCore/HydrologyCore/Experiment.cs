@@ -56,7 +56,7 @@ namespace HydrologyCore
                 CSVParser parser = new CSVParser();
                 DataTable table = parser.Parse(files[i]);
                 string name = files[i].Substring(0, files[i].Length - 4);
-                name = name.Substring(name.LastIndexOf(initFolder) + initFolder.Length);
+                name = name.Substring(name.LastIndexOf(initFolder) + initFolder.Length + 1);
                 table.TableName = name;
                 data.Tables.Add(table);
             }

@@ -20,6 +20,7 @@ namespace RepresentationCheck
 
         public void Run(IContext ctx)
         {
+            var d = ctx.Data.Tables[0];
             resultSet = new DataSet();
             DataTable table = new DataTable();
             table.Columns.Add("col1");
