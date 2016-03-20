@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AlgorithmInterface;
+using CoreInterfaces;
 using System.Data;
 using System.IO;
 using CsvParser;
@@ -19,6 +19,10 @@ namespace HydrologyCore
 
         private string outDir;
 
+        public delegate void ExperimentStatusHandler(string message);
+
+        public event ExperimentStatusHandler AlgorithmChanged;
+
         public Experiment()
         {
             algorithms = new List<AlgorithmNode>();
@@ -30,6 +34,9 @@ namespace HydrologyCore
             outDir = string.Format("Experiment.{0}", DateTime.Now.ToString("yyyyMMdd-HHmmss"));
 
             foreach (AlgorithmNode alg in algorithms) {
+                if (AlgorithmChanged != null)
+                    AlgorithmChanged(alg.Name);
+
                 alg.Init();
                 alg.Run(context);
 
@@ -53,8 +60,8 @@ namespace HydrologyCore
             DataSet data = new DataSet();
             for (int i = 0; i < files.Length; i++)
             {
-                CSVParser parser = new CSVParser();
-                DataTable table = parser.Parse(files[i]);
+                IReader reader = new CSVParser();
+                DataTable table = reader.Read(files[i]);
                 string name = files[i].Substring(0, files[i].Length - 4);
                 name = name.Substring(name.LastIndexOf(initFolder) + initFolder.Length + 1);
                 table.TableName = name;

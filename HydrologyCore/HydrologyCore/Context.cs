@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AlgorithmInterface;
+using CoreInterfaces;
 using System.Data;
 
 namespace HydrologyCore
@@ -13,6 +13,7 @@ namespace HydrologyCore
         public Context()
         {
             _history = new List<AlgorithmNode>();
+            InitialData = new DataSet();
         }
         List<AlgorithmNode> _history;
         public List<AlgorithmNode> History

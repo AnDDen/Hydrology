@@ -44,6 +44,12 @@
     <Compile Include="CSVWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AlgorithmInterface\AlgorithmInterface.csproj">
+      <Project>{ac761097-354b-4063-865d-54d614530a94}</Project>
+      <Name>AlgorithmInterface</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

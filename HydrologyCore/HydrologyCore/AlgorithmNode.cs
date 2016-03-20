@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AlgorithmInterface;
+using CoreInterfaces;
 using System.Data;
 using System.IO;
 using CsvParser;
@@ -34,8 +34,9 @@ namespace HydrologyCore
         {
             if (!Directory.Exists(outputDir))
                 Directory.CreateDirectory(outputDir);
+            IWriter writer = new CSVWriter();
             foreach (DataTable dt in data.Tables)
-                CSVWriter.Write(dt, string.Format("{0}/{1}.csv", outputDir, dt.TableName));
+                writer.Write(dt, string.Format("{0}/{1}.csv", outputDir, dt.TableName));
         }
 
         public void Init()
@@ -69,8 +70,8 @@ namespace HydrologyCore
             string[] files = Directory.GetFiles(path, "*.csv");
             for (int i = 0; i < files.Length; i++)
             {
-                CSVParser parser = new CSVParser();
-                DataTable table = parser.Parse(files[i]);
+                IReader reader = new CSVParser();
+                DataTable table = reader.Read(files[i]);
                 string name = files[i].Substring(0, files[i].Length - 4);
                 name = name.Substring(name.LastIndexOf(path) + path.Length);
                 table.TableName = name;

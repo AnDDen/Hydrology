@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.IO;
+using CoreInterfaces;
 
 namespace CsvParser
 {
-    public class CSVWriter
+    public class CSVWriter : IWriter
     {
         private const string COMMA = ",";
         private const string EXP = "~";
@@ -52,7 +53,7 @@ namespace CsvParser
             return output;
         }
 
-        public static void Write(DataTable table, string filePath)
+        public void Write(DataTable table, string filePath)
         {
             FileStream fs = null;
             StreamWriter writer = null;

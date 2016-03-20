@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.IO;
+using CoreInterfaces;
 
 namespace CsvParser
 {
@@ -15,7 +16,7 @@ namespace CsvParser
         public CSVParserException(string message) : base(message) { }
     }
 
-    public class CSVParser
+    public class CSVParser : IReader
     {
         private const string COMMA = ",";
         private const string EXP = "~";
@@ -110,7 +111,7 @@ namespace CsvParser
             return result != null;
         }
 
-        public DataTable Parse(string filePath)
+        public DataTable Read(string filePath)
         {
             FileStream fs = null;
             StreamReader reader = null;

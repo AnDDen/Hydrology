@@ -4,14 +4,18 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AlgorithmInterface;
+using CoreInterfaces;
+using System.Reflection;
 
 namespace RepresentationCheck
 {
+    [Parameter("CS", 1.0, typeof(Double))]
+    [Parameter("CV", 2.0, typeof(Double))]
+    [Parameter("N", 1000, typeof(Int32))]
     public class RepresentationCheck : IAlgorithm
     {
-        DataSet data;
-        DataSet resultSet;
+        private DataSet data;
+        private DataSet resultSet;
 
         public void Init(DataSet data)
         {
@@ -42,8 +46,9 @@ namespace RepresentationCheck
 
     public class Statistics : IAlgorithm
     {
-        DataSet data;
-        DataSet resultSet;
+        private DataSet data;
+        private DataSet resultSet;
+        public IDictionary<string, object> Parameters { get; set; }
 
         public void Init(DataSet data)
         {
