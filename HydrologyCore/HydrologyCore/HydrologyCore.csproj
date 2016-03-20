@@ -30,10 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CsvParser, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Debug\CsvParser.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,6 +49,10 @@
     <ProjectReference Include="..\AlgorithmInterface\AlgorithmInterface.csproj">
       <Project>{ac761097-354b-4063-865d-54d614530a94}</Project>
       <Name>AlgorithmInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CsvParser\CsvParser.csproj">
+      <Project>{eddf0213-12c3-457d-bd2c-05d2f368b9a4}</Project>
+      <Name>CsvParser</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
