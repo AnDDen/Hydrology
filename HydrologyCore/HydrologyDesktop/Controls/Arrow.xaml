@@ -1,0 +1,12 @@
+﻿<UserControl x:Class="HydrologyDesktop.Controls.Arrow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="100">
+    <Canvas x:Name="ArrowCanvas" RenderTransformOrigin="0 0">
+        <Line x:Name="ArrowLine" X1="0" Y1="0" X2="100" Y2="0" Stroke="Black" StrokeThickness="1" />
+        <Path x:Name="ArrowCap" Fill="Black" Stroke="Black" Data="M 85,-5 L 100,0 L 85,5" />
+    </Canvas>
+</UserControl>

@@ -35,6 +35,18 @@ namespace HydrologyDesktop
             }
         }
 
+        public Thickness Thickness
+        {
+            get { return border.BorderThickness; }
+            set { border.BorderThickness = value; }
+        }
+
+        public CornerRadius CornerRadius
+        {
+            get { return border.CornerRadius; }
+            set { border.CornerRadius = value; }
+        }
+
         public DataTable ParamsTable { get; set; }
 
         public string InitPath { get; set; }

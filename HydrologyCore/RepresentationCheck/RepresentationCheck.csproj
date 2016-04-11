@@ -43,7 +43,6 @@
     <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\AlgorithmInterface\AlgorithmInterface.csproj">
       <Project>{ac761097-354b-4063-865d-54d614530a94}</Project>

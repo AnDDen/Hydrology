@@ -61,7 +61,11 @@ namespace HydrologyCore
             //todo
             AlgorithmNode node = Top;
             while (node.Name != algorithmName && node.Prev != null)
-                node = node.Prev;
+            {
+                IExperimentNode p = node.Prev;
+                while (p != null && !(p is AlgorithmNode)) p = p.Prev;
+                node = p as AlgorithmNode;
+            }
             if (node.Name == algorithmName)
                 return node.Results;
             return null;

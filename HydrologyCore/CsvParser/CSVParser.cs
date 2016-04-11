@@ -37,6 +37,10 @@ namespace CsvParser
         private string str = null;
         private int index = 0;
 
+        // Read %
+        public double Parsed { get; set; }
+        private int strLength;
+
         private void InitChars()
         {
             List<string> list = new List<string>();
@@ -120,6 +124,8 @@ namespace CsvParser
                 fs = new FileStream(filePath, FileMode.Open);
                 reader = new StreamReader(fs);
                 str = reader.ReadToEnd();
+                Parsed = 0;
+                strLength = str.Length;
 
                 index = 0;
                 DataTable table = new DataTable();
@@ -162,9 +168,14 @@ namespace CsvParser
                 }
                 else
                     if (!End) throw new CSVParserException("Waited for comma or end of line at position " + index);
-                    else return record;
+                    else
+                    {
+                        Parsed = (index + 1) / strLength;
+                        return record;
+                    }
             }
             Match(CRLF, CR, LF);
+            Parsed = (index + 1) / strLength;
             return record;
         }
 

@@ -12,6 +12,7 @@ namespace RepresentationCheck
     [Parameter("CS", 1.0, typeof(Double))]
     [Parameter("CV", 2.0, typeof(Double))]
     [Parameter("N", 1000, typeof(Int32))]
+    [Name("Репрезентативность")]
     public class RepresentationCheck : IAlgorithm
     {
         private DataSet data;
@@ -44,6 +45,7 @@ namespace RepresentationCheck
         }
     }
 
+    [Name("Статистика")]
     public class Statistics : IAlgorithm
     {
         private DataSet data;

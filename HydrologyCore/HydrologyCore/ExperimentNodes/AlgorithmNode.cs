@@ -10,11 +10,11 @@ using CsvParser;
 
 namespace HydrologyCore
 {
-    public class AlgorithmNode
+    public class AlgorithmNode : IExperimentNode
     {
         public IAlgorithm Algorithm { get; set; }
-        public AlgorithmNode Next { get; set; }
-        public AlgorithmNode Prev { get; set; }
+        public IExperimentNode Next { get; set; }
+        public IExperimentNode Prev { get; set; }
 
         private string name;
         public string Name { get { return name; } }
@@ -57,12 +57,6 @@ namespace HydrologyCore
         public void WriteToFile(string path)
         {
             WriteData(Algorithm.Results, path);
-        }
-
-        public static void Connect(AlgorithmNode from, AlgorithmNode to)
-        {
-            from.Next = to;
-            to.Prev = from;
         }
 
         public AlgorithmNode InitFromFolder(string path)

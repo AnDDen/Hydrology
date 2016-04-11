@@ -1,6 +1,7 @@
 ﻿using CoreInterfaces;
 using CsvParser;
 using HydrologyCore;
+using HydrologyDesktop.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -30,12 +31,12 @@ namespace HydrologyDesktop
     {
         private Experiment experiment;
 
-        IList<AlgNodeControl> nodes;
+        IList<NodeControl> nodes;
         Core hydrologyCore;
 
         BackgroundWorker exec;
 
-        public ExecutorWindow(IList<AlgNodeControl> nodes, Core hydrologyCore)
+        public ExecutorWindow(IList<NodeControl> nodes, Core hydrologyCore)
         {
             InitializeComponent();
 
@@ -80,45 +81,55 @@ namespace HydrologyDesktop
             Dispatcher.Invoke(() => { statusLbl.Content = "Загрузка исходных данных"; }, System.Windows.Threading.DispatcherPriority.Normal);
             int n = nodes.Count + 1;
             double percentInc = 100.0 / n;
-            double percent = 0;
-            experiment.StartFrom("experiment/initial");
-            
-            if (worker.CancellationPending == true)
-            {
-                e.Cancel = true;
-                return;
-            }
-            percent += percentInc;
-            worker.ReportProgress((int)percent);
+            double percent = percentInc / 2;
 
             for (int i = 0; i < nodes.Count; i++)
             {
-                string path = nodes[i].InitPath;
-                if (Directory.Exists(nodes[i].InitPath))
+                if (nodes[i] is InitNodeControl)
                 {
-                    // write params to file
-                    DataTable algParams = nodes[i].ParamsTable;
-                    if (path[path.Length - 1] != '/') path += "/";
-                    path += "params.csv";
-                    IWriter writer = new CSVWriter();
-                    writer.Write(algParams, path);
+                    InitNodeControl initNode = nodes[i] as InitNodeControl;
+                    experiment.StartFrom(initNode.InitPath);
+                }
 
-                    experiment.Then(hydrologyCore.Algorithm(nodes[i].AlgorithmName).InitFromFolder(nodes[i].InitPath));
-
-                    if (worker.CancellationPending == true)
+                if (nodes[i] is AlgorithmNodeControl)
+                {
+                    AlgorithmNodeControl node = nodes[i] as AlgorithmNodeControl;
+                    string path = node.InitPath;
+                    if (Directory.Exists(node.InitPath))
                     {
-                        e.Cancel = true;
+                        // write params to file
+                        DataTable algParams = node.ParamsTable;
+                        if (path[path.Length - 1] != '/') path += "/";
+                        path += "params.csv";
+                        IWriter writer = new CSVWriter();
+                        writer.Write(algParams, path);
+
+                        Dispatcher.Invoke(() => { statusLbl.Content = path; }, System.Windows.Threading.DispatcherPriority.Normal);
+
+                        experiment.Then(hydrologyCore.Algorithm(node.AlgorithmType.Name).InitFromFolder(node.InitPath));
+                    }
+                    else
+                    {
+                        MessageBox.Show(string.Format("Путь {0}, указанный для алгоритма {1} не существует", node.InitPath, node.AlgorithmType.Name),
+                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
-                    percent += percentInc;
-                    worker.ReportProgress((int)percent);
                 }
-                else
+
+                if (nodes[i] is RunProcessNodeControl)
                 {
-                    MessageBox.Show(string.Format("Путь {0}, указанный для алгоритма {1} не существует", nodes[i].InitPath, nodes[i].AlgorithmName),
-                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    RunProcessNodeControl node = nodes[i] as RunProcessNodeControl;
+                    string processName = node.ProcessName;
+                    experiment.Then(hydrologyCore.RunProcess(processName));
+                }
+
+                if (worker.CancellationPending == true)
+                {
+                    e.Cancel = true;
                     return;
                 }
+                percent += percentInc;
+                worker.ReportProgress((int)percent);
             }
 
             if (worker.CancellationPending == true)
@@ -133,11 +144,16 @@ namespace HydrologyDesktop
             experiment.Run();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        public void Cancel()
         {
             exec.CancelAsync();
             statusLbl.Content = "Завершение текущей операции";
-            ((Button)sender).IsEnabled = false;
+            cancelBtn.IsEnabled = false;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Cancel();
         }
     }
 }

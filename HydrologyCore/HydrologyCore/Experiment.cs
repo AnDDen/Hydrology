@@ -12,8 +12,8 @@ namespace HydrologyCore
 {
     public class Experiment
     {
-        private IList<AlgorithmNode> algorithms;
-        public IList<AlgorithmNode> Algorithms { get { return algorithms; } }
+        private IList<IExperimentNode> nodes;
+        public IList<IExperimentNode> Nodes { get { return nodes; } }
 
         private Context context;
 
@@ -25,31 +25,42 @@ namespace HydrologyCore
 
         public Experiment()
         {
-            algorithms = new List<AlgorithmNode>();
+            nodes = new List<IExperimentNode>();
             context = new Context();
+            context.InitialData = new DataSet();
         }
 
         public void Run()
         {
             outDir = string.Format("Experiment.{0}", DateTime.Now.ToString("yyyyMMdd-HHmmss"));
 
-            foreach (AlgorithmNode alg in algorithms) {
-                if (AlgorithmChanged != null)
-                    AlgorithmChanged(alg.Name);
-
-                alg.Init();
-                alg.Run(context);
-
-                string algOutDir = outDir + "/" + alg.Name;
-                if (Directory.Exists(algOutDir))
+            foreach (IExperimentNode node in nodes)
+            {
+                if (node is AlgorithmNode)
                 {
-                    int i = 2;
-                    while (Directory.Exists(algOutDir + i.ToString())) i++;
-                    algOutDir = algOutDir + i.ToString();
-                }
+                    var alg = node as AlgorithmNode;
+                    if (AlgorithmChanged != null)
+                        AlgorithmChanged(alg.Name);
 
-                alg.WriteToFile(algOutDir);
-                context.History.Add(alg);
+                    alg.Init();
+                    alg.Run(context);
+
+                    string algOutDir = outDir + "/" + alg.Name;
+                    if (Directory.Exists(algOutDir))
+                    {
+                        int i = 2;
+                        while (Directory.Exists(algOutDir + i.ToString())) i++;
+                        algOutDir = algOutDir + i.ToString();
+                    }
+
+                    alg.WriteToFile(algOutDir);
+                    context.History.Add(alg);
+                }
+                else if (node is RunProcessNode)
+                {
+                    var runProc = node as RunProcessNode;
+                    runProc.Run();
+                }
             }
         }
 
@@ -72,12 +83,18 @@ namespace HydrologyCore
             return this;
         }
 
-        public Experiment Then(AlgorithmNode node)
+        private void Connect(IExperimentNode node1, IExperimentNode node2)
+        {
+            node1.Next = node2;
+            node2.Prev = node1;
+        }
+
+        public Experiment Then(IExperimentNode node)
         {
             //link to prev node
-            algorithms.Add(node);
-            if (algorithms.Count > 1)
-                AlgorithmNode.Connect(algorithms[algorithms.Count - 2], algorithms[algorithms.Count - 1]);
+            nodes.Add(node);
+            if (nodes.Count > 1)
+                Connect(nodes[nodes.Count - 2], nodes[nodes.Count - 1]);
 
             return this;
         }

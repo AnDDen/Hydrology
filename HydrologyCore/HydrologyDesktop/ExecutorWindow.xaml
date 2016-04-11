@@ -1,11 +1,11 @@
 ﻿<Window x:Class="HydrologyDesktop.ExecutorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="ExecutorWindow" Height="146" Width="300" ResizeMode="NoResize">
+        Title="Выполнение эксперимента" Height="150" Width="500" ResizeMode="NoResize">
     <Grid>
         <Label x:Name="statusLbl" Content="Label" HorizontalAlignment="Left" Margin="10 10 0 0" VerticalAlignment="Top"/>
         <ProgressBar x:Name="execBar" HorizontalAlignment="Stretch" Height="20" Margin="10,35,10,0" VerticalAlignment="Top"/>
-        <Button Content="Отмена" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,65,0,10" Width="90" Height="25" Click="Button_Click"/>
+        <Button x:Name="cancelBtn" Content="Отмена" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,65,0,10" Width="90" Height="25" Click="Button_Click"/>
 
     </Grid>
 </Window>

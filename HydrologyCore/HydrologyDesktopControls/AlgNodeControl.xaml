@@ -6,8 +6,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="75" d:DesignWidth="150">
     <Grid>
-        <Label x:Name="algNameLlb" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderThickness="1" BorderBrush="#FF646464"
-               HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="10 5" Background="#FFC8C8C8"/>
-        <Button Content="&#xE115;" HorizontalAlignment="Right" VerticalAlignment="Top" Width="24" Height="24" BorderBrush="{x:Null}" Background="{x:Null}" FontFamily="Segoe UI Symbol" Foreground="#FF646464" Click="Button_Click" />
+        <Border x:Name="border" BorderThickness="1" BorderBrush="#FF707070" Background="#FFDDDDDD" CornerRadius="0">
+            <Label x:Name="algNameLlb" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+               HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="10 5">
+            </Label>
+        </Border>
+        <Button Content="&#xE115;" HorizontalAlignment="Right" VerticalAlignment="Top" Width="24" Height="24" BorderBrush="{x:Null}" Background="{x:Null}" FontFamily="Segoe UI Symbol" Foreground="#FF646464" Click="Button_Click" Margin="0,5,5,0" />
     </Grid>
 </UserControl>

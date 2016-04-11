@@ -57,7 +57,7 @@ namespace HydrologyDesktop
 
         System.Windows.Forms.FolderBrowserDialog folderDialog;
 
-        public AlgorithmSettings()
+        public AlgorithmSettings(System.Windows.Forms.FolderBrowserDialog folderDialog)
         {
             InitializeComponent();
 
@@ -65,21 +65,28 @@ namespace HydrologyDesktop
             ParamsTable.Columns.Add("Name");
             ParamsTable.Columns.Add("Value");
 
-            folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            //folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.folderDialog = folderDialog;
         }
 
-        public AlgorithmSettings(DataTable paramsTable, Type algType)
+        public AlgorithmSettings(System.Windows.Forms.FolderBrowserDialog folderDialog, DataTable paramsTable, Type algType)
         {
             InitializeComponent();
 
             ParamsTable = paramsTable;
             AlgType = algType;
 
-            folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            //folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.folderDialog = folderDialog;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            folderDialog.SelectedPath = folderTextBox.Text;
+            if (!Directory.Exists(folderDialog.SelectedPath) || folderDialog.SelectedPath == "")
+            {
+                folderDialog.SelectedPath = Directory.GetCurrentDirectory();
+            }
             if (folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 folderTextBox.Text = folderDialog.SelectedPath;
@@ -108,7 +115,7 @@ namespace HydrologyDesktop
                 {
                     value = Convert.ChangeType(row["Value"], attr.ValueType);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     return false;
                 }

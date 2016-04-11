@@ -49,7 +49,7 @@ namespace HydrologyCore
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Console.Error.WriteLine("Error loading plugin {0}", assemblyFile);
                 }
@@ -61,6 +61,11 @@ namespace HydrologyCore
             if (algorithmTypes.ContainsKey(name))
                 return new AlgorithmNode(algorithmTypes[name]);
             throw new ApplicationException("Can not find algorithm " + name);
+        }
+
+        public RunProcessNode RunProcess(string name)
+        {
+            return new RunProcessNode(name);
         }
     }
 }
