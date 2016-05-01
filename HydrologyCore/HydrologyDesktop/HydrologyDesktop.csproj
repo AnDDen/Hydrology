@@ -98,6 +98,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ExperimentGraph.cs" />
     <Compile Include="RunProcessSettingsWindow.xaml.cs">
       <DependentUpon>RunProcessSettingsWindow.xaml</DependentUpon>
     </Compile>

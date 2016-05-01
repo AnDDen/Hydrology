@@ -9,5 +9,10 @@ namespace HydrologyDesktop.Controls
     public class InitNodeControl : NodeControl
     {
         public string InitPath { get; set; }
+
+        public InitNodeControl() : base()
+        {
+            paramsExpander.Visibility = System.Windows.Visibility.Collapsed;
+        }
     }
 }

@@ -9,5 +9,10 @@ namespace HydrologyDesktop.Controls
     public class RunProcessNodeControl : NodeControl
     {
         public string ProcessName { get; set; }
+
+        public RunProcessNodeControl() : base()
+        {
+            paramsExpander.Visibility = System.Windows.Visibility.Collapsed;
+        }
     }
 }

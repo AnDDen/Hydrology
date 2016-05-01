@@ -1,14 +1,14 @@
 ﻿<Window xmlns:Controls="clr-namespace:HydrologyDesktop.Controls"  xmlns:HydrologyDesktop="clr-namespace:HydrologyDesktop" x:Class="HydrologyDesktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Гидрология" Height="480" Width="850">
+        Title="Гидрология" Height="480" Width="850" KeyDown="Window_KeyDown">
     <Window.Resources>
+        <Path x:Key="IconTriangle" x:Shared="False" Stretch="Uniform" Data="M50,130 L50,150 65,140 z" Fill="#FF646464"/>
         <Style x:Key="AlgButtonStyle">
             <Setter Property="Button.Margin" Value="0,0,0,3"></Setter>
         </Style>
         <Style x:Key="NodeStyle">
             <Setter Property="Controls:NodeControl.Width" Value="150"></Setter>
-            <Setter Property="Controls:NodeControl.Height" Value="75"></Setter>
         </Style>
         <Style TargetType="{x:Type TabItem}">
             <Setter Property="Template">
@@ -35,6 +35,26 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="ToolButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="#FFF0F0F0" />
+            <Setter Property="BorderBrush" Value="#FFF0F0F0" />
+            <Setter Property="Foreground" Value="#FF646464" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFDDDDDD"/>
+                    <Setter Property="BorderBrush" Value="#FF646464"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid Background="#FFF0F0F0">
@@ -44,10 +64,25 @@
                     <TextBlock>Моделирование эксперимента</TextBlock>
                 </TabItem.Header>
                 <TabItem.Content>
-                    <Grid Background="White">
+                    <Grid Background="White" Margin="0 -2 0 0">
                         <DockPanel HorizontalAlignment="Stretch" Height="30" LastChildFill="False" VerticalAlignment="Top" Background="#FFF0F0F0">
-                            <Button x:Name="RunExperimentBtn" Margin="0,2,5,4" BorderBrush="{x:Null}" Background="#FFF0F0F0" Click="Button_Click">
-                                <TextBlock Margin="5,0,5,0">Запуск</TextBlock>
+                            <Button Content="&#xe160;" x:Name="NewBtn" Margin="1 3" BorderBrush="{x:Null}" Width="24" 
+                                    FontSize="14" FontFamily="Segoe UI Symbol" Style="{StaticResource ToolButtonStyle}" Click="NewBtn_Click" ToolTip="Новый эксперимент"/>
+
+                            <Button Content="&#xe1a5;" x:Name="OpenBtn" Margin="1 3" BorderBrush="{x:Null}" Width="24" 
+                                    FontSize="14" FontFamily="Segoe UI Symbol" Style="{StaticResource ToolButtonStyle}" ToolTip="Открыть эксперимент" Click="OpenBtn_Click"/>
+
+                            <Button Content="&#xe105;" x:Name="SaveBtn" Margin="1 3" BorderBrush="{x:Null}" Width="24" 
+                                    FontSize="14" FontFamily="Segoe UI Symbol" Style="{StaticResource ToolButtonStyle}" ToolTip="Сохранить эксперимент" Click="SaveBtn_Click"/>
+
+                            <Line Margin="5 6" Stroke="#FFA2A2A2" StrokeThickness="1" X1="0" Y1="0" X2="0" Y2="20"></Line>
+
+                            <Button x:Name="RunExperimentBtn" Margin="1 3"
+                                    Click="Button_Click" Style="{StaticResource ToolButtonStyle}" ToolTip="Запуск эксперимента">
+                                <StackPanel Orientation="Horizontal" Margin="5 3">
+                                    <ContentControl VerticalAlignment="Center" Width="10" Margin="0 0 7 0" Content="{StaticResource IconTriangle}"/>
+                                    <TextBlock VerticalAlignment="Center" Foreground="#FF454545">Запуск</TextBlock>
+                                </StackPanel>
                             </Button>
                         </DockPanel>
                         <Grid Margin="0,30,0,0" Background="#FFF0F0F0">
@@ -58,7 +93,7 @@
 
                             <Border Grid.Column="0" BorderThickness="1,0,1,1" BorderBrush="#FFBFBFBF" Margin="0,0,0,0">
                                 <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#FFFAFAFA">
-                                    <Label Background="#FF707070" Foreground="White">
+                                    <Label Padding="3" Background="#FF707070" Foreground="White">
                                         <TextBlock Margin="5 0 0 0">Панель элементов</TextBlock>
                                     </Label>
                                     <Button x:Name="PointerBtn" Margin="7,5,7,2" Click="PointerBtn_Click" Background="#FF707070" Foreground="White">
@@ -73,8 +108,11 @@
                                         </Expander.Header>
                                         <Expander.Content>
                                             <StackPanel Margin="2,5,2,0">
-                                                <Button Margin="0,0,0,3" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseMove="initButton_MouseMove" PreviewMouseUp="Button_PreviewMouseUp">Инициализация</Button>
-                                                <Button Margin="0,0,0,3" PreviewMouseDown="Button_PreviewMouseDown" PreviewMouseMove="exportButton_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp">Запуск приложения</Button>
+                                                <Button Margin="0,0,0,3" Content="Инициализация" PreviewMouseDown="Button_PreviewMouseDown"
+                                                        PreviewMouseMove="initButton_MouseMove" PreviewMouseUp="Button_PreviewMouseUp">
+                                                </Button>
+                                                <Button Margin="0,0,0,3" Content="Запуск приложения" PreviewMouseDown="Button_PreviewMouseDown" 
+                                                        PreviewMouseMove="exportButton_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp"></Button>
                                             </StackPanel>
                                         </Expander.Content>
                                     </Expander>
@@ -91,7 +129,7 @@
 
                             <Border Margin="3,0,0,0" Grid.Column="1" BorderThickness="1,1,1,1" BorderBrush="#FFBFBFBF">
                                 <Canvas x:Name="Canvas" AllowDrop="True" Drop="Canvas_Drop" ClipToBounds="True" 
-                                        MouseDown="Canvas_MouseDown" MouseMove="Canvas_MouseMove" MouseUp="Canvas_MouseUp">
+                                        MouseDown="Canvas_MouseDown" MouseMove="Canvas_MouseMove" MouseUp="Canvas_MouseUp" RenderTransformOrigin="0.5,0.5">
                                     <Canvas.Background>
                                         <VisualBrush TileMode="Tile"
                                             Viewport="0,0,10,10" ViewportUnits="Absolute" 
@@ -101,7 +139,7 @@
                                                     <Rectangle StrokeDashArray="2 10" Fill="White" Height="25" Width="25"/>
                                                     <Line Stroke="#FF707070" X1="0" Y1="0" X2="25" Y2="0" StrokeDashArray="2 4" StrokeThickness="1.5"></Line>
                                                     <Line Stroke="#FF707070" X1="0" Y1="0" X2="0" Y2="25" StrokeDashArray="2 4" StrokeThickness="1.5"></Line>
-                                                </Canvas>                                                
+                                                </Canvas>
                                             </VisualBrush.Visual>
                                         </VisualBrush>
                                     </Canvas.Background>

@@ -6,7 +6,14 @@
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="100">
     <Canvas x:Name="ArrowCanvas" RenderTransformOrigin="0 0">
-        <Line x:Name="ArrowLine" X1="0" Y1="0" X2="100" Y2="0" Stroke="Black" StrokeThickness="1" />
-        <Path x:Name="ArrowCap" Fill="Black" Stroke="Black" Data="M 85,-5 L 100,0 L 85,5" />
+        <Line x:Name="ArrowLine" X1="0" Y1="0" X2="100" Y2="0" Stroke="#FF707070" StrokeThickness="1"/>
+        <Line x:Name="HiddenLine" X1="0" Y1="0" X2="100" Y2="0" Stroke="Transparent" StrokeThickness="8"/>
+        <Path x:Name="ArrowCap" Fill="#FF707070" Stroke="#FF707070" Data="M 85,-5 L 100,0 L 85,5" />
+        <Grid x:Name="attachPoints" Visibility="Hidden">
+            <Ellipse x:Name="pointFrom" Fill="#FFF4F4F5" Height="8" Stroke="Black" Width="8" Margin="-8, -8, 0, 0"
+                     MouseEnter="Ellipse_MouseEnter" MouseLeave="Ellipse_MouseLeave" MouseDown="Ellipse_MouseDown" MouseUp="Ellipse_MouseUp" />
+            <Ellipse x:Name="pointTo" Fill="#FFF4F4F5" Height="8" Stroke="Black" Width="8" Margin="96,-4,-96,4" 
+                     MouseEnter="Ellipse_MouseEnter" MouseLeave="Ellipse_MouseLeave" MouseDown="Ellipse_MouseDown" MouseUp="Ellipse_MouseUp" />
+        </Grid>
     </Canvas>
 </UserControl>

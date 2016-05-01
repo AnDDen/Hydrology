@@ -80,10 +80,10 @@ namespace HydrologyDesktop.Controls
             return attach;
         }
 
-        public Visibility AttachPointsVisibility
+        public Brush BorderColor
         {
-            get { return attachPoints.Visibility; }
-            set { attachPoints.Visibility = value; }
+            get { return border.BorderBrush; }
+            set { border.BorderBrush = value; }
         }
 
         public Thickness Thickness
@@ -107,10 +107,7 @@ namespace HydrologyDesktop.Controls
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (SettingsButtonClick != null)
-            {
-                SettingsButtonClick(this, EventArgs.Empty);
-            }
+            SettingsButtonClick?.Invoke(this, EventArgs.Empty);
         }
 
         private void Ellipse_MouseEnter(object sender, MouseEventArgs e)
