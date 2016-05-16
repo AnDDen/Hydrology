@@ -30,97 +30,80 @@ namespace HydrologyDesktop
     public partial class ExecutorWindow : Window
     {
         private Experiment experiment;
+        private ExperimentGraph experimentGraph;
+        private double percent = 0;
 
-        IList<NodeControl> nodes;
-        Core hydrologyCore;
+        private Core hydrologyCore;
 
-        BackgroundWorker exec;
+        private BackgroundWorker backgroundWorker;
 
-        public ExecutorWindow(IList<NodeControl> nodes, Core hydrologyCore)
+        public ExecutorWindow(ExperimentGraph experimentGraph, Core hydrologyCore)
         {
             InitializeComponent();
 
-            this.nodes = nodes;
+            this.experimentGraph = experimentGraph;
             this.hydrologyCore = hydrologyCore;
-
-            experiment = new Experiment();
 
             RunExecutor();            
         }
 
-        public void RunExecutor()
+        public void PrepareInitNode(InitNodeControl node, Experiment experiment)
         {
-            execBar.Value = 0;
-
-            exec = new BackgroundWorker();
-            exec.DoWork += exec_DoWork;
-            exec.RunWorkerCompleted += exec_RunWorkerCompleted;
-            exec.ProgressChanged += exec_ProgressChanged;
-            exec.WorkerReportsProgress = true;
-            exec.WorkerSupportsCancellation = true;
-
-            exec.RunWorkerAsync();
+            experiment.StartFrom(node.InitPath);
         }
-
-        void exec_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        public void PrepareRunProcessNode(RunProcessNodeControl node, Experiment experiment)
         {
-            execBar.Value = e.ProgressPercentage;
+            experiment.Then(hydrologyCore.RunProcess(node.ProcessName));
         }
-
-        void exec_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        public void PrepareAlgorithmNode(AlgorithmNodeControl node, Experiment experiment)
         {
-            if (!e.Cancelled && e.Error == null)
-                MessageBox.Show("Эксперимент выполнен", "", MessageBoxButton.OK, MessageBoxImage.Information);
-            Close();
-        }
-
-        void exec_DoWork(object sender, DoWorkEventArgs e)
-        {
-            BackgroundWorker worker = sender as BackgroundWorker;
-
-            Dispatcher.Invoke(() => { statusLbl.Content = "Загрузка исходных данных"; }, System.Windows.Threading.DispatcherPriority.Normal);
-            int n = nodes.Count + 1;
-            double percentInc = 100.0 / n;
-            double percent = percentInc / 2;
-
-            for (int i = 0; i < nodes.Count; i++)
+            if (Directory.Exists(node.InitPath))
             {
-                if (nodes[i] is InitNodeControl)
+                DataTable algParams = node.ParamsTable.Copy();
+
+                foreach (DataRow row in algParams.Rows)
                 {
-                    InitNodeControl initNode = nodes[i] as InitNodeControl;
-                    experiment.StartFrom(initNode.InitPath);
+                    if (node.VarLoop.Keys.Contains(row["Name"].ToString()))
+                        row["Value"] = node.VarLoop[row["Name"].ToString()].RunValue;
                 }
 
-                if (nodes[i] is AlgorithmNodeControl)
+                experiment.Then(hydrologyCore.Algorithm(node.AlgorithmType.Name).InitFromFolder(node.InitPath).SetParams(algParams));
+            }
+            else
+            {
+                MessageBox.Show(string.Format("Путь {0}, указанный для алгоритма {1} не существует", node.InitPath, node.AlgorithmType.Name),
+                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+        }
+        public void PrepareLoop(LoopControl loop, Experiment experiment, BackgroundWorker worker, DoWorkEventArgs e, double p)
+        {
+            var chain = loop.LoopBody.CreateExecutionChain();
+
+            double percentInc = 100.0 * p / chain.Count;
+            percent += percentInc / 2;
+            worker.ReportProgress((int)percent);
+
+            for (loop.ResetValue(); loop.IsLoop(); loop.StepValue())
+            {
+                for (int i = 0; i < chain.Count; i++)
                 {
-                    AlgorithmNodeControl node = nodes[i] as AlgorithmNodeControl;
-                    string path = node.InitPath;
-                    if (Directory.Exists(node.InitPath))
-                    {
-                        // write params to file
-                        DataTable algParams = node.ParamsTable;
-                        if (path[path.Length - 1] != '/') path += "/";
-                        path += "params.csv";
-                        IWriter writer = new CSVWriter();
-                        writer.Write(algParams, path);
+                    if (chain[i] is InitNodeControl)
+                        PrepareInitNode(chain[i] as InitNodeControl, experiment);
+                    else if (chain[i] is AlgorithmNodeControl)
+                        PrepareAlgorithmNode(chain[i] as AlgorithmNodeControl, experiment);
+                    else if (chain[i] is RunProcessNodeControl)
+                        PrepareRunProcessNode(chain[i] as RunProcessNodeControl, experiment);
+                    else if (chain[i] is LoopControl)
+                        PrepareLoop(chain[i] as LoopControl, experiment, worker, e, percentInc);
 
-                        Dispatcher.Invoke(() => { statusLbl.Content = path; }, System.Windows.Threading.DispatcherPriority.Normal);
-
-                        experiment.Then(hydrologyCore.Algorithm(node.AlgorithmType.Name).InitFromFolder(node.InitPath));
-                    }
-                    else
+                    if (worker.CancellationPending == true)
                     {
-                        MessageBox.Show(string.Format("Путь {0}, указанный для алгоритма {1} не существует", node.InitPath, node.AlgorithmType.Name),
-                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        e.Cancel = true;
                         return;
                     }
-                }
-
-                if (nodes[i] is RunProcessNodeControl)
-                {
-                    RunProcessNodeControl node = nodes[i] as RunProcessNodeControl;
-                    string processName = node.ProcessName;
-                    experiment.Then(hydrologyCore.RunProcess(processName));
+                    percent += percentInc;
+                    worker.ReportProgress((int)percent);
                 }
 
                 if (worker.CancellationPending == true)
@@ -131,26 +114,85 @@ namespace HydrologyDesktop
                 percent += percentInc;
                 worker.ReportProgress((int)percent);
             }
+        }
+        public void PrepareExperiment(BackgroundWorker worker, DoWorkEventArgs e)
+        {
+            experiment = new Experiment();
 
-            if (worker.CancellationPending == true)
+            var chain = experimentGraph.CreateExecutionChain();
+
+            double percentInc = 100.0 / chain.Count;
+            percent += percentInc / 2;
+            worker.ReportProgress((int)percent);
+
+            for (int i = 0; i < chain.Count; i++)
             {
-                e.Cancel = true;
-                return;
+                if (chain[i] is InitNodeControl)
+                    PrepareInitNode(chain[i] as InitNodeControl, experiment);
+                else if (chain[i] is AlgorithmNodeControl)
+                    PrepareAlgorithmNode(chain[i] as AlgorithmNodeControl, experiment);
+                else if (chain[i] is RunProcessNodeControl)
+                    PrepareRunProcessNode(chain[i] as RunProcessNodeControl, experiment);
+                else if (chain[i] is LoopControl)
+                    PrepareLoop(chain[i] as LoopControl, experiment, worker, e, percentInc);
+
+                if (worker.CancellationPending == true)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                percent += percentInc;
+                worker.ReportProgress((int)percent);
             }
-            Dispatcher.Invoke(() => { statusLbl.Content = "Выполнение алгоритма"; }, System.Windows.Threading.DispatcherPriority.Normal);
+        }
+
+        public void Run(BackgroundWorker worker, DoWorkEventArgs e)
+        {
+            Dispatcher.Invoke(() => { statusLbl.Content = "Подготовка эксперимента"; }, System.Windows.Threading.DispatcherPriority.Normal);
+
+            PrepareExperiment(worker, e);
+
+            Dispatcher.Invoke(() => { statusLbl.Content = "Выполнение эксперимента"; }, System.Windows.Threading.DispatcherPriority.Normal);
             percent = 0;
             worker.ReportProgress((int)percent);
 
             experiment.Run();
         }
 
+        public void RunExecutor()
+        {
+            execBar.Value = 0;
+
+            backgroundWorker = new BackgroundWorker();
+            backgroundWorker.DoWork += exec_DoWork;
+            backgroundWorker.RunWorkerCompleted += exec_RunWorkerCompleted;
+            backgroundWorker.ProgressChanged += exec_ProgressChanged;
+            backgroundWorker.WorkerReportsProgress = true;
+            backgroundWorker.WorkerSupportsCancellation = true;
+
+            backgroundWorker.RunWorkerAsync();
+        }
+
+        void exec_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            execBar.Value = e.ProgressPercentage;
+        }
+        void exec_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (!e.Cancelled && e.Error == null)
+                MessageBox.Show("Эксперимент выполнен", "", MessageBoxButton.OK, MessageBoxImage.Information);
+            Close();
+        }
+        void exec_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Run(sender as BackgroundWorker, e);
+        }
         public void Cancel()
         {
-            exec.CancelAsync();
+            backgroundWorker.CancelAsync();
             statusLbl.Content = "Завершение текущей операции";
             cancelBtn.IsEnabled = false;
         }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Cancel();

@@ -46,5 +46,7 @@ namespace CoreInterfaces
         {
             get;
         }
+
+        DataSet InitialData { get; set; }
     }
 }

@@ -23,8 +23,8 @@ namespace HydrologyDesktop.Controls
         private Point start, end, startRelative, endRelative;
         private double length = 100, angle = 0;
 
-        public NodeControl From { get; set; }
-        public NodeControl To { get; set; }
+        public BaseNodeControl From { get; set; }
+        public BaseNodeControl To { get; set; }
 
         public Point StartRelative
         {
@@ -133,7 +133,7 @@ namespace HydrologyDesktop.Controls
             transform.Angle = angle;
         }
 
-        public Arrow(NodeControl from, Point startRelative, NodeControl to, Point endRelative)
+        public Arrow(BaseNodeControl from, Point startRelative, BaseNodeControl to, Point endRelative)
         {
             InitializeComponent();
 
@@ -143,7 +143,7 @@ namespace HydrologyDesktop.Controls
             EndRelative = endRelative;
         }
 
-        public Arrow(NodeControl from, Point startRelative, Point end)
+        public Arrow(BaseNodeControl from, Point startRelative, Point end)
         {
             InitializeComponent();
 

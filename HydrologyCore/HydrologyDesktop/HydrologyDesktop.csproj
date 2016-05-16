@@ -55,6 +55,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\Nodes\BaseNodeControl.cs" />
+    <Compile Include="Controls\Nodes\LoopControl.xaml.cs">
+      <DependentUpon>LoopControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Nodes\AlgorithmNodeControl.cs" />
     <Compile Include="Controls\Arrow.xaml.cs">
       <DependentUpon>Arrow.xaml</DependentUpon>
@@ -63,6 +67,9 @@
     <Compile Include="Controls\Nodes\InitNodeControl.cs" />
     <Compile Include="Controls\Nodes\NodeControl.xaml.cs">
       <DependentUpon>NodeControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Nodes\StartLoopNodeControl.xaml.cs">
+      <DependentUpon>StartLoopNodeControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ExecutorWindow.xaml.cs">
       <DependentUpon>ExecutorWindow.xaml</DependentUpon>
@@ -75,9 +82,21 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\Nodes\LoopControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\Nodes\NodeControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Nodes\StartLoopNodeControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LoopSettingsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="RunProcessSettingsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -99,6 +118,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ExperimentGraph.cs" />
+    <Compile Include="LoopSettingsWindow.xaml.cs">
+      <DependentUpon>LoopSettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RunProcessSettingsWindow.xaml.cs">
       <DependentUpon>RunProcessSettingsWindow.xaml</DependentUpon>
     </Compile>
@@ -155,6 +177,7 @@
       <Name>HydrologyCore</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

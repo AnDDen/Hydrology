@@ -46,6 +46,8 @@ namespace HydrologyDesktop.Controls
 
         public string InitPath { get; set; }
 
+        public Dictionary<string, LoopControl> VarLoop { get; set; }
+
         public AlgorithmNodeControl() : base()
         {
             paramsExpander.Visibility = Visibility.Visible;

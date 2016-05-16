@@ -28,7 +28,7 @@ namespace HydrologyDesktop
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Core hydrologyCore;
+        public Core HydrologyCore;
 
         private ExperimentGraph experimentGraph;
 
@@ -39,15 +39,31 @@ namespace HydrologyDesktop
         private Vector delta;
 
         private Point startPoint;
-        private bool isDragDrop;
+        public bool IsDragDrop { get; set; }
 
         private EditorMode mode = EditorMode.Pointer;
+        public EditorMode Mode
+        {
+            get { return mode; }
+            set { mode = value; }
+        }
+
         private Arrow editingArrow = null;
+        public Arrow EditingArrow
+        {
+            get { return editingArrow; }
+            set { editingArrow = value; }
+        }
 
         private UIElement selected;
+        public UIElement Selected
+        {
+            get { return selected; }
+            set { selected = value; }
+        }
 
-        private System.Windows.Forms.FolderBrowserDialog folderDialog;
-        private OpenFileDialog fileDialog;
+        public System.Windows.Forms.FolderBrowserDialog FolderDialog { get; set; }
+        public OpenFileDialog FileDialog { get; set; }
 
         private SaveFileDialog saveFileDialog = new SaveFileDialog()
         {
@@ -70,10 +86,10 @@ namespace HydrologyDesktop
 
         private void Init()
         {
-            hydrologyCore = new Core();
-            IList<Type> algTypes = hydrologyCore.AlgorithmTypes.Values.ToList();
-            folderDialog = new System.Windows.Forms.FolderBrowserDialog();
-            fileDialog = new OpenFileDialog() { Multiselect = false };
+            HydrologyCore = new Core();
+            IList<Type> algTypes = HydrologyCore.AlgorithmTypes.Values.ToList();
+            FolderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            FileDialog = new OpenFileDialog() { Multiselect = false };
 
             // add algorithm buttons to toolkit
             foreach (Type type in algTypes)
@@ -99,9 +115,9 @@ namespace HydrologyDesktop
             //arrows = new List<Arrow>();
         }
 
-        void AddAlgNode(string algName, double x = 0, double y = 0)
+        void AddAlgNode(string algName, double x = 0, double y = 0, LoopControl loop = null)
         {
-            Type algType = hydrologyCore.AlgorithmTypes[algName];
+            Type algType = HydrologyCore.AlgorithmTypes[algName];
 
             DataTable paramsTable = new DataTable();
             paramsTable.Columns.Add("Name");
@@ -115,19 +131,21 @@ namespace HydrologyDesktop
                 paramsTable.Rows.Add(row);
             }
 
-            var algSettings = new AlgorithmSettings(folderDialog, paramsTable, algType) 
+            var algSettings = new AlgorithmSettings(FolderDialog, paramsTable, algType) 
             { 
                 Owner = this, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner 
             };
+            if (ViewedLoop != null)
+                algSettings.ParentLoop = ViewedLoop;
             bool? dialogResult = algSettings.ShowDialog();
             if (dialogResult.HasValue && dialogResult.Value)
             {
-                AddNode(algType, algSettings.Path, algSettings.ParamsTable, x, y);
+                AddNode(algType, algSettings.Path, algSettings.ParamsTable, x, y, loop, algSettings.VarLoop);
             }
         }
 
-        void AddNode(Type algType, string initPath, DataTable paramTable, double x = 0, double y = 0)
+        void AddNode(Type algType, string initPath, DataTable paramTable, double x = 0, double y = 0, LoopControl loop = null, Dictionary<string, LoopControl> varLoop = null)
         {
             var attr = algType.GetCustomAttribute(typeof(NameAttribute)) as NameAttribute;
             NodeControl node = new AlgorithmNodeControl()
@@ -135,7 +153,8 @@ namespace HydrologyDesktop
                 NodeName = attr.Name,
                 AlgorithmType = algType,
                 InitPath = initPath,
-                ParamsTable = paramTable
+                ParamsTable = paramTable,
+                VarLoop = varLoop
             };
             node.Style = (Style)this.FindResource("NodeStyle");
             node.SettingsButtonClick += node_SettingsClicked;
@@ -145,68 +164,94 @@ namespace HydrologyDesktop
             node.LostMouseCapture += node_LostMouseCapture;
 
             Canvas.Children.Add(node);
+            experimentGraph.Nodes.Add(node);
+
             Canvas.SetLeft(node, x);
             Canvas.SetTop(node, y);
-            experimentGraph.Nodes.Add(node);
         }
 
-        void node_LostMouseCapture(object sender, MouseEventArgs e)
+        public void node_LostMouseCapture(object sender, MouseEventArgs e)
         {
             isMove = false;
         }
 
-        void node_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        object moveControl = null;
+
+        public void node_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {  
             switch (mode) 
             { 
                 case EditorMode.Pointer:
-                    if (sender is NodeControl) 
+                    if (moveControl == null && sender is BaseNodeControl) 
                     {
-                        NodeControl node = sender as NodeControl;
+                        BaseNodeControl node = sender as BaseNodeControl;
                         isMove = true;                    
-                        Point pos = e.GetPosition(Canvas);
+                        Point pos = e.GetPosition(ViewedLoop == null ? Canvas : ViewedLoop.Canvas);
                         delta = new Vector(pos.X - Canvas.GetLeft(node), pos.Y - Canvas.GetTop(node));
                         node.CaptureMouse();
+                        moveControl = node;
                     }
                     break;
                 case EditorMode.Arrow:
-                    if (sender is NodeControl && editingArrow == null) 
+                    if (sender is BaseNodeControl && editingArrow == null) 
                     {
-                        NodeControl node = sender as NodeControl;
+                        BaseNodeControl node = sender as BaseNodeControl;
                         Point p = node.FindAttachPoint(e.GetPosition(node));
                         p.X = p.X * 1.0 / node.ActualWidth;
                         p.Y = p.Y * 1.0 / node.ActualHeight;
-                        editingArrow = new Arrow(node, p, e.GetPosition(Canvas));
-                        Canvas.Children.Add(editingArrow);
+                        if (ViewedLoop == null)
+                        {
+                            editingArrow = new Arrow(node, p, e.GetPosition(Canvas));
+                            Canvas.Children.Add(editingArrow);
+                        }
+                        else
+                        {
+                            editingArrow = new Arrow(node, p, e.GetPosition(ViewedLoop.Canvas));
+                            ViewedLoop.Canvas.Children.Add(editingArrow);
+                        }
                     }
                     break;
             }
         }
 
-        void node_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        public void node_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             isMove = false;
+            moveControl = null;
             (sender as UserControl).ReleaseMouseCapture();
         }
 
-        void node_MouseMove(object sender, MouseEventArgs e)
+        public void node_MouseMove(object sender, MouseEventArgs e)
         {
             switch (mode)
             {
                 case EditorMode.Pointer:
                     {
-                        if (isMove)
+                        if (isMove && moveControl == sender)
                         {
-                            NodeControl node = sender as NodeControl;
-                            Point pos = e.GetPosition(Canvas);
+                            BaseNodeControl node = sender as BaseNodeControl;
+                            Point pos = e.GetPosition(ViewedLoop == null ? Canvas : ViewedLoop.Canvas);
                             Canvas.SetLeft(node, pos.X - delta.X);
                             Canvas.SetTop(node, pos.Y - delta.Y);
 
-                            foreach (Arrow arrow in experimentGraph.Arrows)
+                            if (ViewedLoop == null)
                             {
-                                if (arrow.From == node || arrow.To == node)
+                                foreach (Arrow arrow in experimentGraph.Arrows)
                                 {
-                                    arrow.Draw();
+                                    if (arrow.From == node || arrow.To == node)
+                                    {
+                                        arrow.Draw();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                foreach (Arrow arrow in ViewedLoop.LoopBody.Arrows)
+                                {
+                                    if (arrow.From == node || arrow.To == node)
+                                    {
+                                        arrow.Draw();
+                                    }
                                 }
                             }
                         }
@@ -218,20 +263,23 @@ namespace HydrologyDesktop
             
         }
 
-        void node_SettingsClicked(object sender, EventArgs e)
+        public void node_SettingsClicked(object sender, EventArgs e)
         {
             AlgorithmNodeControl node = (AlgorithmNodeControl)sender;
-            var algSettings = new AlgorithmSettings(folderDialog, node.ParamsTable, node.AlgorithmType) 
+            var algSettings = new AlgorithmSettings(FolderDialog, node.ParamsTable, node.AlgorithmType) 
             { 
                 Owner = this, 
                 Path = node.InitPath, 
                 WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner 
             };
+            if (ViewedLoop != null)
+                algSettings.ParentLoop = ViewedLoop;
             bool? dialogResult = algSettings.ShowDialog();
             if (dialogResult.HasValue && dialogResult.Value)
             {
                 node.InitPath = algSettings.Path;
                 node.ParamsTable = algSettings.ParamsTable;
+                node.VarLoop = algSettings.VarLoop;
             }
         }
 
@@ -248,12 +296,12 @@ namespace HydrologyDesktop
             Point mousePos = e.GetPosition(null);
             Vector diff = startPoint - mousePos;
 
-            if (e.LeftButton == MouseButtonState.Pressed && !isDragDrop)
+            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
             {
                 if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
                     || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
-                    isDragDrop = true;
+                    IsDragDrop = true;
                     Button btn = (Button)sender;
                     DataObject dragData = new DataObject("NodeNameFormat", btn.Tag);
                     DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
@@ -263,113 +311,93 @@ namespace HydrologyDesktop
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            IDictionary<NodeControl, IList<NodeControl>> ascendents = new Dictionary<NodeControl, IList<NodeControl>>();
-            IList<NodeControl> left = new List<NodeControl>();
-
-            foreach (NodeControl node in experimentGraph.Nodes) {
-                ascendents.Add(node, new List<NodeControl>());
-                left.Add(node);
-            }
-            
-            foreach (Arrow arrow in experimentGraph.Arrows)
-            {
-                if (arrow.From != null && arrow.To != null)
-                    ascendents[arrow.To].Add(arrow.From);
-            }
-
-            IList<NodeControl> res = new List<NodeControl>();
-
-            Queue<NodeControl> q = new Queue<NodeControl>();
-            for (int i = 0; i < left.Count; i++)
-            {
-                NodeControl node = left[i];
-                if (ascendents[node].Count == 0)
-                {
-                    q.Enqueue(node);
-                    left.Remove(node);
-                    i--;
-                }
-            }
-
-            while (q.Count > 0)
-            {
-                NodeControl p = q.Dequeue();
-                res.Add(p);
-
-                for (int i = 0; i < left.Count; i++)
-                {
-                    NodeControl node = left[i];
-                    ascendents[node].Remove(p);
-                    if (ascendents[node].Count == 0)
-                    {
-                        q.Enqueue(node);
-                        left.Remove(node);
-                        i--;
-                    }
-                }
-            }
-
-            ExecutorWindow experimentWindow = new ExecutorWindow(res, hydrologyCore)
+            ExecutorWindow experimentWindow = new ExecutorWindow(experimentGraph, HydrologyCore)
             {
                 Owner = this,
-                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             experimentWindow.ShowDialog(); 
         }
 
         private void Canvas_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent("NodeFormat"))
-            {
-                NodeControl node = (NodeControl) e.Data.GetData("NodeFormat");
-                if (node is InitNodeControl)
+            if (IsDragDrop)
+            { 
+                if (e.Data.GetDataPresent("NodeFormat"))
                 {
-                    var initSettings = new InitSettingsWindow(folderDialog) 
-                    { 
-                        Owner = this, 
-                        InitPath = (node as InitNodeControl).InitPath,
-                        WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner 
-                    };
-                    bool? dialogResult = initSettings.ShowDialog();
-                    if (dialogResult.HasValue && dialogResult.Value)
+                    BaseNodeControl node = (BaseNodeControl)e.Data.GetData("NodeFormat");
+                    if (node is InitNodeControl)
                     {
-                        (node as InitNodeControl).InitPath = initSettings.InitPath;
-                        Canvas.Children.Add(node);
-                        Point pos = e.GetPosition(Canvas);
-                        Canvas.SetLeft(node, pos.X);
-                        Canvas.SetTop(node, pos.Y);
-                        experimentGraph.Nodes.Add(node);
+                        var initSettings = new InitSettingsWindow(FolderDialog)
+                        {
+                            Owner = this,
+                            InitPath = (node as InitNodeControl).InitPath,
+                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
+                        };
+                        bool? dialogResult = initSettings.ShowDialog();
+                        if (dialogResult.HasValue && dialogResult.Value)
+                        {
+                            (node as InitNodeControl).InitPath = initSettings.InitPath;
+                            Canvas.Children.Add(node);
+                            Point pos = e.GetPosition(Canvas);
+                            Canvas.SetLeft(node, pos.X);
+                            Canvas.SetTop(node, pos.Y);
+                            experimentGraph.Nodes.Add(node);
+                        }
+                        IsDragDrop = false;
                     }
-                    isDragDrop = false;
-                }
-                else if (node is RunProcessNodeControl)
-                {
-                    var runProcessSettings = new RunProcessSettingsWindow(fileDialog)
+                    else if (node is RunProcessNodeControl)
                     {
-                        ProcessName = (node as RunProcessNodeControl).ProcessName,
-                        Owner = this,
-                        WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
-                    };
-                    bool? dialogResult = runProcessSettings.ShowDialog();
-                    if (dialogResult.HasValue && dialogResult.Value)
-                    {
-                        (node as RunProcessNodeControl).ProcessName = runProcessSettings.ProcessName;
-                        Canvas.Children.Add(node);
-                        Point pos = e.GetPosition(Canvas);
-                        Canvas.SetLeft(node, pos.X);
-                        Canvas.SetTop(node, pos.Y);
-                        experimentGraph.Nodes.Add(node);
+                        var runProcessSettings = new RunProcessSettingsWindow(FileDialog)
+                        {
+                            ProcessName = (node as RunProcessNodeControl).ProcessName,
+                            Owner = this,
+                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
+                        };
+                        bool? dialogResult = runProcessSettings.ShowDialog();
+                        if (dialogResult.HasValue && dialogResult.Value)
+                        {
+                            (node as RunProcessNodeControl).ProcessName = runProcessSettings.ProcessName;
+                            Canvas.Children.Add(node);
+                            Point pos = e.GetPosition(Canvas);
+                            Canvas.SetLeft(node, pos.X);
+                            Canvas.SetTop(node, pos.Y);
+                            experimentGraph.Nodes.Add(node);
+                        }
+                        IsDragDrop = false;
                     }
-                    isDragDrop = false;
-                }
-            }
+                    else if (node is LoopControl)
+                    {
+                        var loopSettings = new LoopSettingsWindow()
+                        {
+                            Owner = this,
+                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
+                        };
+                        bool? dialogResult = loopSettings.ShowDialog();
+                        if (dialogResult.HasValue && dialogResult.Value)
+                        {
+                            (node as LoopControl).VarName = loopSettings.VarName;
+                            (node as LoopControl).StartValue = loopSettings.StartValue;
+                            (node as LoopControl).EndValue = loopSettings.EndValue;
+                            (node as LoopControl).Step = loopSettings.Step;
 
-            if (e.Data.GetDataPresent("NodeNameFormat")) 
-            {
-                String nodeName = e.Data.GetData("NodeNameFormat").ToString();
-                Point pos = e.GetPosition(Canvas);
-                AddAlgNode(nodeName, pos.X, pos.Y);
-                isDragDrop = false;
+                            Canvas.Children.Add(node);
+                            Point pos = e.GetPosition(Canvas);
+                            Canvas.SetLeft(node, pos.X);
+                            Canvas.SetTop(node, pos.Y);
+                            experimentGraph.Nodes.Add(node);
+                        }
+                        IsDragDrop = false;
+                    }
+                }
+
+                if (e.Data.GetDataPresent("NodeNameFormat"))
+                {
+                    String nodeName = e.Data.GetData("NodeNameFormat").ToString();
+                    Point pos = e.GetPosition(Canvas);
+                    AddAlgNode(nodeName, pos.X, pos.Y);
+                    IsDragDrop = false;
+                }
             }
         }
 
@@ -380,7 +408,7 @@ namespace HydrologyDesktop
 
         private void Button_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
-            isDragDrop = false;
+            IsDragDrop = false;
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
@@ -389,9 +417,9 @@ namespace HydrologyDesktop
             for (int i = Canvas.Children.Count - 1; i >= 0; i--)
             {
                 UIElement child = Canvas.Children[i];
-                if (child is NodeControl)
+                if (child is BaseNodeControl)
                 {
-                    NodeControl node = child as NodeControl;
+                    BaseNodeControl node = child as BaseNodeControl;
                     if (node.IsMouseOver)
                     {
                         node.Thickness = new Thickness(3);
@@ -423,12 +451,12 @@ namespace HydrologyDesktop
             Point mousePos = e.GetPosition(null);
             Vector diff = startPoint - mousePos;
 
-            if (e.LeftButton == MouseButtonState.Pressed && !isDragDrop)
+            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
             {
                 if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
                     || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
-                    isDragDrop = true;
+                    IsDragDrop = true;
 
                     Button btn = (Button)sender;
 
@@ -450,7 +478,7 @@ namespace HydrologyDesktop
         private void initNode_SettingsButtonClick(object sender, EventArgs e)
         {
             InitNodeControl node = sender as InitNodeControl;
-            var initSettings = new InitSettingsWindow(folderDialog) 
+            var initSettings = new InitSettingsWindow(FolderDialog) 
             { 
                 Owner = this, 
                 InitPath = node.InitPath, 
@@ -463,25 +491,70 @@ namespace HydrologyDesktop
             }
         }
 
+        private void loopButton_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            Point mousePos = e.GetPosition(null);
+            Vector diff = startPoint - mousePos;
+
+            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
+            {
+                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
+                    || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    IsDragDrop = true;
+
+                    Button btn = (Button)sender;
+
+                    LoopControl node = new LoopControl(this);
+                    node.MouseLeftButtonDown += node_MouseLeftButtonDown;
+                    node.MouseLeftButtonUp += node_MouseLeftButtonUp;
+                    node.MouseMove += node_MouseMove;
+                    node.LostMouseCapture += node_LostMouseCapture;
+                    node.SettingsButtonClick += loopNode_SettingsButtonClick;
+
+                    DataObject dragData = new DataObject("NodeFormat", node);
+                    DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
+                }
+            }
+        }
+
+        private void loopNode_SettingsButtonClick(object sender, EventArgs e)
+        {
+            LoopControl node = sender as LoopControl;
+            var loopSettings = new LoopSettingsWindow()
+            {
+                Owner = this,
+                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
+                VarName = node.VarName,
+                StartValue = node.StartValue,
+                EndValue = node.EndValue,
+                Step = node.Step
+            };
+            bool? dialogResult = loopSettings.ShowDialog();
+            if (dialogResult.HasValue && dialogResult.Value)
+            {
+                node.VarName = loopSettings.VarName;
+                node.StartValue = loopSettings.StartValue;
+                node.EndValue = loopSettings.EndValue;
+                node.Step = loopSettings.Step;
+            }
+        }
+
         private void PointerBtn_Click(object sender, RoutedEventArgs e)
         {
             mode = EditorMode.Pointer;
-            PointerBtn.Background = new SolidColorBrush(Color.FromRgb(112, 112, 112));
-            PointerBtn.Foreground = Brushes.White;
-            ArrowBtn.Background = new SolidColorBrush(Color.FromRgb(221, 221, 221));
-            ArrowBtn.Foreground = Brushes.Black;
+            PointerBtn.Tag = "Selected";
+            ArrowBtn.Tag = "";
         }
 
         private void ArrowBtn_Click(object sender, RoutedEventArgs e)
         {
             mode = EditorMode.Arrow;
-            ArrowBtn.Background = new SolidColorBrush(Color.FromRgb(112, 112, 112));
-            ArrowBtn.Foreground = Brushes.White;
-            PointerBtn.Background = new SolidColorBrush(Color.FromRgb(221, 221, 221));
-            PointerBtn.Foreground = Brushes.Black;
+            PointerBtn.Tag = "";
+            ArrowBtn.Tag = "Selected";
         }
 
-        private void Arrow_MouseDown(object sender, MouseButtonEventArgs e)
+        public void Arrow_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Arrow arrow = sender as Arrow;
             if (arrow.AttachEllipse != null)
@@ -519,9 +592,9 @@ namespace HydrologyDesktop
             {
                 foreach (UIElement element in Canvas.Children)
                 {
-                    if (element is NodeControl)
+                    if (element is BaseNodeControl)
                     {
-                        NodeControl node = element as NodeControl;
+                        BaseNodeControl node = element as BaseNodeControl;
                         double x = Canvas.GetLeft(node);
                         double y = Canvas.GetTop(node);
 
@@ -571,9 +644,9 @@ namespace HydrologyDesktop
                 for (int i = Canvas.Children.Count - 1; i >= 0 && !found; i--)
                 {
                     UIElement child = Canvas.Children[i];
-                    if (child is NodeControl)
+                    if (child is BaseNodeControl)
                     {
-                        NodeControl node = child as NodeControl;
+                        BaseNodeControl node = child as BaseNodeControl;
                         double x = Canvas.GetLeft(node), y = Canvas.GetTop(node);
                         if (experimentGraph.Arrows.FirstOrDefault((a) => { return a.From == editingArrow.From && a.To == node; }) == null)
                         {
@@ -600,6 +673,7 @@ namespace HydrologyDesktop
                                 editingArrow.MouseUp += Arrow_MouseUp;
 
                                 experimentGraph.Arrows.Add(editingArrow);
+
                                 editingArrow = null;
                                 found = true;
                             }
@@ -619,12 +693,12 @@ namespace HydrologyDesktop
             Point mousePos = e.GetPosition(null);
             Vector diff = startPoint - mousePos;
 
-            if (e.LeftButton == MouseButtonState.Pressed && !isDragDrop)
+            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
             {
                 if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
                     || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
-                    isDragDrop = true;
+                    IsDragDrop = true;
 
                     Button btn = (Button)sender;
 
@@ -646,7 +720,7 @@ namespace HydrologyDesktop
         void exportNode_SettingsButtonClick(object sender, EventArgs e)
         {
             RunProcessNodeControl node = sender as RunProcessNodeControl;
-            var runProcessSettings = new RunProcessSettingsWindow(fileDialog)
+            var runProcessSettings = new RunProcessSettingsWindow(FileDialog)
             {
                 Owner = this,
                 WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
@@ -661,29 +735,62 @@ namespace HydrologyDesktop
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Delete && selected != null)
+            if (ViewedLoop == null)
             {
-                Canvas.Children.Remove(selected);
-                if (selected is Arrow)
+                if (e.Key == Key.Delete && selected != null)
                 {
-                    experimentGraph.Arrows.Remove(selected as Arrow);     
-                }
-                else if (selected is NodeControl)
-                {
-                    NodeControl node = selected as NodeControl;
-                    experimentGraph.Nodes.Remove(node);
-
-                    var arrs = experimentGraph.Arrows.Where((a) => { return a.From == node || a.To == node; }).ToList();
-
-                    for (int i = 0; i < arrs.Count(); i++)
+                    if (selected is Arrow)
                     {
-                        Arrow a = arrs[i];
-                        Canvas.Children.Remove(a);
-                        experimentGraph.Arrows.Remove(a);
+                        Canvas.Children.Remove(selected);
+                        experimentGraph.Arrows.Remove(selected as Arrow);
                     }
-                }
+                    else if (selected is BaseNodeControl && !(selected is StartLoopNodeControl))
+                    {
+                        Canvas.Children.Remove(selected);
+                        BaseNodeControl node = selected as BaseNodeControl;
+                        experimentGraph.Nodes.Remove(node);
 
-                selected = null;
+                        var arrs = experimentGraph.Arrows.Where((a) => { return a.From == node || a.To == node; }).ToList();
+
+                        for (int i = 0; i < arrs.Count(); i++)
+                        {
+                            Arrow a = arrs[i];
+                            Canvas.Children.Remove(a);
+                            experimentGraph.Arrows.Remove(a);
+                        }
+                    }
+
+                    selected = null;
+                }
+            }
+            else
+            {
+                if (e.Key == Key.Delete && selected != null)
+                {                   
+                    if (selected is Arrow)
+                    {
+                        ViewedLoop.Canvas.Children.Remove(selected);
+                        ViewedLoop.LoopBody.Arrows.Remove(selected as Arrow);
+                    }
+                    else if (selected is BaseNodeControl && !(selected is StartLoopNodeControl))
+                    {
+                        ViewedLoop.Canvas.Children.Remove(selected);
+                        BaseNodeControl node = selected as BaseNodeControl;
+
+                        ViewedLoop.LoopBody.Nodes.Remove(node);
+
+                        var arrs = ViewedLoop.LoopBody.Arrows.Where((a) => { return a.From == node || a.To == node; }).ToList();
+
+                        for (int i = 0; i < arrs.Count(); i++)
+                        {
+                            Arrow a = arrs[i];
+                            ViewedLoop.Canvas.Children.Remove(a);
+                            ViewedLoop.LoopBody.Arrows.Remove(a);
+                        }
+                    }
+
+                    selected = null;
+                }
             }
         }
 
@@ -694,29 +801,50 @@ namespace HydrologyDesktop
 
         private void LoadExperimentGraph(string path)
         {
-            NewExperiment();
             XDocument xDocument = XDocument.Load(path);
-            foreach (XElement node in xDocument.Element("experiment").Element("nodes").Elements("node"))
+            LoadExperimentGraph(xDocument.Root);
+        }
+
+        private void LoadExperimentGraph(XElement root, LoopControl loop = null)
+        {
+            if (loop == null)
+                NewExperiment();
+            else {
+                loop.LoopBody = new ExperimentGraph();
+                loop.Canvas.Children.Clear();
+            }
+            
+            foreach (XElement node in root.Element("nodes").Elements("node"))
             {
-                NodeControl nodeControl;
+                BaseNodeControl nodeControl;
                 switch (node.Attribute("type").Value)
                 {
                     case "init":
                         nodeControl = new InitNodeControl() { CornerRadius = new CornerRadius(10) };
                         (nodeControl as InitNodeControl).InitPath = node.Element("initpath").Value;
-                        nodeControl.NodeName = "Инициализация";
-                        nodeControl.SettingsButtonClick += initNode_SettingsButtonClick;
+                        (nodeControl as NodeControl).NodeName = "Инициализация";
+                        (nodeControl as NodeControl).SettingsButtonClick += initNode_SettingsButtonClick;
                         break;
                     case "runprocess":
                         nodeControl = new RunProcessNodeControl() { CornerRadius = new CornerRadius(10) };
                         (nodeControl as RunProcessNodeControl).ProcessName = node.Element("processname").Value;
-                        nodeControl.NodeName = "Запуск приложения";
-                        nodeControl.SettingsButtonClick += exportNode_SettingsButtonClick;
+                        (nodeControl as NodeControl).NodeName = "Запуск приложения";
+                        (nodeControl as NodeControl).SettingsButtonClick += exportNode_SettingsButtonClick;
                         break;
                     case "algorithm":
                         nodeControl = new AlgorithmNodeControl();
                         (nodeControl as AlgorithmNodeControl).InitPath = node.Element("initpath").Value;
-                        (nodeControl as AlgorithmNodeControl).AlgorithmType = hydrologyCore.AlgorithmTypes[node.Element("algorithmtype").Value];
+                        (nodeControl as AlgorithmNodeControl).AlgorithmType = HydrologyCore.AlgorithmTypes[node.Element("algorithmtype").Value];
+                        (nodeControl as AlgorithmNodeControl).VarLoop = new Dictionary<string, LoopControl>();
+
+                        var varNames = new Dictionary<string, LoopControl>();
+                        LoopControl p = loop;
+                        while (p != null)
+                        {
+                            varNames.Add(p.VarName, p);
+                            p = p.PreviousLoop;
+                        }
+
                         DataTable paramTable = new DataTable();
                         paramTable.Columns.Add("Name");
                         paramTable.Columns.Add("Value");
@@ -726,46 +854,114 @@ namespace HydrologyDesktop
                             row["Name"] = param.Attribute("name").Value;
                             row["Value"] = param.Attribute("value").Value;
                             paramTable.Rows.Add(row);
+
+                            if (row["Value"].ToString()[0] == '{')
+                            {
+                                string varName = row["Value"].ToString();
+                                varName = varName.Trim(' ', '{', '}');
+                                if (varNames.Keys.Contains(varName))
+                                {
+                                    (nodeControl as AlgorithmNodeControl).VarLoop.Add(row["Name"].ToString(), varNames[varName]);
+                                }
+                            }
                         }
                         (nodeControl as AlgorithmNodeControl).ParamsTable = paramTable;
                         var attr = (nodeControl as AlgorithmNodeControl).AlgorithmType.GetCustomAttribute(typeof(NameAttribute)) as NameAttribute;
-                        nodeControl.NodeName = attr.Name;
-                        nodeControl.SettingsButtonClick += node_SettingsClicked;
+                        (nodeControl as NodeControl).NodeName = attr.Name;
+                        (nodeControl as NodeControl).SettingsButtonClick += node_SettingsClicked;
+                        break;
+                    case "loopstart":
+                        nodeControl = new StartLoopNodeControl() { Width = 30, Height = 30 };
+                        break;
+                    case "loop":
+                        nodeControl = new LoopControl(this) { PreviousLoop = loop };
+                        (nodeControl as LoopControl).VarName = node.Element("loopparams").Attribute("varname").Value;
+                        (nodeControl as LoopControl).StartValue = 
+                            double.Parse(node.Element("loopparams").Attribute("start").Value, CultureInfo.InvariantCulture);
+                        (nodeControl as LoopControl).EndValue = 
+                            double.Parse(node.Element("loopparams").Attribute("end").Value, CultureInfo.InvariantCulture);
+                        (nodeControl as LoopControl).Step = 
+                            double.Parse(node.Element("loopparams").Attribute("step").Value, CultureInfo.InvariantCulture);
+                        LoadExperimentGraph(node.Element("loopbody"), nodeControl as LoopControl);
                         break;
                     default:
                         nodeControl = new NodeControl();
                         break;
                 }
-                nodeControl.Style = (Style)this.FindResource("NodeStyle");
+                if (!(nodeControl is StartLoopNodeControl))
+                    nodeControl.Style = (Style)this.FindResource("NodeStyle");
                 nodeControl.MouseLeftButtonDown += node_MouseLeftButtonDown;
                 nodeControl.MouseLeftButtonUp += node_MouseLeftButtonUp;
                 nodeControl.MouseMove += node_MouseMove;
                 nodeControl.LostMouseCapture += node_LostMouseCapture;
-
-                Canvas.Children.Add(nodeControl);
+                
                 Canvas.SetLeft(nodeControl, double.Parse(node.Attribute("x").Value, CultureInfo.InvariantCulture));
                 Canvas.SetTop(nodeControl, double.Parse(node.Attribute("y").Value, CultureInfo.InvariantCulture));
-                experimentGraph.Nodes.Add(nodeControl);
+
+                if (loop == null)
+                {
+                    Canvas.Children.Add(nodeControl);
+                    experimentGraph.Nodes.Add(nodeControl);
+                }
+                else
+                {
+                    loop.Canvas.Children.Add(nodeControl);
+                    loop.LoopBody.Nodes.Add(nodeControl);
+                }
             }
 
-            Canvas.UpdateLayout();
-
-            foreach (XElement arrow in xDocument.Element("experiment").Element("arrows").Elements("arrow"))
+            if (loop == null)
             {
-                var arr = new Arrow(
+                Canvas.UpdateLayout();
+            }
+            else
+            {
+                loop.Canvas.UpdateLayout();
+            }
+
+            foreach (XElement arrow in root.Element("arrows").Elements("arrow"))
+            {
+                Arrow arr;
+                if (loop == null)
+                {
+                    arr = new Arrow(
                     experimentGraph.Nodes[int.Parse(arrow.Element("from").Attribute("id").Value)],
                     new Point(double.Parse(arrow.Element("from").Attribute("x").Value, CultureInfo.InvariantCulture),
                               double.Parse(arrow.Element("from").Attribute("y").Value, CultureInfo.InvariantCulture)),
                     experimentGraph.Nodes[int.Parse(arrow.Element("to").Attribute("id").Value)],
                     new Point(double.Parse(arrow.Element("to").Attribute("x").Value, CultureInfo.InvariantCulture),
                               double.Parse(arrow.Element("to").Attribute("y").Value, CultureInfo.InvariantCulture))
-                );
-                arr.MouseDown += Arrow_MouseDown;
-                arr.MouseMove += Arrow_MouseMove;
-                arr.MouseUp += Arrow_MouseUp;
-                Canvas.Children.Add(arr);
-                experimentGraph.Arrows.Add(arr);
-                arr.Draw();
+                    );
+
+                    arr.MouseDown += Arrow_MouseDown;
+                    arr.MouseMove += Arrow_MouseMove;
+                    arr.MouseUp += Arrow_MouseUp;
+
+                    Canvas.Children.Add(arr);
+                    experimentGraph.Arrows.Add(arr);
+                    Canvas.UpdateLayout();
+                }
+                else
+                {
+                    arr = new Arrow(
+                    loop.LoopBody.Nodes[int.Parse(arrow.Element("from").Attribute("id").Value)],
+                    new Point(double.Parse(arrow.Element("from").Attribute("x").Value, CultureInfo.InvariantCulture),
+                              double.Parse(arrow.Element("from").Attribute("y").Value, CultureInfo.InvariantCulture)),
+                    loop.LoopBody.Nodes[int.Parse(arrow.Element("to").Attribute("id").Value)],
+                    new Point(double.Parse(arrow.Element("to").Attribute("x").Value, CultureInfo.InvariantCulture),
+                              double.Parse(arrow.Element("to").Attribute("y").Value, CultureInfo.InvariantCulture))
+                    );
+
+                    arr.MouseDown += Arrow_MouseDown;
+                    arr.MouseMove += loop.Arrow_MouseMove;
+                    arr.MouseUp += loop.Arrow_MouseUp;
+
+                    loop.Canvas.Children.Add(arr);
+                    loop.LoopBody.Arrows.Add(arr);
+                    loop.Canvas.UpdateLayout();
+                }
+
+                arr.Draw();                
             }
         }
 
@@ -785,6 +981,42 @@ namespace HydrologyDesktop
             if (res.HasValue && res.Value)
             {
                 experimentGraph.ToXml().Save(saveFileDialog.FileName);
+            }
+        }
+
+        private LoopControl viewedLoop = null;
+        public LoopControl ViewedLoop
+        {
+            get { return viewedLoop; }
+            set
+            {
+                viewedLoop = value;
+                if (viewedLoop != null)
+                {
+                    LoopView.Visibility = Visibility.Visible;
+                    LoopViewGrid.Children.Clear();
+                    LoopViewGrid.Children.Add(viewedLoop.Canvas);
+                    viewedLoop.Canvas.UpdateLayout();
+                    foreach (var child in viewedLoop.Canvas.Children)
+                        if (child is Arrow)
+                            (child as Arrow).Draw();
+                }
+                else
+                {
+                    LoopView.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private void CloseLoopButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewedLoop.PreviousLoop != null)
+            {
+                ViewedLoop = ViewedLoop.PreviousLoop;
+            }
+            else
+            {
+                ViewedLoop = null;                
             }
         }
     }

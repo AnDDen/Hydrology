@@ -16,22 +16,13 @@ using System.Windows.Shapes;
 namespace HydrologyDesktop.Controls
 {
     /// <summary>
-    /// Логика взаимодействия для NodeControl.xaml
+    /// Логика взаимодействия для StartLoopNodeControl.xaml
     /// </summary>
-    public partial class NodeControl : BaseNodeControl
+    public partial class StartLoopNodeControl : BaseNodeControl
     {
-        private string nodeName = "";
-        public string NodeName
+        public StartLoopNodeControl()
         {
-            get
-            {
-                return nodeName;
-            }
-            set
-            {
-                nodeName = value;
-                nodeNameLbl.Content = nodeName;
-            }
+            InitializeComponent();
         }
 
         private Ellipse attachEllipse = null;
@@ -80,40 +71,10 @@ namespace HydrologyDesktop.Controls
             return attach;
         }
 
-        public Brush BorderColor
-        {
-            get { return border.BorderBrush; }
-            set { border.BorderBrush = value; }
-        }
-
-        public override Thickness Thickness
-        {
-            get { return border.BorderThickness; }
-            set { border.BorderThickness = value; }
-        }
-
-        public CornerRadius CornerRadius
-        {
-            get { return border.CornerRadius; }
-            set { border.CornerRadius = value; }
-        }
-
-        public event EventHandler<EventArgs> SettingsButtonClick;
-
-        public NodeControl() : base()
-        {
-            InitializeComponent();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            SettingsButtonClick?.Invoke(this, EventArgs.Empty);
-        }
-
         private void Ellipse_MouseEnter(object sender, MouseEventArgs e)
         {
             Ellipse ellipse = sender as Ellipse;
-            ellipse.Fill = new SolidColorBrush(Color.FromRgb(112,112,112));
+            ellipse.Fill = new SolidColorBrush(Color.FromRgb(112, 112, 112));
             attachEllipse = ellipse;
         }
 

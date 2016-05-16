@@ -16,6 +16,8 @@ using System.Data;
 using CoreInterfaces;
 using CsvParser;
 using System.Reflection;
+using HydrologyDesktop.Controls;
+using System.Collections.ObjectModel;
 
 namespace HydrologyDesktop
 {
@@ -37,6 +39,32 @@ namespace HydrologyDesktop
             }
         }
 
+        public Dictionary<string, LoopControl> VarLoop { get; set; }
+
+        public Dictionary<string, LoopControl> VarNames { get; set; }
+
+        private LoopControl parentLoop;
+        public LoopControl ParentLoop
+        {
+            get
+            {
+                return parentLoop;
+            }
+
+            set
+            {
+                parentLoop = value;
+                VarNames.Clear();
+                LoopControl p = parentLoop;
+                while (p != null)
+                {
+                    VarNames.Add(p.VarName, p);
+                    p = p.PreviousLoop;
+                }
+                
+            }
+        }
+
         private Type algType;
         public Type AlgType
         {
@@ -53,7 +81,7 @@ namespace HydrologyDesktop
                 paramsTable = value;
                 paramsGrid.DataContext = paramsTable.DefaultView;
             }
-        }
+        }       
 
         System.Windows.Forms.FolderBrowserDialog folderDialog;
 
@@ -67,6 +95,8 @@ namespace HydrologyDesktop
 
             //folderDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.folderDialog = folderDialog;
+
+            VarNames = new Dictionary<string, LoopControl>();
         }
 
         public AlgorithmSettings(System.Windows.Forms.FolderBrowserDialog folderDialog, DataTable paramsTable, Type algType)
@@ -78,6 +108,9 @@ namespace HydrologyDesktop
 
             //folderDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.folderDialog = folderDialog;
+
+            VarNames = new Dictionary<string, LoopControl>();
+            VarLoop = new Dictionary<string, LoopControl>();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -99,8 +132,6 @@ namespace HydrologyDesktop
 
             if (ParamsValid())
                 DialogResult = true;
-            else
-                MessageBox.Show("Один или несколько параметров имеют неверный формат", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private bool ParamsValid()
@@ -110,14 +141,39 @@ namespace HydrologyDesktop
             {
                 var attr = attrs.First((x) => { return x.Name == row["Name"].ToString(); });
                 object value;
-                if (row["Value"] == null) return false;
-                try
+                if (row["Value"] == null)
                 {
-                    value = Convert.ChangeType(row["Value"], attr.ValueType);
-                }
-                catch (Exception)
-                {
+                    MessageBox.Show(string.Format("Параметр {0} имеет неверный формат", row["Name"].ToString()),
+                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     return false;
+                }
+                else if (row["Value"].ToString()[0] == '{')
+                {
+                    string varName = row["Value"].ToString();
+                    varName = varName.Trim(' ', '{', '}');
+                    if (VarNames.Keys.Contains(varName))
+                    {
+                        VarLoop.Add(row["Name"].ToString(), VarNames[varName]);
+                    }
+                    else
+                    {
+                        MessageBox.Show(string.Format("Переменная {0}, заданная для параметра {1}, не найдена", varName, row["Name"].ToString()),
+                                "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return false;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        value = Convert.ChangeType(row["Value"], attr.ValueType);
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show(string.Format("Параметр {0} имеет неверный формат", row["Name"].ToString()),
+                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return false;
+                    }
                 }
             }
             return true;

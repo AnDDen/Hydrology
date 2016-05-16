@@ -1,0 +1,47 @@
+﻿<local:BaseNodeControl x:Class="HydrologyDesktop.Controls.LoopControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HydrologyDesktop.Controls"
+             mc:Ignorable="d" Width="150">
+    <Grid>
+        <Border x:Name="border" BorderThickness="1" 
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" 
+                Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" />
+        <StackPanel>
+            <DockPanel VerticalAlignment="Top" Height="36">
+                <Label VerticalAlignment="Center" Padding="10 5" FontFamily="Segoe UI Semibold" Foreground="#FF303030" >Цикл</Label>
+                <DockPanel Margin="6" HorizontalAlignment="Right">
+                    <Button Content="&#xE104;" VerticalAlignment="Top" Width="24" Height="24" FontFamily="Segoe UI Symbol" 
+                            Style="{StaticResource NodeButtonStyle}" Click="EditButton_Click" />
+                    <Button Content="&#xE115;" VerticalAlignment="Top" Width="24" Height="24" FontFamily="Segoe UI Symbol" 
+                            Style="{StaticResource NodeButtonStyle}" Click="Button_Click" />
+                </DockPanel>
+            </DockPanel>
+            <DockPanel VerticalAlignment="Top" Margin="10 0 10 10">
+                <Label x:Name="VarNameLbl" VerticalAlignment="Center" Padding="2 5" Foreground="#FF303030" >N</Label>
+                <Label VerticalAlignment="Center" Padding="2 5" Foreground="#FF303030" >=</Label>
+                <Label x:Name="StartValueLbl" VerticalAlignment="Center" Padding="1 5" Foreground="#FF303030" >1</Label>
+                <Label VerticalAlignment="Center" Padding="0 5" Foreground="#FF303030" >..</Label>
+                <Label x:Name="EndValueLbl" VerticalAlignment="Center" Padding="1 5" Foreground="#FF303030" >10</Label>
+                <Label VerticalAlignment="Center" Padding="0 5" Foreground="#FF303030" >,</Label>
+                <Label x:Name="StepLbl" VerticalAlignment="Center" Padding="5 5" Foreground="#FF303030" >2</Label>
+            </DockPanel>
+        </StackPanel>
+        <Grid x:Name="attachPoints" Visibility="Hidden">
+            <Ellipse Fill="#FFF4F4F5" Height="8" Stroke="Black" Width="8" 
+                     MouseEnter="Ellipse_MouseEnter" MouseLeave="Ellipse_MouseLeave" MouseDown="Ellipse_MouseDown" MouseUp="Ellipse_MouseUp"
+                     HorizontalAlignment="Left"  VerticalAlignment="Center" Margin="-4,0,0,0"/>
+            <Ellipse Fill="#FFF4F4F5" Height="8" Stroke="Black" Width="8" 
+                     MouseEnter="Ellipse_MouseEnter" MouseLeave="Ellipse_MouseLeave" MouseDown="Ellipse_MouseDown" MouseUp="Ellipse_MouseUp"
+                     HorizontalAlignment="Right"  VerticalAlignment="Center" Margin="0,0,-4,0"/>
+            <Ellipse Fill="#FFF4F4F5" Height="8" Stroke="Black" Width="8" 
+                     MouseEnter="Ellipse_MouseEnter" MouseLeave="Ellipse_MouseLeave" MouseDown="Ellipse_MouseDown" MouseUp="Ellipse_MouseUp"
+                     HorizontalAlignment="Center"  VerticalAlignment="Top" Margin="0,-4,0,0"/>
+            <Ellipse Fill="#FFF4F4F5" Height="8" Stroke="Black" Width="8" 
+                     MouseEnter="Ellipse_MouseEnter" MouseLeave="Ellipse_MouseLeave" MouseDown="Ellipse_MouseDown" MouseUp="Ellipse_MouseUp"
+                     HorizontalAlignment="Center"  VerticalAlignment="Bottom" Margin="0,0,0,-4"/>
+        </Grid>
+    </Grid>
+</local:BaseNodeControl>

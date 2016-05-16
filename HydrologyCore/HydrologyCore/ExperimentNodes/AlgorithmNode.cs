@@ -49,7 +49,7 @@ namespace HydrologyCore
             get { return Algorithm.Results; }
         }
 
-        public void Run(Context context)
+        public void Run(IContext context)
         {
             Algorithm.Run(context);
         }
@@ -67,10 +67,19 @@ namespace HydrologyCore
                 IReader reader = new CSVParser();
                 DataTable table = reader.Read(files[i]);
                 string name = files[i].Substring(0, files[i].Length - 4);
-                name = name.Substring(name.LastIndexOf(path) + path.Length);
+                name = name.Substring(name.LastIndexOf(path) + path.Length + 1);
                 table.TableName = name;
                 data.Tables.Add(table);
             }
+            return this;
+        }
+
+        public AlgorithmNode SetParams(DataTable paramsTbl)
+        {
+            if (data.Tables["params"] != null)
+                data.Tables.Remove("params");
+            paramsTbl.TableName = "params";
+            data.Tables.Add(paramsTbl);
             return this;
         }
     }
