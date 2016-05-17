@@ -33,26 +33,6 @@ namespace CsvParser
             return s;
         }
 
-        private static string WriteDataTable(DataTable table)
-        {
-            string output = "";
-
-            foreach (DataColumn column in table.Columns)
-                output += WriteFieldColumn(column.ColumnName) + COMMA;
-            output = output.Remove(output.Length - 1, 1);
-            output += CRLF;
-
-            foreach (DataRow row in table.Rows)
-            {
-                foreach (string s in row.ItemArray)
-                    output += WriteFieldColumn(s) + COMMA;
-                output = output.Remove(output.Length - 1, 1);
-                output += CRLF;
-            }
-
-            return output;
-        }
-
         public void Write(DataTable table, string filePath)
         {
             FileStream fs = null;
@@ -62,7 +42,24 @@ namespace CsvParser
                 fs = new FileStream(filePath, FileMode.Create);
                 writer = new StreamWriter(fs);
 
-                writer.Write(WriteDataTable(table));
+                for (int i = 0; i < table.Columns.Count; i++)
+                {
+                    writer.Write(WriteFieldColumn(table.Columns[i].ColumnName));
+                    if (i < table.Columns.Count - 1)
+                        writer.Write(COMMA);
+                }
+                writer.Write(CRLF);
+
+                foreach (DataRow row in table.Rows)
+                {
+                    for (int i = 0; i < row.ItemArray.Length; i++)
+                    {
+                        writer.Write(WriteFieldColumn(row.ItemArray[i].ToString()));
+                        if (i < row.ItemArray.Length - 1)
+                            writer.Write(COMMA);
+                    }
+                    writer.Write(CRLF);
+                }
             }
             catch (Exception e)
             {
