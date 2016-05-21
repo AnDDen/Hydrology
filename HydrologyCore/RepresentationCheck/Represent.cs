@@ -26,11 +26,11 @@ namespace RepresentationCheck
         {
             resultSet = new DataSet();
             DataTable kTable = new DataTable() { TableName = "Coefficient" };
-            kTable.Columns.Add("K1");
-            kTable.Columns.Add("K2");
-            kTable.Columns.Add("K3");
-            kTable.Columns.Add("K4");
-            kTable.Columns.Add("K5");
+            kTable.Columns.Add("average");
+            kTable.Columns.Add("deviation");
+            kTable.Columns.Add("variation");
+            kTable.Columns.Add("asymmetry");
+            kTable.Columns.Add("eta");
 
             DataTable paramsTable = data.Tables["\\params"];
             int N = 20;
@@ -55,41 +55,41 @@ namespace RepresentationCheck
             for (int i = 0; i < k1.Count; i++)
             {
                 DataRow row = kTable.NewRow();
-                row["k1"] = k1[i];
+                row["average"] = k1[i];
                 kTable.Rows.Add(row);
             }
-            List<double> k2 = CoefSigma(X_Table, new statistics(), N);
+                List<double> k2 = CoefSigma(X_Table, new statistics(), N);
 
-            for (int i = 0; i < k2.Count; i++)
-            {
-                DataRow row = kTable.NewRow();
-                row["k2"] = k2[i];
-                kTable.Rows.Add(row);
-            }
-            List<double> k3 = Coef_Cv(X_Table, new statistics(), N);
+                for (int i = 0; i < k2.Count; i++)
+                {
+                    DataRow row = kTable.NewRow();
+                    row["deviation"] = k2[i];
+                    kTable.Rows.Add(row);
+                }
+                List<double> k3 = Coef_Cv(X_Table, new statistics(), N);
 
-            for (int i = 0; i < k3.Count; i++)
-            {
-                DataRow row = kTable.NewRow();
-                row["k3"] = k3[i];
-                kTable.Rows.Add(row);
-            }
-            List<double> k4 = Coef_Cs(X_Table, new statistics(), N);
+                for (int i = 0; i < k3.Count; i++)
+                {
+                    DataRow row = kTable.NewRow();
+                    row["variation"] = k3[i];
+                    kTable.Rows.Add(row);
+                }
+                List<double> k4 = Coef_Cs(X_Table, new statistics(), N);
 
-            for (int i = 0; i < k4.Count; i++)
-            {
-                DataRow row = kTable.NewRow();
-                row["k4"] = k4[i];
-                kTable.Rows.Add(row);
-            }
-            List<double> k5 = Coef_Eta(X_Table, new statistics(), N);
+                for (int i = 0; i < k4.Count; i++)
+                {
+                    DataRow row = kTable.NewRow();
+                    row["asymmetry"] = k4[i];
+                    kTable.Rows.Add(row);
+                }
+                List<double> k5 = Coef_Eta(X_Table, new statistics(), N);
 
-            for (int i = 0; i < k5.Count; i++)
-            {
-                DataRow row = kTable.NewRow();
-                row["k5"] = k5[i];
-                kTable.Rows.Add(row);
-            }
+                for (int i = 0; i < k5.Count; i++)
+                {
+                    DataRow row = kTable.NewRow();
+                    row["eta"] = k5[i];
+                    kTable.Rows.Add(row);
+                }
             resultSet.Tables.Add(kTable);
         }
 
@@ -194,7 +194,7 @@ namespace RepresentationCheck
                 DataTable pTable = new DataTable() { TableName = "Probability" };
                 DataTable K_Table = ctx.InitialData.Tables["Coefficient"];
                 pTable.Columns.Add("p");
-            //   pTable.Columns.Add("k");
+                pTable.Columns.Add("k");
                 RepresentationCheck represent = new RepresentationCheck();
 
                 DataTable paramsTable = data.Tables["\\params"];
@@ -222,12 +222,12 @@ namespace RepresentationCheck
                            row["p"] = p[i];
                            pTable.Rows.Add(row);
                        }
-        /*        for (int i = 0; i < k.Length; i++)
+                for (int i = 0; i < k.Length; i++)
             {
                 DataRow row = pTable.NewRow();
                 row["k"] = k[i];
                 pTable.Rows.Add(row);
-            }*/
+            }
             resultSet.Tables.Add(pTable);
             }
             
