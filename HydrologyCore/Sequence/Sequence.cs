@@ -10,8 +10,9 @@ using System.Globalization;
 
 namespace Sequence
 {
-    [Parameter("ETA", 1.0, typeof(Double))]
-    [Parameter("CV", 0.4, typeof(Double))]
+    [Parameter("eps", 1E-5, typeof(Double))]
+    [Parameter("ETA", 2.0, typeof(Double))]
+    [Parameter("CV", 0.8, typeof(Double))]
     [Parameter("N", 50000, typeof(Int32))]
     [Parameter("r", 0.109, typeof(Double))]
     [Name("Генерация последовательности стока")]
@@ -19,10 +20,12 @@ namespace Sequence
     {
         private DataSet data;
         private DataSet resultSet;
+        Random Rand;
 
         public void Init(DataSet data)
         {
             this.data = data;
+            Rand = new Random();
         }
 
         public void Run(IContext ctx)
@@ -35,6 +38,7 @@ namespace Sequence
 
             var attrs = typeof(FlowSequenceGeneration).GetCustomAttributes<ParameterAttribute>();
 
+            double eps = (double)attrs.First((param) => { return param.Name == "eps"; }).DefaultValue;
             int n = (int)attrs.First((param) => { return param.Name == "N"; }).DefaultValue;
             double r = (double)attrs.First((param) => { return param.Name == "r"; }).DefaultValue;
             double cv = (double)attrs.First((param) => { return param.Name == "CV"; }).DefaultValue;
@@ -43,6 +47,9 @@ namespace Sequence
             foreach(DataRow row in paramsTable.Rows) {
                 switch (row["Name"].ToString())
                 {
+                    case "eps":
+                        eps = double.Parse(row["Value"].ToString(), CultureInfo.InvariantCulture);
+                        break;
                     case "N": 
                         n = int.Parse(row["Value"].ToString()); 
                         break;
@@ -60,7 +67,7 @@ namespace Sequence
 
             DataTable optSource = ctx.InitialData.Tables["optsource_big"];
 
-            double[] kArray = Sequence(optSource, new Statistics(), n, r, cv, eta);
+            double[] kArray = Sequence(optSource, new Statistics(), n, r, cv, eta,eps);
 
             for (int i = 0; i < kArray.Length; i++)
             {
@@ -100,25 +107,18 @@ namespace Sequence
             return x;
         }
         //последовательность для заданного N
-        double[] Sequence(DataTable optSource, Statistics stat, int N, double r, double Cv, double Eta)
+        double[] Sequence(DataTable optSource, Statistics stat, int N, double r, double Cv, double Eta,double eps)
         {
-
-            // double mean = 1;
-            // double dev = 0.5;
-            // double cs = 1;
-            //  double cv = Cv;
-            double r0 = stat.r0(r, Cv);
-            //   double eta = cs / cv;
+            double r0 = stat.r0(r, Cv,eps);
             List<double> P = new List<double>(N);
             Double[] m_vK = new Double[N];
             Double[] x = BigOptSource(optSource, Cv, Eta);
             int NSrc = x.Length;
             int index;
             double next, dP;
-            Random Rand = new Random();
             for (int i = 0; i < N; ++i)
             {
-                next = (i == 0 ? 0.5 : stat.nextP(P[i - 1], r0, Rand.Next(0, 1)));
+                next = (i == 0 ? 0.5 : stat.nextP(P[i - 1], r0, Rand.NextDouble(),eps));
                 P.Add(next);
                 index = (int)(next * NSrc);
                 dP = next * NSrc - index;
