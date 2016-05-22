@@ -39,13 +39,13 @@ namespace UniformityCheck
                 for (int i = 0; i < lambda_items.Length; i++)
                 {
                     double lambda = lambda_items[i];
-                    mods1 = transform(series, mods1, 0, n1-1, index, lambda, negCount, udm);
+                    mods1 = transform(series, mods1, 0, n1, index, lambda, negCount, udm);
                     mods2 = transform(series, mods2, n1, N, index, lambda, negCount, udm);
                 }
 
             }
             modifiers1 = new double [6, mods1.Count/6];
-            modifiers2 = new double [6, mods2.Count / 6];
+            modifiers2 = new double [6, mods2.Count/6];
             getModifiers(modifiers1, mods1, mods1.Count/6);
             getModifiers(modifiers2, mods2, mods2.Count/6);
 
@@ -55,7 +55,7 @@ namespace UniformityCheck
                 calcParameters(params2, tempMods(modifiers2, index));
             }
 
-            Student stud = new Student(modifiers1, modifiers2, autocorr);
+            Student stud = new Student(modifiers1, modifiers2, autocorr, lambda_items.Length);
         }
 
 
@@ -80,7 +80,7 @@ namespace UniformityCheck
                     Fx = -(double)((i + 1) / n_) * (double)((i + 1) / n_);      //parabola 2 
                 else if (index == 5)
                 {
-                    idx = (i - 1) / n_ * 50;
+                    idx = Convert.ToInt32(i / n_ * 50);
                     if (idx < 0 || idx >= udm.Length)
                         Fx = 0;
                     else
