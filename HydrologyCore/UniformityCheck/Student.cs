@@ -9,17 +9,18 @@ namespace UniformityCheck
     public class Student
     {
         public double[,] t;
+        public int index_size = 5;
 
         public Student(double[,] modifiers1, double[,] modifiers2, double autocorr, int lam_len)
         {
-            t = new double[6,lam_len];
+            t = new double[index_size, lam_len];
             int n1 = modifiers1.GetLength(1);
             int n2 = modifiers2.GetLength(1);
             double[] mods1 = new double[n1 / lam_len];
             double[] mods2 = new double[n2 / lam_len];
-            //double[,] t_r = new double[11,6];      //0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0
+            //double[,] t_r = new double[11,index_size];      //0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0
 
-            for (int index = 0; index < 6; index++)
+            for (int index = 0; index < index_size; index++)
             {
                 for (int j = 0; j < lam_len; j++)
                 {
