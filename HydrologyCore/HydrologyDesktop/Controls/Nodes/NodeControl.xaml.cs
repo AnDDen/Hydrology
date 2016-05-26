@@ -107,7 +107,7 @@ namespace HydrologyDesktop.Controls
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            SettingsButtonClick?.Invoke(this, EventArgs.Empty);
+            SettingsButtonClick.Invoke(this, EventArgs.Empty);
         }
 
         private void Ellipse_MouseEnter(object sender, MouseEventArgs e)

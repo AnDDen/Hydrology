@@ -34,7 +34,7 @@ namespace Sequence
             DataTable kTable = new DataTable() { TableName = "FlowSequence" };
             kTable.Columns.Add("K");
 
-            DataTable paramsTable = data.Tables["\\params"];
+            DataTable paramsTable = data.Tables["params"];
 
             var attrs = typeof(FlowSequenceGeneration).GetCustomAttributes<ParameterAttribute>();
 

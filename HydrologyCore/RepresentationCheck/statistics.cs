@@ -44,7 +44,7 @@ namespace RepresentationCheck
                 ik = i0 + n ;
                 for (int i = i0; i < ik; i++)
                     s += Math.Pow(x[i] - avr, 2);
-                return Math.Sqrt(s / (n - 1));
+                return Math.Sqrt(s / n );
             }
         }
 
@@ -71,7 +71,7 @@ namespace RepresentationCheck
                 ik = i0 + n - 1;
                 for (i = i0; i <= ik; i++)
                     s += Math.Pow(x[i] - avr, 3);
-                return s * n / ((n - 1) * (n - 2) * Math.Pow(sig, 3));
+                return s * (double)n / ((double)(n - 1) * (double)(n - 2) * Math.Pow(sig, 3));
             }
         }
 

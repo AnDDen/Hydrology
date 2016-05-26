@@ -10,7 +10,6 @@ using System.Reflection;
 namespace RepresentationCheck
 {
     [Parameter("n", 20, typeof(Int32))]
-
     [Name("Расчет коэффициентов")]
     public class RepresentationCheck : IAlgorithm
     {
@@ -32,8 +31,7 @@ namespace RepresentationCheck
             kTable.Columns.Add("asymmetry");
             kTable.Columns.Add("eta");
 
-            DataTable paramsTable = data.Tables["\\params"];
-            int N = 20;
+            DataTable paramsTable = data.Tables["params"];
             var attrs = typeof(RepresentationCheck).GetCustomAttributes<ParameterAttribute>();
 
             int n = (int)attrs.First((param) => { return param.Name == "n"; }).DefaultValue;
@@ -48,48 +46,27 @@ namespace RepresentationCheck
                 }
             }
             
-            DataTable X_Table = ctx.InitialData.Tables["FlowSequence"];
+            DataTable X_Table = ctx.Data.Tables["FlowSequence"];
 
-            List<double> k1 = CoefAvg(X_Table, new statistics(), N);
-
+            List<double> k1 = CoefAvg(X_Table, new statistics(), n);
+            List<double> k2 = CoefSigma(X_Table, new statistics(), n);
+            List<double> k3 = Coef_Cv(X_Table, new statistics(), n);
+            List<double> k4 = Coef_Cs(X_Table, new statistics(), n);
+            List<double> k5 = Coef_Eta(X_Table, new statistics(), n);
             for (int i = 0; i < k1.Count; i++)
             {
                 DataRow row = kTable.NewRow();
                 row["average"] = k1[i];
+              //  kTable.Rows.Add(row);
+                row["deviation"] = k2[i];
+              //  kTable.Rows.Add(row);
+                row["variation"] = k3[i];
+             //   kTable.Rows.Add(row);
+                row["asymmetry"] = k4[i];
+             //   kTable.Rows.Add(row);
+                row["eta"] = k5[i];
                 kTable.Rows.Add(row);
             }
-                List<double> k2 = CoefSigma(X_Table, new statistics(), N);
-
-                for (int i = 0; i < k2.Count; i++)
-                {
-                    DataRow row = kTable.NewRow();
-                    row["deviation"] = k2[i];
-                    kTable.Rows.Add(row);
-                }
-                List<double> k3 = Coef_Cv(X_Table, new statistics(), N);
-
-                for (int i = 0; i < k3.Count; i++)
-                {
-                    DataRow row = kTable.NewRow();
-                    row["variation"] = k3[i];
-                    kTable.Rows.Add(row);
-                }
-                List<double> k4 = Coef_Cs(X_Table, new statistics(), N);
-
-                for (int i = 0; i < k4.Count; i++)
-                {
-                    DataRow row = kTable.NewRow();
-                    row["asymmetry"] = k4[i];
-                    kTable.Rows.Add(row);
-                }
-                List<double> k5 = Coef_Eta(X_Table, new statistics(), N);
-
-                for (int i = 0; i < k5.Count; i++)
-                {
-                    DataRow row = kTable.NewRow();
-                    row["eta"] = k5[i];
-                    kTable.Rows.Add(row);
-                }
             resultSet.Tables.Add(kTable);
         }
 
@@ -192,42 +169,36 @@ namespace RepresentationCheck
             {
                 resultSet = new DataSet();
                 DataTable pTable = new DataTable() { TableName = "Probability" };
-                DataTable K_Table = ctx.InitialData.Tables["Coefficient"];
-                pTable.Columns.Add("p");
-                pTable.Columns.Add("k");
+                DataTable K_Table = ctx.Data.Tables["Coefficient"];
+                pTable.Columns.Add("k1");
+                pTable.Columns.Add("k2");
+                pTable.Columns.Add("k3");
+                pTable.Columns.Add("k4");
+                pTable.Columns.Add("k5");
                 RepresentationCheck represent = new RepresentationCheck();
 
-                DataTable paramsTable = data.Tables["\\params"];
+                DataTable paramsTable = data.Tables["params"];
 
                 var attrs = typeof(Probability).GetCustomAttributes<ParameterAttribute>();
 
-                int type_k = (int)attrs.First((param) => { return param.Name == "type_k"; }).DefaultValue;
-
-                foreach (DataRow row in paramsTable.Rows)
+                int resN = 100;
+                for (int i = 0; i < resN; i++)
                 {
-                    switch (row["Name"].ToString())
+                    DataRow row = pTable.NewRow();
+                    pTable.Rows.Add(row);
+                }
+
+                for (int type_k = 0; type_k < 5; type_k++)
+                {
+                    statistics stat = new statistics();
+                    double[] k = represent.TableValues(K_Table, type_k);
+                    k = stat.sort_shell(k, k.Length);
+                    for (int i = 0; i < resN; i++)
                     {
-                        case "type_k":
-                            type_k = int.Parse(row["Value"].ToString());
-                            break;
+                        pTable.Rows[i][type_k] = k[(int)Math.Round((double)i * ((double)(k.Length - 1)) / ((double)(resN - 1)))];                      
                     }
                 }
-                statistics stat = new statistics();
-                double [] k = represent.TableValues(K_Table,type_k);
-                k = stat.sort_shell(k, k.Length);
-                double [] p = stat.probability(k);
-                for (int i = 0; i < p.Length; i++)
-                       {
-                           DataRow row = pTable.NewRow();
-                           row["p"] = p[i];
-                           pTable.Rows.Add(row);
-                       }
-                for (int i = 0; i < k.Length; i++)
-            {
-                DataRow row = pTable.NewRow();
-                row["k"] = k[i];
-                pTable.Rows.Add(row);
-            }
+
             resultSet.Tables.Add(pTable);
             }
             
@@ -254,26 +225,21 @@ namespace RepresentationCheck
             public void Run(IContext ctx)
             {
                 resultSet = new DataSet();
-                DataTable K_Table = ctx.InitialData.Tables["Coefficient"];
+                DataTable K_Table = ctx.Data.Tables["Coefficient"];
                 DataTable SigmaTable = new DataTable() { TableName = "Standarts" };
-                SigmaTable.Columns.Add("K");
+               // SigmaTable.Columns.Add("K");
                 SigmaTable.Columns.Add("Sigma");
-                DataTable paramsTable = data.Tables["\\params"];
+                DataTable paramsTable = data.Tables["params"];
                 var attrs = typeof(Probability).GetCustomAttributes<ParameterAttribute>();
-                int type_k = (int)attrs.First((param) => { return param.Name == "type_k"; }).DefaultValue;
                 RepresentationCheck represent = new RepresentationCheck();
                 statistics stat = new statistics();
-                foreach (DataRow row in paramsTable.Rows)
+
+                for (int type_k = 0; type_k < 5; type_k++)
                 {
-                    switch (row["Name"].ToString())
-                    {
-                        case "type_k":
-                            type_k = int.Parse(row["Value"].ToString());
-                            break;
-                    }
+                    double[] k = represent.TableValues(K_Table, type_k);
+                    double sigma = stat.standart(k);
+                    SigmaTable.Rows[0][type_k] = sigma;
                 }
-                double[] k = represent.TableValues(K_Table, type_k);
-                double sigma = stat.standart(k);
 
             }
 
