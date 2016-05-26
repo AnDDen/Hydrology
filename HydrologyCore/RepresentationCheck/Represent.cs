@@ -25,11 +25,11 @@ namespace RepresentationCheck
         {
             resultSet = new DataSet();
             DataTable kTable = new DataTable() { TableName = "Coefficient" };
-            kTable.Columns.Add("average");
-            kTable.Columns.Add("deviation");
-            kTable.Columns.Add("variation");
-            kTable.Columns.Add("asymmetry");
-            kTable.Columns.Add("eta");
+            kTable.Columns.Add("K_average");
+            kTable.Columns.Add("K_dev");
+            kTable.Columns.Add("K_variation");
+            kTable.Columns.Add("K_asymmetry");
+            kTable.Columns.Add("K_eta");
 
             DataTable paramsTable = data.Tables["params"];
             var attrs = typeof(RepresentationCheck).GetCustomAttributes<ParameterAttribute>();
@@ -152,8 +152,6 @@ namespace RepresentationCheck
             return k5;
 
         }
-        [Parameter("type_k", 0, typeof(Int32))]
-
         [Name("Вероятности превышения")]
         public class Probability : IAlgorithm
         {
@@ -176,11 +174,6 @@ namespace RepresentationCheck
                 pTable.Columns.Add("k4");
                 pTable.Columns.Add("k5");
                 RepresentationCheck represent = new RepresentationCheck();
-
-                DataTable paramsTable = data.Tables["params"];
-
-                var attrs = typeof(Probability).GetCustomAttributes<ParameterAttribute>();
-
                 int resN = 100;
                 for (int i = 0; i < resN; i++)
                 {
@@ -210,35 +203,57 @@ namespace RepresentationCheck
 
         }
 
-        [Parameter("type_k", 0, typeof(Int32))]
+        [Parameter("n", 20, typeof(Int32))]
+        [Parameter("i", 0, typeof(Int32))]
         [Name("Стандарты")]
         public class Standarts : IAlgorithm
         {
             private DataSet data;
             private DataSet resultSet;
-
             public void Init(DataSet data)
             {
                 this.data = data;
             }
-
+            
             public void Run(IContext ctx)
             {
                 resultSet = new DataSet();
                 DataTable K_Table = ctx.Data.Tables["Coefficient"];
                 DataTable SigmaTable = new DataTable() { TableName = "Standarts" };
-               // SigmaTable.Columns.Add("K");
-                SigmaTable.Columns.Add("Sigma");
+                SigmaTable.Columns.Add("n");
+                SigmaTable.Columns.Add("Sigma_k1");
+                SigmaTable.Columns.Add("Sigma_k2");
+                SigmaTable.Columns.Add("Sigma_k3");
+                SigmaTable.Columns.Add("Sigma_k4");
+                SigmaTable.Columns.Add("Sigma_k5");
                 DataTable paramsTable = data.Tables["params"];
-                var attrs = typeof(Probability).GetCustomAttributes<ParameterAttribute>();
+                var attrs = typeof(Standarts).GetCustomAttributes<ParameterAttribute>();
+
+                int n = (int)attrs.First((param) => { return param.Name == "n"; }).DefaultValue;
+                int i = (int)attrs.First((param) => { return param.Name == "i"; }).DefaultValue;
+
+                foreach (DataRow row in paramsTable.Rows)
+                {
+                    switch (row["Name"].ToString())
+                    {
+                        case "n":
+                            n = int.Parse(row["Value"].ToString());
+                            break;
+                        case "i":
+                            i = int.Parse(row["Value"].ToString());
+                            break;
+
+                    }
+                }
                 RepresentationCheck represent = new RepresentationCheck();
                 statistics stat = new statistics();
-
+                SigmaTable.Rows[i][0] = n;
                 for (int type_k = 0; type_k < 5; type_k++)
                 {
                     double[] k = represent.TableValues(K_Table, type_k);
                     double sigma = stat.standart(k);
-                    SigmaTable.Rows[0][type_k] = sigma;
+
+                    SigmaTable.Rows[i][type_k+1] = sigma;
                 }
 
             }
