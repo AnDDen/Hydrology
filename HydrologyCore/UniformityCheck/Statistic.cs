@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace UniformityCheck
 {
-    class Statistic
+    public class Statistic
     {
-        // Среднее middle
         public double means(double[] series, int i0, int n_)
         {
             double result = 0;
@@ -104,79 +103,79 @@ namespace UniformityCheck
         /***************************************************************************************/
 
         // Среднее выборочное для двумерного
-        public double mean2(double[,] series, int index)
+        public double mean2(double[,] series, int index, int j, int lam_len)
         {
             double result = 0;
-            for (int i = 0; i < series.GetLength(1); ++i)
+            for (int i = j*1000; i < (j+1)*1000; ++i)
                 result += series[index, i];
 
-            return result / series.GetLength(1);
+            return result / 1000;
         }
 
         // Выборочная дисперсия
-        public double dispersion2(double[,] series, int index)
+        public double dispersion2(double[,] series, int index, int j, int lam_len)
         {
             double result = 0,
-                mid = mean2(series, index);
+                mid = mean2(series, index, j, lam_len);
 
-            for (int i = 0; i < series.GetLength(1); ++i)
+            for (int i = j * 1000; i < (j + 1) * 1000; ++i)
                 result += (series[index, i] - mid) * (series[index, i] - mid);
 
-            return result / series.GetLength(1);
+            return result / 1000;
         }
 
         // Среднеквадратическое отклонение
-        public double deviation2(double[,] series, int index)
+        public double deviation2(double[,] series, int index, int j, int lam_len)
         {
-            double d = dispersion2(series, index);
+            double d = dispersion2(series, index, j, lam_len);
             return Math.Sqrt(d);
         }
 
         // Ассиметрия
-        public double skewness2(double[,] series, int index)
+        public double skewness2(double[,] series, int index, int j, int lam_len)
         {
-            int N = series.GetLength(1);
-            double dev = deviation2(series, index),
-                result = 0,
-                mid = mean2(series, index);
+            //int N = series.GetLength(1);
+            double dev = deviation2(series, index, j, lam_len);
+            double result = 0;
+            double mid = mean2(series, index, j, lam_len);
 
-            for (int i = 0; i < N; ++i)
+            for (int i = j * 1000; i < (j + 1) * 1000; ++i)
                 result += (series[index, i] - mid) * (series[index, i] - mid) * (series[index, i] - mid);
 
-            return result / (dev * dev * dev) * (double)N / ((double)(N - 1) * (double)(N - 2));
+            return result / (dev * dev * dev) * 1000 / (999 * 998);
         }
 
         // Вариация
-        public double variation2(double[,] series, int index)
+        public double variation2(double[,] series, int index, int j, int lam_len)
         {
-            double m = mean2(series, index);
-            return Math.Abs(m) < 0.001 ? 0 : deviation2(series, index) / m;
+            double m = mean2(series, index, j, lam_len);
+            return Math.Abs(m) < 0.001 ? 0 : deviation2(series, index, j, lam_len) / m;
         }
 
         // Корреляция
-        public double correlation2(double[,] series, int index)
+        public double correlation2(double[,] series, int index, int j, int lam_len)
         {
             double result = 0,
                 middle1,
                 middle2,
                 second;
-            int N = series.GetLength(1);
+            //int N = series.GetLength(1);
 
-            middle1 = middle2 = mean2(series, index);
-            middle1 = (middle1 * N - series[index, N - 1]) / (N - 1);
-            middle2 = (middle2 * N - series[index, 0]) / (N - 1);
+            middle1 = middle2 = mean2(series, index, j, lam_len);
+            middle1 = (middle1 * lam_len - series[index, 999]) / (999);
+            middle2 = (middle2 * lam_len - series[index, 0]) / (999);
 
-            for (int i = 0; i < N - 1; ++i)
+            for (int i = j * 1000; i < (j + 1) * 1000 - 1; ++i)
                 result += (series[index, i] - middle1) * (series[index, i + 1] - middle2);
 
             second = 0;
-            for (int i = 0; i < N - 1; ++i)
+            for (int i = j * 1000; i < (j + 1) * 1000 - 1; ++i)
                 second += (series[index, i] - middle1) * (series[index, i] - middle1);
 
             result /= Math.Sqrt(second);
 
             second = 0;
-            for (int i = 1; i < N; ++i)
+            for (int i = j * 1000 + 1; i < (j + 1) * 1000; ++i)
                 second += (series[index, i] - middle2) * (series[index, i] - middle2);
 
             return result / Math.Sqrt(second);
