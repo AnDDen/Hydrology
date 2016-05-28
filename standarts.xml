@@ -10,41 +10,18 @@
         <nodes>
           <node type="loopstart" id="0" x="50" y="50" />
           <node type="algorithm" id="1" x="259.22666666666669" y="99.539999999999992">
-            <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\alg_koef\input</initpath>
+            <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\alg_koef\</initpath>
             <algorithmtype>RepresentationCheck</algorithmtype>
             <params>
               <param name="n" value="{n}" />
             </params>
           </node>
-          <node type="loop" id="2" x="220.22666666666669" y="287.53999999999996">
-            <loopparams varname="i" start="0" end="6" step="1" />
-            <loopbody>
-              <nodes>
-                <node type="loopstart" id="0" x="50" y="50" />
-                <node type="algorithm" id="1" x="280.22666666666669" y="89.539999999999992">
-                  <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\alg_standarts\input</initpath>
-                  <algorithmtype>Standarts</algorithmtype>
-                  <params>
-                    <param name="n" value="{n}" />
-                    <param name="i" value="{i}" />
-                  </params>
-                </node>
-              </nodes>
-              <arrows>
-                <arrow>
-                  <from id="0" x="0.5" y="0.5" />
-                  <to id="1" x="0.5" y="0" />
-                </arrow>
-                <arrow>
-                  <from id="1" x="0.5" y="1" />
-                  <to id="0" x="0.5" y="0.5" />
-                </arrow>
-                <arrow>
-                  <from id="0" x="0.5" y="0.5" />
-                  <to id="0" x="0.5" y="0.5" />
-                </arrow>
-              </arrows>
-            </loopbody>
+          <node type="algorithm" id="2" x="272.22666666666669" y="276.53999999999996">
+            <initpath>D:\Танюшка\Рабочий стол\Hydrology\HydrologyCore\bin\Debug</initpath>
+            <algorithmtype>Standarts</algorithmtype>
+            <params>
+              <param name="n" value="{n}" />
+            </params>
           </node>
         </nodes>
         <arrows>
@@ -55,10 +32,6 @@
           <arrow>
             <from id="1" x="0.5" y="1" />
             <to id="2" x="0.5" y="0" />
-          </arrow>
-          <arrow>
-            <from id="2" x="0" y="0.5" />
-            <to id="0" x="0.5" y="0.5" />
           </arrow>
         </arrows>
       </loopbody>
@@ -76,10 +49,6 @@
     </node>
   </nodes>
   <arrows>
-    <arrow>
-      <from id="1" x="0.5" y="0" />
-      <to id="1" x="0.5" y="0" />
-    </arrow>
     <arrow>
       <from id="2" x="0.5" y="1" />
       <to id="1" x="0.5" y="0" />

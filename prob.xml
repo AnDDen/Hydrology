@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<experiment>
+  <nodes>
+    <node type="init" id="0" x="14.22666666666666" y="19.54">
+      <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\initial</initpath>
+    </node>
+    <node type="algorithm" id="1" x="55.226666666666659" y="92.539999999999992">
+      <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\alg1\input</initpath>
+      <algorithmtype>FlowSequenceGeneration</algorithmtype>
+      <params>
+        <param name="CV" value="0.8" />
+        <param name="ETA" value="2" />
+        <param name="r" value="0.109" />
+        <param name="eps" value="1E-05" />
+        <param name="N" value="50000" />
+      </params>
+    </node>
+    <node type="algorithm" id="2" x="256.22666666666669" y="262.54">
+      <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\alg2\input</initpath>
+      <algorithmtype>Probability</algorithmtype>
+      <params>
+        <param name="type_k" value="0" />
+      </params>
+    </node>
+    <node type="algorithm" id="3" x="237.22666666666666" y="120.53999999999999">
+      <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\alg2\input</initpath>
+      <algorithmtype>RepresentationCheck</algorithmtype>
+      <params>
+        <param name="n" value="20" />
+      </params>
+    </node>
+  </nodes>
+  <arrows>
+    <arrow>
+      <from id="0" x="0.5" y="1" />
+      <to id="1" x="0.5" y="0" />
+    </arrow>
+    <arrow>
+      <from id="1" x="1" y="0.5" />
+      <to id="3" x="0" y="0.5" />
+    </arrow>
+    <arrow>
+      <from id="3" x="0.5" y="1" />
+      <to id="2" x="0.5" y="0" />
+    </arrow>
+  </arrows>
+</experiment>

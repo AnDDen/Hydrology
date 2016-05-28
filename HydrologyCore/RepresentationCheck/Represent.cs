@@ -26,7 +26,7 @@ namespace RepresentationCheck
             resultSet = new DataSet();
             DataTable kTable = new DataTable() { TableName = "Coefficient" };
             kTable.Columns.Add("K_average");
-            kTable.Columns.Add("K_dev");
+            kTable.Columns.Add("K_deviation");
             kTable.Columns.Add("K_variation");
             kTable.Columns.Add("K_asymmetry");
             kTable.Columns.Add("K_eta");
@@ -46,7 +46,7 @@ namespace RepresentationCheck
                 }
             }
             
-            DataTable X_Table = ctx.Data.Tables["FlowSequence"];
+            DataTable X_Table = ctx.GetData("FlowSequenceGeneration").Tables["FlowSequence"];
 
             List<double> k1 = CoefAvg(X_Table, new statistics(), n);
             List<double> k2 = CoefSigma(X_Table, new statistics(), n);
@@ -56,15 +56,15 @@ namespace RepresentationCheck
             for (int i = 0; i < k1.Count; i++)
             {
                 DataRow row = kTable.NewRow();
-                row["average"] = k1[i];
+                row["K_average"] = k1[i];
               //  kTable.Rows.Add(row);
-                row["deviation"] = k2[i];
+                row["K_deviation"] = k2[i];
               //  kTable.Rows.Add(row);
-                row["variation"] = k3[i];
+                row["K_variation"] = k3[i];
              //   kTable.Rows.Add(row);
-                row["asymmetry"] = k4[i];
+                row["K_asymmetry"] = k4[i];
              //   kTable.Rows.Add(row);
-                row["eta"] = k5[i];
+                row["K_eta"] = k5[i];
                 kTable.Rows.Add(row);
             }
             resultSet.Tables.Add(kTable);
@@ -204,7 +204,6 @@ namespace RepresentationCheck
         }
 
         [Parameter("n", 20, typeof(Int32))]
-        [Parameter("i", 0, typeof(Int32))]
         [Name("Стандарты")]
         public class Standarts : IAlgorithm
         {
@@ -218,7 +217,7 @@ namespace RepresentationCheck
             public void Run(IContext ctx)
             {
                 resultSet = new DataSet();
-                DataTable K_Table = ctx.Data.Tables["Coefficient"];
+                DataTable K_Table = ctx.GetData("RepresentationCheck").Tables["Coefficient"];
                 DataTable SigmaTable = new DataTable() { TableName = "Standarts" };
                 SigmaTable.Columns.Add("n");
                 SigmaTable.Columns.Add("Sigma_k1");
@@ -230,7 +229,6 @@ namespace RepresentationCheck
                 var attrs = typeof(Standarts).GetCustomAttributes<ParameterAttribute>();
 
                 int n = (int)attrs.First((param) => { return param.Name == "n"; }).DefaultValue;
-                int i = (int)attrs.First((param) => { return param.Name == "i"; }).DefaultValue;
 
                 foreach (DataRow row in paramsTable.Rows)
                 {
@@ -239,22 +237,29 @@ namespace RepresentationCheck
                         case "n":
                             n = int.Parse(row["Value"].ToString());
                             break;
-                        case "i":
-                            i = int.Parse(row["Value"].ToString());
-                            break;
-
                     }
                 }
                 RepresentationCheck represent = new RepresentationCheck();
                 statistics stat = new statistics();
-                SigmaTable.Rows[i][0] = n;
-                for (int type_k = 0; type_k < 5; type_k++)
-                {
-                    double[] k = represent.TableValues(K_Table, type_k);
-                    double sigma = stat.standart(k);
-
-                    SigmaTable.Rows[i][type_k+1] = sigma;
-                }
+                DataRow rows = SigmaTable.NewRow();
+                rows["n"] = n;
+                double[] k = represent.TableValues(K_Table, 0);
+                double sigma = stat.standart(k);                
+                rows["Sigma_k1"] = sigma;
+                k = represent.TableValues(K_Table, 1);
+                sigma = stat.standart(k);
+                rows["Sigma_k2"] = sigma;
+                k = represent.TableValues(K_Table, 2);
+                sigma = stat.standart(k);
+                rows["Sigma_k3"] = sigma;
+                k = represent.TableValues(K_Table, 3);
+                sigma = stat.standart(k);
+                rows["Sigma_k4"] = sigma;
+                k = represent.TableValues(K_Table, 4);
+                sigma = stat.standart(k);
+                rows["Sigma_k5"] = sigma;
+                SigmaTable.Rows.Add(rows);
+                resultSet.Tables.Add(SigmaTable);
 
             }
 
