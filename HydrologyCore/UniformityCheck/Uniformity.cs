@@ -21,8 +21,8 @@ namespace UniformityCheck
     {
         private DataSet data;
         private DataSet resultSet;
-        public Statistic stat = new Statistic();
-        public int index_size = 5;
+        public Statistic stat;
+        public int index_size = 4;
         public int lam_len = 5;
         public double[,] modifiers1;
         public double[,] modifiers2;
@@ -30,6 +30,8 @@ namespace UniformityCheck
         public double[, ,] params1;
         //public double[, ,] params2;
         public int N;
+        public double n = 0;
+        public int size = 0;
 
         public void Init(DataSet data)
         {
@@ -50,7 +52,7 @@ namespace UniformityCheck
             DataTable sequenceTable = new DataTable() { TableName = "ModifiedSequence" };
             sequenceTable.Columns.Add("const");
             sequenceTable.Columns.Add("linear-1");
-            sequenceTable.Columns.Add("linear-2");
+            //sequenceTable.Columns.Add("linear-2");
             sequenceTable.Columns.Add("parabola-1");
             sequenceTable.Columns.Add("parabola-2");
 
@@ -58,8 +60,6 @@ namespace UniformityCheck
             var attrs = typeof(Transformation).GetCustomAttributes<ParameterAttribute>();
             
             double[] lambda_items = new double[lam_len];
-            double n = 0;
-            int size = 0;
             /*double n = (int)attrs.First((param) => { return param.Name == "n"; }).DefaultValue;
             int size = (int)attrs.First((param) => { return param.Name == "size"; }).DefaultValue;
             lambda_items[0] = (int)attrs.First((param) => { return param.Name == "lam1"; }).DefaultValue;
@@ -96,6 +96,7 @@ namespace UniformityCheck
                 }
             }
 
+            stat = new Statistic(size);
             DataTable series_Table = ctx.GetData("FlowSequenceGeneration").Tables["FlowSequence"];
 
             double[] series = new double[size];
@@ -144,24 +145,24 @@ namespace UniformityCheck
             for (int index = 0; index < index_size; index++)
                 for (int j = 0; j < lam_len; j++)
                 {
-                    params1[index, j, 0] = stat.mean2(summods, index, j, lam_len);
-                    params1[index, j, 1] = stat.deviation2(summods, index, j, lam_len);
-                    params1[index, j, 2] = stat.variation2(summods, index, j, lam_len);
-                    params1[index, j, 3] = stat.skewness2(summods, index, j, lam_len);
-                    params1[index, j, 4] = stat.correlation2(summods, index, j, lam_len);
+                    params1[index, j, 0] = stat.mean2(summods, index, j);
+                    params1[index, j, 1] = stat.deviation2(summods, index, j);
+                    params1[index, j, 2] = stat.variation2(summods, index, j);
+                    params1[index, j, 3] = stat.skewness2(summods, index, j);
+                    params1[index, j, 4] = stat.correlation2(summods, index, j);
                     params1[index, j, 5] = params1[index, j, 3] == 0 ? 0 : params1[index, j, 3] / params1[index, j, 2];
                 }
 
             SaveParameters(kTable, lambda_items, series);
 
-            for (int j = 0; j < summods.GetLength(1) / lam_len; j++)
+            for (int j = 0; j < summods.GetLength(1); j++)
             {
                 DataRow row = sequenceTable.NewRow();
                 row["const"] = summods[0, j];
                 row["linear-1"] = summods[1, j];
-                row["linear-2"] = summods[2, j];
-                row["parabola-1"] = summods[3, j];
-                row["parabola-2"] = summods[4, j];
+                //row["linear-2"] = summods[2, j];
+                row["parabola-1"] = summods[2, j];
+                row["parabola-2"] = summods[3, j];
                 sequenceTable.Rows.Add(row);
             }
             resultSet.Tables.Add(sequenceTable);
@@ -193,11 +194,11 @@ namespace UniformityCheck
                     Fx = 1;     //const
                 else if (index == 1)
                     Fx = (double)(i + 1) / n_;   //linear 1
+                //else if (index == 2)
+                    //Fx = -(double)(i + 1) / n_;      //linear 2
                 else if (index == 2)
-                    Fx = -(double)(i + 1) / n_;      //linear 2
-                else if (index == 3)
                     Fx = (double)((i + 1) / n_) * (double)((i + 1) / n_);   //parabola 1
-                else if (index == 4)
+                else if (index == 3)
                     Fx = -(double)((i + 1) / n_) * (double)((i + 1) / n_);      //parabola 2 
 
                 double val = series[i] - Fx * lambda * middle;
@@ -243,7 +244,7 @@ namespace UniformityCheck
 
         public double[,] sumMods(double[,] summods, double[] modfs1, double[] modfs2, int index, int j)
         {
-            int k = j * 1000;
+            int k = j * size;
             for (int i = 0; i < modfs1.Length; i++)
             {
                 summods[index, k] = modfs1[i];

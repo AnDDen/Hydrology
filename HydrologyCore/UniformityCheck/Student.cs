@@ -18,8 +18,8 @@ namespace UniformityCheck
 
         private DataSet data;
         private DataSet resultSet;
-        public double[] t;
-        public int index_size = 5;
+        public double[,] t;
+        public int index_size = 4;
         public int lam_len = 5;
         public int size;
         public double n, r;
@@ -36,7 +36,7 @@ namespace UniformityCheck
             DataTable tTable = new DataTable() { TableName = "t" };
             tTable.Columns.Add("const");
             tTable.Columns.Add("linear-1");
-            tTable.Columns.Add("linear-2");
+            //tTable.Columns.Add("linear-2");
             tTable.Columns.Add("parabola-1");
             tTable.Columns.Add("parabola-2");
 
@@ -70,30 +70,44 @@ namespace UniformityCheck
             }
 
             DataTable series_Table = ctx.Data.Tables["ModifiedSequence"];
-            double[,] series = new double[index_size, size];
+            double[,] series = new double[index_size, size*lam_len];
             for (int index = 0; index < index_size; index++)
                 series = GetTableValues(series_Table, series, index);
 
 
-            t = new double[index_size];
-            int n1 = Convert.ToInt32(n * size);
-            int n2 = size - n1;
+            t = new double[index_size, lam_len];
+            int n1 = Convert.ToInt32(n * size * lam_len);
+            int n2 = size * lam_len - n1;
             double[] mods1 = new double[n1 / lam_len];
             double[] mods2 = new double[n2 / lam_len];
             //double[,] t_r = new double[11,index_size];      //0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0
 
+            //for (int index = 0; index < index_size; index++)
+                //t[index] = getT(series, n1, index);
+
             for (int index = 0; index < index_size; index++)
-                t[index] = getT(series, n1, index);
+            {
+                for (int j = 0; j < lam_len; j++)
+                {
+                    mods1 = tempMods(series, mods1, j * n1 / lam_len, (j + 1) * n1 / lam_len, index);
+                    mods2 = tempMods(series, mods2, j * n2 / lam_len, (j + 1) * n2 / lam_len, index);
+                    t[index, j] = getT(mods1, mods2);
+                }
+            }
 
+            for (int j = 0; j < lam_len; j++)
+            {
                 DataRow row1 = tTable.NewRow();
-                row1["const"] = t[0];
-                row1["linear-1"] = t[1];
-                row1["linear-2"] = t[2];
-                row1["parabola-1"] = t[3];
-                row1["parabola-2"] = t[4];
+                row1["const"] = t[0, j];
+                row1["linear-1"] = t[1, j];
+                //row1["linear-2"] = t[2, j];
+                row1["parabola-1"] = t[2, j];
+                row1["parabola-2"] = t[3, j];
                 tTable.Rows.Add(row1);
-                resultSet.Tables.Add(tTable);
+                
+            }
 
+            resultSet.Tables.Add(tTable);
             //получили, например, для r=0.1 различные t при разбиении 50/50, различных формах кривых и лямбдах.
             //потом можно взять для r=0.1 разбиение 40/60, 20/80...
             //а затем брать разные r
@@ -108,7 +122,7 @@ namespace UniformityCheck
             foreach (DataRow row in X_Table.Rows)
             {
                 x[col, i] = Convert.ToDouble(row[column]);
-                if (i < size) i++;
+                if (i < size*lam_len) i++;
             }
             return x;
         }
@@ -125,39 +139,41 @@ namespace UniformityCheck
             return tempMods;
         }
 
-        public double getT(double[,] series, int n1, int index)
+        public double getT(double[] mods1, double[] mods2)
         {
             double t = 0; double u = 0;
             double[] dx;
             double[] dy;
             double mx, my, sigma_x, sigma_y;
+            int n1 = mods1.Length;
+            int n2 = mods2.Length;
 
             dx = new double[n1];
-            dy = new double[size-n1];
+            dy = new double[n2];
 
             mx = 0; //х среднее
             for (int i = 0; i < n1; i++)
-                mx += series[index, i];
+                mx += mods1[i];
             mx /= n1;
 
             my = 0; //у среднее
-            for (int i = n1; i < size; i++)
-                my += series[index, i];
-            my /= size-n1;
+            for (int i = 0; i < n2; i++)
+                my += mods2[i];
+            my /= n2;
 
             sigma_x = 0; //sigma_x^2
             for (int i = 0; i < n1; i++)
-                sigma_x += Math.Pow(series[index, i] - mx, 2);
+                sigma_x += Math.Pow(mods1[i] - mx, 2);
             sigma_x /= n1;
 
             sigma_y = 0; //sigma_y^2
-            for (int i = n1; i < size; i++)
-                sigma_y += Math.Pow(series[index, i] - mx, 2);
-            sigma_y /= size-n1;
+            for (int i = 0; i < n2; i++)
+                sigma_y += Math.Pow(mods2[i] - mx, 2);
+            sigma_y /= n2;
 
             t = Math.Abs(mx - my);
-            t /= Math.Sqrt((n1 - 1) * sigma_x + (size - n1 - 1) * sigma_y);
-            u = n1 * (size-n1);
+            t /= Math.Sqrt((n1 - 1) * sigma_x + (n2 - 1) * sigma_y);
+            u = n1 * n2;
             u *= (size - 2);
             u /= size;
             t *= Math.Sqrt(u);
