@@ -10,17 +10,19 @@ using System.Globalization;
 
 namespace Sequence
 {
-    [Parameter("eps", 1E-5, typeof(Double))]
+    [Parameter("eps", 1E-7, typeof(Double))]
     [Parameter("ETA", 2.0, typeof(Double))]
     [Parameter("CV", 0.8, typeof(Double))]
-    [Parameter("N", 50000, typeof(Int32))]
-    [Parameter("r", 0.109, typeof(Double))]
+    [Parameter("N", 1000, typeof(Int32))]
+    [Parameter("r", 0.1, typeof(Double))]
     [Name("Генерация последовательности стока")]
     public class FlowSequenceGeneration : IAlgorithm
     {
         private DataSet data;
         private DataSet resultSet;
         Random Rand;
+        private double Average_p;
+        private double Sigma_p ;
 
         public void Init(DataSet data)
         {
@@ -31,9 +33,18 @@ namespace Sequence
         public void Run(IContext ctx)
         {
             resultSet = new DataSet();
+            Statistics stat = new Statistics();
             DataTable kTable = new DataTable() { TableName = "FlowSequence" };
             kTable.Columns.Add("K");
-
+            DataTable Option = new DataTable() { TableName = "OptionsSequence" };
+            Option.Columns.Add("Type");
+            Option.Columns.Add("Srednee");
+            Option.Columns.Add("Sigma");
+            Option.Columns.Add("Cv");
+            Option.Columns.Add("Cs");
+            Option.Columns.Add("Eta");
+            Option.Columns.Add("r");
+            
             DataTable paramsTable = data.Tables["params"];
 
             var attrs = typeof(FlowSequenceGeneration).GetCustomAttributes<ParameterAttribute>();
@@ -67,7 +78,7 @@ namespace Sequence
 
             DataTable optSource = ctx.InitialData.Tables["optsource_big"];
 
-            double[] kArray = Sequence(optSource, new Statistics(), n, r, cv, eta,eps);
+            double[] kArray = Sequence(optSource, stat, n, r, cv, eta,eps);
 
             for (int i = 0; i < kArray.Length; i++)
             {
@@ -77,6 +88,36 @@ namespace Sequence
             }
 
             resultSet.Tables.Add(kTable);
+            double[] x = BigOptSource(optSource, cv, eta);
+            DataRow row0 = Option.NewRow();
+            row0["Type"] = "K_teor";
+            row0["Srednee"] = stat.Average(x, 0, x.Length-1);
+            row0["Sigma"] = stat.Sigma(x, 0, x.Length-1);
+       //     row0["Cv"] = stat.Variation(x, 0, x.Length - 1);
+       //     row0["Cs"] = stat.Asimmetria(x, 0, x.Length - 1);
+       //     row0["Eta"] = stat.Asimmetria(x, 0, x.Length - 1) / stat.Variation(x, 0, x.Length - 1);
+       //     row0["r"] = stat.Correlation(x, 0, x.Length - 1);
+            row0["Cv"] = cv;
+            row0["Cs"] = cv*eta;
+            row0["Eta"] = eta;
+            row0["r"] = r;
+            Option.Rows.Add(row0);
+            DataRow row1 = Option.NewRow();
+            row1["Type"] = "K_practic";
+            row1["Srednee"] = stat.Average(kArray, 0, n-1);
+            row1["Sigma"] = stat.Sigma(kArray, 0, n-1);
+            row1["Cv"] = stat.Variation(kArray, 0, n-1);
+            row1["Cs"] = stat.Asimmetria(kArray, 0, n-1);
+            row1["Eta"] = stat.Asimmetria(kArray, 0, n) / stat.Variation(kArray, 0, n-1);
+            row1["r"] = stat.Correlation(kArray, 0, n-1);
+            Option.Rows.Add(row1);
+
+            DataRow row2 = Option.NewRow();
+            row2["Type"] = "P";
+            row2["Srednee"] = Average_p;
+            row2["Sigma"] = Sigma_p;
+            Option.Rows.Add(row2);
+            resultSet.Tables.Add(Option);
         }
 
         public DataSet Results
@@ -87,11 +128,12 @@ namespace Sequence
         //столбец по cv и eta
         public double[] BigOptSource(DataTable optSource, double Cv, double Eta)
         {
-            int group = 1 + (int)((Eta - 1.0) * 2.0); //выбираем группу
-            int c1 = (int)(Cv * 10); //выбираем колонку в группе
-            int column = 0; //нужная колонка в таблице
-            column = 1 + (group - 1) * 10 + c1;
+            int group = (int)((Eta - 1.0) * 2.0); //выбираем группу
+            int c1 = (int)(Cv * 10)- 1; //выбираем колонку в группе
+           int column = 0; //нужная колонка в таблице
+            column = (group ) * 10 + c1;
             return TableValues(optSource, column);
+            
         }
         //значения из  столбца source
         public double[] TableValues(DataTable optSource, int col)
@@ -126,7 +168,8 @@ namespace Sequence
                 if (next < 0) next = 0;
                 m_vK[i] = next;
             }
-
+            Average_p = stat.Average(P);
+            Sigma_p = stat.Sigma(P);
             return m_vK;
         }
     }

@@ -25,10 +25,11 @@ namespace RepresentationCheck
         {
             resultSet = new DataSet();
             DataTable kTable = new DataTable() { TableName = "Coefficient" };
-            kTable.Columns.Add("K_average");
-            kTable.Columns.Add("K_deviation");
-            kTable.Columns.Add("K_variation");
-            kTable.Columns.Add("K_asymmetry");
+            kTable.Columns.Add("Period");
+            kTable.Columns.Add("K_srednee");
+            kTable.Columns.Add("K_sigma");
+            kTable.Columns.Add("K_cv");
+            kTable.Columns.Add("K_cs");
             kTable.Columns.Add("K_eta");
 
             DataTable paramsTable = data.Tables["params"];
@@ -56,14 +57,11 @@ namespace RepresentationCheck
             for (int i = 0; i < k1.Count; i++)
             {
                 DataRow row = kTable.NewRow();
-                row["K_average"] = k1[i];
-              //  kTable.Rows.Add(row);
-                row["K_deviation"] = k2[i];
-              //  kTable.Rows.Add(row);
-                row["K_variation"] = k3[i];
-             //   kTable.Rows.Add(row);
-                row["K_asymmetry"] = k4[i];
-             //   kTable.Rows.Add(row);
+                row["Period"] = i + ".." + (i + n);
+                row["K_srednee"] = k1[i];
+                row["K_sigma"] = k2[i];
+                row["K_cv"] = k3[i];
+                row["K_cs"] = k4[i];
                 row["K_eta"] = k5[i];
                 kTable.Rows.Add(row);
             }
@@ -128,10 +126,10 @@ namespace RepresentationCheck
             double[] q = new double[n];
             double[] x = TableValues(X_Table, 0);
             List<double> k4 = new List<double>();
-            double cs = stat.Assimetria(x, 0, x.Length);
+            double cs = stat.Asimmetria(x, 0, x.Length);
             for (int i = 0; i <= x.Length - n; i++)
             {
-                k4.Add(stat.Assimetria(x, i, n ) / cs);
+                k4.Add(stat.Asimmetria(x, i, n ) / cs);
             }
             return k4;
 
@@ -142,16 +140,17 @@ namespace RepresentationCheck
             double[] x = TableValues(X_Table, 0);
             List<double> k5 = new List<double>();
             double cv = stat.Variation(x, 0, x.Length);
-            double cs = stat.Assimetria(x, 0, x.Length);
+            double cs = stat.Asimmetria(x, 0, x.Length);
             double eta = cs / cv;
             // int index = 0; 
             for (int i = 0; i <= x.Length - n; i++)
             {
-                k5.Add(stat.Assimetria(x, i, n ) / stat.Variation(x, i, n ) / eta);
+                k5.Add(stat.Asimmetria(x, i, n ) / stat.Variation(x, i, n ) / eta);
             }
             return k5;
 
         }
+        [Parameter("resN", 500, typeof(Int32))]
         [Name("Вероятности превышения")]
         public class Probability : IAlgorithm
         {
@@ -168,27 +167,41 @@ namespace RepresentationCheck
                 resultSet = new DataSet();
                 DataTable pTable = new DataTable() { TableName = "Probability" };
                 DataTable K_Table = ctx.Data.Tables["Coefficient"];
-                pTable.Columns.Add("k1");
-                pTable.Columns.Add("k2");
-                pTable.Columns.Add("k3");
-                pTable.Columns.Add("k4");
-                pTable.Columns.Add("k5");
+                pTable.Columns.Add("k_srednee");
+                pTable.Columns.Add("k_sigma");
+                pTable.Columns.Add("k_cv");
+                pTable.Columns.Add("k_cs");
+                pTable.Columns.Add("k_eta");
                 RepresentationCheck represent = new RepresentationCheck();
-                int resN = 100;
+                DataTable paramsTable = data.Tables["params"];
+                var attrs = typeof(Probability).GetCustomAttributes<ParameterAttribute>();
+
+                int resN = (int)attrs.First((param) => { return param.Name == "resN"; }).DefaultValue;
+
+                foreach (DataRow row in paramsTable.Rows)
+                {
+                    switch (row["Name"].ToString())
+                    {
+                        case "resN":
+                            resN = int.Parse(row["Value"].ToString());
+                            break;
+                    }
+                }
+            
                 for (int i = 0; i < resN; i++)
                 {
                     DataRow row = pTable.NewRow();
                     pTable.Rows.Add(row);
                 }
 
-                for (int type_k = 0; type_k < 5; type_k++)
+                for (int type_k = 1; type_k < 6; type_k++)
                 {
                     statistics stat = new statistics();
                     double[] k = represent.TableValues(K_Table, type_k);
                     k = stat.sort_shell(k, k.Length);
                     for (int i = 0; i < resN; i++)
                     {
-                        pTable.Rows[i][type_k] = k[(int)Math.Round((double)i * ((double)(k.Length - 1)) / ((double)(resN - 1)))];                      
+                        pTable.Rows[i][type_k-1] = k[(int)Math.Round((double)i * ((double)(k.Length - 1)) / ((double)(resN - 1)))];                      
                     }
                 }
 
@@ -220,11 +233,11 @@ namespace RepresentationCheck
                 DataTable K_Table = ctx.GetData("RepresentationCheck").Tables["Coefficient"];
                 DataTable SigmaTable = new DataTable() { TableName = "Standarts" };
                 SigmaTable.Columns.Add("n");
-                SigmaTable.Columns.Add("Sigma_k1");
-                SigmaTable.Columns.Add("Sigma_k2");
-                SigmaTable.Columns.Add("Sigma_k3");
-                SigmaTable.Columns.Add("Sigma_k4");
-                SigmaTable.Columns.Add("Sigma_k5");
+                SigmaTable.Columns.Add("Sigma_k_srednee");
+                SigmaTable.Columns.Add("Sigma_k_sigma");
+                SigmaTable.Columns.Add("Sigma_k_cv");
+                SigmaTable.Columns.Add("Sigma_k_cs");
+                SigmaTable.Columns.Add("Sigma_k_eta");
                 DataTable paramsTable = data.Tables["params"];
                 var attrs = typeof(Standarts).GetCustomAttributes<ParameterAttribute>();
 
@@ -243,21 +256,21 @@ namespace RepresentationCheck
                 statistics stat = new statistics();
                 DataRow rows = SigmaTable.NewRow();
                 rows["n"] = n;
-                double[] k = represent.TableValues(K_Table, 0);
-                double sigma = stat.standart(k);                
-                rows["Sigma_k1"] = sigma;
-                k = represent.TableValues(K_Table, 1);
-                sigma = stat.standart(k);
-                rows["Sigma_k2"] = sigma;
+                double[] k = represent.TableValues(K_Table, 1);
+                double sigma = stat.standart(k);
+                rows["Sigma_k_srednee"] = sigma;
                 k = represent.TableValues(K_Table, 2);
                 sigma = stat.standart(k);
-                rows["Sigma_k3"] = sigma;
+                rows["Sigma_k_sigma"] = sigma;
                 k = represent.TableValues(K_Table, 3);
                 sigma = stat.standart(k);
-                rows["Sigma_k4"] = sigma;
+                rows["Sigma_k_cv"] = sigma;
                 k = represent.TableValues(K_Table, 4);
                 sigma = stat.standart(k);
-                rows["Sigma_k5"] = sigma;
+                rows["Sigma_k_cs"] = sigma;
+                k = represent.TableValues(K_Table, 5);
+                sigma = stat.standart(k);
+                rows["Sigma_k_eta"] = sigma;
                 SigmaTable.Rows.Add(rows);
                 resultSet.Tables.Add(SigmaTable);
 

@@ -5,7 +5,7 @@
       <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\initial</initpath>
     </node>
     <node type="algorithm" id="1" x="208.22666666666666" y="196.54">
-      <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\alg1\input</initpath>
+      <initpath>D:\Танюшка\Рабочий стол\Hydrology\experiment\alg_gen_siquents</initpath>
       <algorithmtype>FlowSequenceGeneration</algorithmtype>
       <params>
         <param name="CV" value="0.8" />

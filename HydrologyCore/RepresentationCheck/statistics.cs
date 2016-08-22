@@ -59,7 +59,7 @@ namespace RepresentationCheck
         }
 
         //коэффициент ассиметрии
-        public double Assimetria(Double[] x, int i0, int n)
+        public double Asimmetria(Double[] x, int i0, int n)
         {
             double sig, avr, s = 0;
             int ik, i;

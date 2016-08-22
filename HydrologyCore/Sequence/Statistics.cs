@@ -8,12 +8,6 @@ namespace Sequence
 {
     public class Statistics
     {
-        // public statistics(double [] x)
-        //  {
-
-        //  }
-
-      //  static double eps = 1E-5;
 
         //корни уравнения n-ой степени
         static List<double> roots(List<double> factors, double eps)
@@ -66,6 +60,7 @@ namespace Sequence
             double center,
                 left_result = polynom(factors, left),
                 center_result;
+            int i=0;
             do
             {
                 center = (left + right) / 2;
@@ -77,8 +72,9 @@ namespace Sequence
                     left = center;
                     left_result = center_result;
                 }
+                i++;
             }
-            while (Math.Abs(center_result) > eps);
+            while(Math.Abs(center_result) > eps);
             return center;
         }
         //корни квадратного уравнения
@@ -122,7 +118,7 @@ namespace Sequence
         {
             List<double> factors, _roots;
             double result = 0;
-            factors = new List<double> { 3.0 / 3.141592653589793, -0.12 * Math.Pow(cv, 3.0 / 2.0), 0, 0, -r };
+            factors = new List<double> { 3.0 / Math.PI, -0.12 * Math.Pow(cv, 3.0 / 2.0), 0, 0, -r };
             _roots = roots(factors,eps);
 
             bool stop = false;
@@ -171,6 +167,91 @@ namespace Sequence
                     result = _roots[i];
             }
             return result;
+        }
+        //выборочное среднее
+        public double Average(Double[] x, int i0, int n)
+        {
+            double s = 0;
+            int ik = i0 + n;
+            for (int i = i0; i < ik; i++)
+                s += x[i];
+            return s / n;
+        }
+        public double Average(List <double> k)
+        {
+            double s = 0;
+            for (int i = 0; i < k.Count; i++)
+                s += k[i];
+            return s / k.Count;
+        }
+
+        //среднеквадратичное отклонение
+        public double Sigma(Double[] x, int i0, int n)
+        {
+            int ik;
+            double s, avr;
+            if (n == 1) return 0;
+            else
+            {
+                avr = Average(x, i0, n);
+                s = 0;
+                ik = i0 + n;
+                for (int i = i0; i < ik; i++)
+                    s += Math.Pow(x[i] - avr, 2);
+                return Math.Sqrt(s / n);
+            }
+        }
+        public double Sigma(List <double> x)
+        {
+            double s, avr;
+            avr = Average(x);
+            s = 0;
+            for (int i = 0; i < x.Count; i++)
+               s += Math.Pow(x[i] - avr, 2);
+            return Math.Sqrt(s / x.Count);
+        }
+
+        //Коэффициент вариации
+        public double Variation(Double[] x, int i0, int n)
+        {
+            double s = Sigma(x, i0, n), avr = Average(x, i0, n);
+            if (avr != 0)
+                return s / avr;
+            else
+                return 0;
+        }
+
+        //коэффициент ассиметрии
+        public double Asimmetria(Double[] x, int i0, int n)
+        {
+            double sig, avr, s = 0;
+            int ik, i;
+            if ((n == 1) | (n == 2)) return 0;
+            else
+            {
+                avr = Average(x, i0, n);
+                sig = Sigma(x, i0, n);
+                ik = i0 + n - 1;
+                for (i = i0; i <= ik; i++)
+                    s += Math.Pow(x[i] - avr, 3);
+                return s * (double)n / ((double)(n - 1) * (double)(n - 2) * Math.Pow(sig, 3));
+            }
+        }
+
+        //Коэффициент корреляции
+        public double Correlation(Double[] x, int i0, int n)
+        {
+            double avr1 = Average(x, i0, n - 1),
+                avr2 = Average(x, i0 + 1, n),
+                s1 = 0, s2 = 0, s3 = 0;
+            int ik = i0 + n - 2, i;
+            for (i = i0; i <= ik; i++)
+            {
+                s1 += (x[i] - avr1) * (x[i + 1] - avr2);
+                s2 += Math.Pow(x[i] - avr1, 2);
+                s3 += Math.Pow(x[i + 1] - avr2, 2);
+            }
+            return s1 / Math.Pow(s2 * s3, 2);
         }
     }
 }

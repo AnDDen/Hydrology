@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HydrologyDesktop", "Hydrolo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sequence", "Sequence\Sequence.csproj", "{96A48D24-904B-457B-8139-C9E8B5E3A14B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniformityCheck", "UniformityCheck\UniformityCheck.csproj", "{2A307A5E-B137-4CC3-88FB-843E62C742A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{96A48D24-904B-457B-8139-C9E8B5E3A14B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96A48D24-904B-457B-8139-C9E8B5E3A14B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96A48D24-904B-457B-8139-C9E8B5E3A14B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A307A5E-B137-4CC3-88FB-843E62C742A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A307A5E-B137-4CC3-88FB-843E62C742A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A307A5E-B137-4CC3-88FB-843E62C742A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A307A5E-B137-4CC3-88FB-843E62C742A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,5 +66,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{4068EC99-2DE5-4A66-86DB-5C73671843C5} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
 		{96A48D24-904B-457B-8139-C9E8B5E3A14B} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
+		{2A307A5E-B137-4CC3-88FB-843E62C742A3} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
 	EndGlobalSection
 EndGlobal
