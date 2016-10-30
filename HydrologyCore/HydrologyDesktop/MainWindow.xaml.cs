@@ -274,12 +274,20 @@ namespace HydrologyDesktop
             };
             if (ViewedLoop != null)
                 algSettings.ParentLoop = ViewedLoop;
-            bool? dialogResult = algSettings.ShowDialog();
-            if (dialogResult.HasValue && dialogResult.Value)
+            try
             {
-                node.InitPath = algSettings.Path;
-                node.ParamsTable = algSettings.ParamsTable;
-                node.VarLoop = algSettings.VarLoop;
+                bool? dialogResult = algSettings.ShowDialog();
+                if (dialogResult.HasValue && dialogResult.Value)
+                {
+                    node.InitPath = algSettings.Path;
+                    node.ParamsTable = algSettings.ParamsTable;
+                    node.VarLoop = algSettings.VarLoop;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Произошла ошибка во время сохранения настроек: {0}", ex.Message),
+                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

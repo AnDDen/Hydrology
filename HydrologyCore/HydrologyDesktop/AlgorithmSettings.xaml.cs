@@ -139,25 +139,29 @@ namespace HydrologyDesktop
             var attrs = algType.GetCustomAttributes<ParameterAttribute>();
             foreach (DataRow row in paramsTable.Rows)
             {
-                var attr = attrs.First((x) => { return x.Name == row["Name"].ToString(); });
+                var name = row["Name"].ToString();
+                var svalue = row["Value"] == null ? null : row["Value"].ToString();
+                var attr = attrs.FirstOrDefault((x) => { return x.Name == name; });
+                if (attr == null)
+                    throw new ArgumentException(string.Format(@"Алгоритм {0} не имеет параметра {1}. 
+                        Исправьте файл настроек, удалив лишний параметр или подгрузите другую версию алгоритма, который поддерживает параметр {1}.", algType.Name, name));
                 object value;
-                if (row["Value"] == null)
+                if (svalue == null)
                 {
-                    MessageBox.Show(string.Format("Параметр {0} имеет неверный формат", row["Name"].ToString()),
+                    MessageBox.Show(string.Format("Параметр {0} имеет неверный формат", name),
                         "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     return false;
                 }
-                else if (row["Value"].ToString()[0] == '{')
+                else if (svalue[0] == '{')
                 {
-                    string varName = row["Value"].ToString();
-                    varName = varName.Trim(' ', '{', '}');
+                    string varName = svalue.Trim(' ', '{', '}');
                     if (VarNames.Keys.Contains(varName))
                     {
-                        VarLoop.Add(row["Name"].ToString(), VarNames[varName]);
+                        VarLoop.Add(svalue, VarNames[varName]);
                     }
                     else
                     {
-                        MessageBox.Show(string.Format("Переменная {0}, заданная для параметра {1}, не найдена", varName, row["Name"].ToString()),
+                        MessageBox.Show(string.Format("Переменная {0}, заданная для параметра {1}, не найдена", varName, name),
                                 "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                         return false;
                     }
@@ -170,7 +174,7 @@ namespace HydrologyDesktop
                     }
                     catch (Exception)
                     {
-                        MessageBox.Show(string.Format("Параметр {0} имеет неверный формат", row["Name"].ToString()),
+                        MessageBox.Show(string.Format("Параметр {0} имеет неверный формат", name),
                             "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                         return false;
                     }
