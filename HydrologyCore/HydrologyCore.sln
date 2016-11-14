@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HydrologyCore", "HydrologyCore\HydrologyCore.csproj", "{81A9DCCB-A363-4D6D-BD9F-F23808F7DA5E}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sequence", "Sequence\Sequence.csproj", "{96A48D24-904B-457B-8139-C9E8B5E3A14B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniformityCheck", "UniformityCheck\UniformityCheck.csproj", "{2A307A5E-B137-4CC3-88FB-843E62C742A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAlgorithms", "TestAlgorithms\TestAlgorithms.csproj", "{5336B9D9-80BD-482F-9713-A0B024A50262}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,10 @@ Global
 		{2A307A5E-B137-4CC3-88FB-843E62C742A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A307A5E-B137-4CC3-88FB-843E62C742A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A307A5E-B137-4CC3-88FB-843E62C742A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5336B9D9-80BD-482F-9713-A0B024A50262}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5336B9D9-80BD-482F-9713-A0B024A50262}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5336B9D9-80BD-482F-9713-A0B024A50262}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5336B9D9-80BD-482F-9713-A0B024A50262}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,5 +73,6 @@ Global
 		{4068EC99-2DE5-4A66-86DB-5C73671843C5} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
 		{96A48D24-904B-457B-8139-C9E8B5E3A14B} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
 		{2A307A5E-B137-4CC3-88FB-843E62C742A3} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
+		{5336B9D9-80BD-482F-9713-A0B024A50262} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
 	EndGlobalSection
 EndGlobal

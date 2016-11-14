@@ -15,58 +15,64 @@ namespace HydrologyCore
         private IList<IExperimentNode> nodes;
         public IList<IExperimentNode> Nodes { get { return nodes; } }
 
-        private Context context;
+        public string OutDir { get; set; }
 
-        private string outDir;
+        public delegate void ExperimentStatusHandler(IExperimentNode node);
 
-        public delegate void ExperimentStatusHandler(string message);
+        public event ExperimentStatusHandler CurrentNodeChanged;
 
-        public event ExperimentStatusHandler AlgorithmChanged;
+        private string initFolder;
 
-        public Experiment()
+        public Experiment(string outDir)
         {
             nodes = new List<IExperimentNode>();
-            context = new Context();
-            context.InitialData = new DataSet();
+            initFolder = null;
+            OutDir = outDir;
         }
+
+        public Experiment() : this(string.Format("Experiment.{0}", DateTime.Now.ToString("yyyyMMdd-HHmmss"))) { }
 
         public void Run()
         {
-            outDir = string.Format("Experiment.{0}", DateTime.Now.ToString("yyyyMMdd-HHmmss"));
-
+            Context context = new Context();
+            if (initFolder != null)
+                context.InitialData = InitData(initFolder);
             foreach (IExperimentNode node in nodes)
             {
-                if (node is AlgorithmNode)
+                if (CurrentNodeChanged != null)
+                    CurrentNodeChanged(node);
+
+                if (node.IsSaveResults)
                 {
-                    var alg = node as AlgorithmNode;
-                    if (AlgorithmChanged != null)
-                        AlgorithmChanged(alg.Name);
-
-                    alg.Init();
-                    alg.Run(context);
-
-                    string algOutDir = outDir + "/" + alg.Name;
-                    if (Directory.Exists(algOutDir))
+                    string nodeOutDir = OutDir + "/" + node.Name;
+                    if (Directory.Exists(nodeOutDir))
                     {
                         int i = 2;
-                        while (Directory.Exists(algOutDir + i.ToString())) i++;
-                        algOutDir = algOutDir + i.ToString();
+                        while (Directory.Exists(nodeOutDir + i.ToString())) i++;
+                        nodeOutDir = nodeOutDir + i.ToString();
                     }
 
-                    alg.WriteToFile(algOutDir);
-                    context.History.Add(alg);
+                    node.SaveResultsPath = nodeOutDir;
                 }
-                else if (node is RunProcessNode)
-                {
-                    var runProc = node as RunProcessNode;
-                    runProc.Run();
-                }
+
+                node.Run(context);
+
+                if (node.IsSaveResults)
+                    node.SaveResults();
+                
+                if (node.IsStoreInContext)
+                    context.History.Add(node);
             }
         }
 
         public Experiment StartFrom(string initFolder)
         {
-            //read data from folder and store in the context as initial data
+            this.initFolder = initFolder;
+            return this;
+        }
+
+        private DataSet InitData(string initFolder)
+        {
             string[] files = Directory.GetFiles(initFolder, "*.csv");
             DataSet data = new DataSet();
             for (int i = 0; i < files.Length; i++)
@@ -78,9 +84,7 @@ namespace HydrologyCore
                 table.TableName = name;
                 data.Tables.Add(table);
             }
-            context.InitialData = data;
-
-            return this;
+            return data;
         }
 
         private void Connect(IExperimentNode node1, IExperimentNode node2)

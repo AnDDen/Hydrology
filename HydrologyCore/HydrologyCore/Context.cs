@@ -12,11 +12,11 @@ namespace HydrologyCore
     {
         public Context()
         {
-            _history = new List<AlgorithmNode>();
+            _history = new List<IExperimentNode>();
             InitialData = new DataSet();
         }
-        List<AlgorithmNode> _history;
-        public List<AlgorithmNode> History
+        List<IExperimentNode> _history;
+        public List<IExperimentNode> History
         {
             get
             { 
@@ -24,7 +24,7 @@ namespace HydrologyCore
             }
         }
 
-        AlgorithmNode Top
+        IExperimentNode Top
         {
             get
             {
@@ -54,19 +54,17 @@ namespace HydrologyCore
         /// <summary>
         /// Получение последнего результата работы алгоритма по его имени
         /// </summary>
-        /// <param name="algorithmName">Имя алгоритма</param>
+        /// <param name="name">Имя алгоритма</param>
         /// <returns></returns>
-        public DataSet GetData(string algorithmName)
+        public DataSet GetData(string name)
         {
             //todo
-            AlgorithmNode node = Top;
-            while (node.Name != algorithmName && node.Prev != null)
+            IExperimentNode node = Top;
+            while (node.Name != name && node.Prev != null)
             {
-                IExperimentNode p = node.Prev;
-                while (p != null && !(p is AlgorithmNode)) p = p.Prev;
-                node = p as AlgorithmNode;
+                node = node.Prev;
             }
-            if (node.Name == algorithmName)
+            if (node.Name == name)
                 return node.Results;
             return null;
         }
