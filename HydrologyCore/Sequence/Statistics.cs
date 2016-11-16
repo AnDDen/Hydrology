@@ -73,8 +73,9 @@ namespace Sequence
                     left_result = center_result;
                 }
                 i++;
+                //System.Diagnostics.Trace.WriteLine(string.Format("center_result = {0}, center = {1}", center_result, center));
             }
-            while(Math.Abs(center_result) > eps);
+            while(Math.Abs(center_result) > eps && Math.Abs(left - right) > eps);
             return center;
         }
         //корни квадратного уравнения
@@ -156,7 +157,7 @@ namespace Sequence
             while (Math.Abs(factors[0]) < eps)
             {
                 factors.Remove(factors[0]);
-                factors.Remove(factors[1]);
+                //factors.Remove(factors[1]);
             }
             _roots = roots(factors,eps);
             bool stop = false;

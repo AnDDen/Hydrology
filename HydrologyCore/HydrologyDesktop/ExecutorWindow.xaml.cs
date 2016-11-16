@@ -57,23 +57,30 @@ namespace HydrologyDesktop
         }
         public void PrepareAlgorithmNode(AlgorithmNodeControl node, Experiment experiment)
         {
-            if (Directory.Exists(node.InitPath))
+            DataTable algParams = node.ParamsTable.Copy();
+
+            foreach (DataRow row in algParams.Rows)
             {
-                DataTable algParams = node.ParamsTable.Copy();
-
-                foreach (DataRow row in algParams.Rows)
-                {
-                    if (node.VarLoop.Keys.Contains(row["Name"].ToString()))
-                        row["Value"] = node.VarLoop[row["Name"].ToString()].RunValue;
-                }
-
-                experiment.Then(hydrologyCore.Algorithm(node.AlgorithmType.Name).InitFromFolder(node.InitPath).SetParams(algParams));
+                if (node.VarLoop.Keys.Contains(row["Name"].ToString()))
+                    row["Value"] = node.VarLoop[row["Name"].ToString()].RunValue;
             }
+
+            if (string.IsNullOrEmpty(node.InitPath))
+            {
+                experiment.Then(hydrologyCore.Algorithm(node.AlgorithmType.Name).SetParams(algParams));
+            } 
             else
             {
-                MessageBox.Show(string.Format("Путь {0}, указанный для алгоритма {1} не существует", node.InitPath, node.AlgorithmType.Name),
-                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                if (Directory.Exists(node.InitPath))
+                {
+                    experiment.Then(hydrologyCore.Algorithm(node.AlgorithmType.Name).InitFromFolder(node.InitPath).SetParams(algParams));
+                }
+                else
+                {
+                    MessageBox.Show(string.Format("Путь {0}, указанный для алгоритма {1} не существует", node.InitPath, node.AlgorithmType.Name),
+                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
             }
         }
         public void PrepareLoop(LoopControl loop, Experiment experiment, BackgroundWorker worker, DoWorkEventArgs e, double p)

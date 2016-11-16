@@ -20,7 +20,7 @@ namespace UniformityCheck
         private DataSet resultSet;
         public double[,] t;
         public int index_size = 4;
-        public int lam_len = 5;
+        public int lam_len = 6;
         public int size;
         public double n, r;
         public double[,] series;

@@ -19,7 +19,7 @@ namespace HydrologyCore
 
         private string outDir;
 
-        public delegate void ExperimentStatusHandler(string message);
+        public delegate void ExperimentStatusHandler(string message, AlgorithmNode node);
 
         public event ExperimentStatusHandler AlgorithmChanged;
 
@@ -40,10 +40,18 @@ namespace HydrologyCore
                 {
                     var alg = node as AlgorithmNode;
                     if (AlgorithmChanged != null)
-                        AlgorithmChanged(alg.Name);
+                        AlgorithmChanged(alg.Name, alg);
 
                     alg.Init();
-                    alg.Run(context);
+                    try
+                    {
+                        alg.Run(context);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Trace.WriteLine(ex.ToString());
+                        throw ex;
+                    }
 
                     string algOutDir = outDir + "/" + alg.Name;
                     if (Directory.Exists(algOutDir))

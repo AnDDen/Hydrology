@@ -16,14 +16,15 @@ namespace UniformityCheck
     [Parameter("lam3", 0.3, typeof(double))]
     [Parameter("lam4", 0.4, typeof(double))]
     [Parameter("lam5", 0.5, typeof(double))]
-    [Name("Модификация")]
+    [Parameter("lam6", 0.5, typeof(double))]
+    [Name("Модификация с разбиением")]
     public class Transformation : IAlgorithm
     {
         private DataSet data;
         private DataSet resultSet;
         public Statistic stat;
         public int index_size = 4;
-        public int lam_len = 5;
+        public int lam_len = 6;
         public double[,] modifiers1;
         public double[,] modifiers2;
         public double[,] summods;
@@ -78,20 +79,23 @@ namespace UniformityCheck
                     case "size":
                         size = int.Parse(row["Value"].ToString());
                         break;
-                    case "lam1":
+                    case "lam0":
                         lambda_items[0] = double.Parse(row["Value"].ToString());
                         break;
-                    case "lam2":
+                    case "lam1":
                         lambda_items[1] = double.Parse(row["Value"].ToString());
                         break;
-                    case "lam3":
+                    case "lam2":
                         lambda_items[2] = double.Parse(row["Value"].ToString());
                         break;
-                    case "lam4":
+                    case "lam3":
                         lambda_items[3] = double.Parse(row["Value"].ToString());
                         break;
-                    case "lam5":
+                    case "lam4":
                         lambda_items[4] = double.Parse(row["Value"].ToString());
+                        break;
+                    case "lam5":
+                        lambda_items[5] = double.Parse(row["Value"].ToString());
                         break;
                 }
             }
