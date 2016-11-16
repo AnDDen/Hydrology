@@ -1,6 +1,7 @@
 ﻿using CoreInterfaces;
 using CsvParser;
 using HydrologyCore;
+using HydrologyCore.ExperimentNodes;
 using HydrologyDesktop.Controls;
 using System;
 using System.Collections.Generic;
@@ -51,9 +52,37 @@ namespace HydrologyDesktop
         {
             experiment.StartFrom(node.InitPath);
         }
+
+        public IExperimentNode CreateExperimentNode(BaseNodeControl node)
+        {
+            if (node is RunProcessNodeControl)
+                return hydrologyCore.RunProcess((node as RunProcessNodeControl).ProcessName);
+            if (node is AlgorithmNodeControl)
+            {
+                var algNode = node as AlgorithmNodeControl;
+                DataTable algParams = algNode.ParamsTable.Copy();                
+                return hydrologyCore.Algorithm(algNode.AlgorithmType.Name).InitFromFolder(algNode.InitPath).SetParams(algParams);
+            }
+            if (node is LoopControl)
+            {
+                var loopNode = node as LoopControl;
+                var name = string.Format("Loop {0} = {1}..{2}, {3}", loopNode.VarName, loopNode.StartValue, loopNode.EndValue, loopNode.Step);
+                var chain = loopNode.LoopBody.CreateExecutionChain();
+                var body = new List<IExperimentNode>();
+                foreach (var p in chain)
+                {
+                    IExperimentNode experimentNode = CreateExperimentNode(p);
+                    if (experimentNode != null) body.Add(experimentNode);
+                }
+                return hydrologyCore.Loop(name, body, loopNode.VarName, loopNode.StartValue, loopNode.EndValue, loopNode.Step);
+            }
+            return null;
+        }
+
+        #region OLD
         public void PrepareRunProcessNode(RunProcessNodeControl node, Experiment experiment)
         {
-            experiment.Then(hydrologyCore.RunProcess(node.ProcessName));
+            experiment.Then(CreateExperimentNode(node));
         }
         public void PrepareAlgorithmNode(AlgorithmNodeControl node, Experiment experiment)
         {
@@ -122,6 +151,8 @@ namespace HydrologyDesktop
                 worker.ReportProgress((int)percent);
             }
         }
+        #endregion
+
         public void PrepareExperiment(BackgroundWorker worker, DoWorkEventArgs e)
         {
             experiment = new Experiment();
@@ -136,12 +167,8 @@ namespace HydrologyDesktop
             {
                 if (chain[i] is InitNodeControl)
                     PrepareInitNode(chain[i] as InitNodeControl, experiment);
-                else if (chain[i] is AlgorithmNodeControl)
-                    PrepareAlgorithmNode(chain[i] as AlgorithmNodeControl, experiment);
-                else if (chain[i] is RunProcessNodeControl)
-                    PrepareRunProcessNode(chain[i] as RunProcessNodeControl, experiment);
-                else if (chain[i] is LoopControl)
-                    PrepareLoop(chain[i] as LoopControl, experiment, worker, e, percentInc);
+                else
+                    experiment.Then(CreateExperimentNode(chain[i]));
 
                 if (worker.CancellationPending == true)
                 {

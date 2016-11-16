@@ -7,6 +7,7 @@ using CoreInterfaces;
 using System.IO;
 using System.Reflection;
 using System.Data;
+using HydrologyCore.ExperimentNodes;
 
 namespace HydrologyCore
 {
@@ -66,6 +67,11 @@ namespace HydrologyCore
         public RunProcessNode RunProcess(string name)
         {
             return new RunProcessNode(name);
+        }
+
+        public LoopNode Loop(string name, IList<IExperimentNode> body, string loopVar, double initValue, double endValue, double step)
+        {
+            return new LoopNode(body, name, loopVar, initValue, endValue, step);
         }
     }
 }
