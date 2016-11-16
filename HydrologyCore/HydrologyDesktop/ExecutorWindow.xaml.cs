@@ -66,7 +66,6 @@ namespace HydrologyDesktop
             if (node is LoopControl)
             {
                 var loopNode = node as LoopControl;
-                var name = string.Format("Loop {0} = {1}..{2}, {3}", loopNode.VarName, loopNode.StartValue, loopNode.EndValue, loopNode.Step);
                 var chain = loopNode.LoopBody.CreateExecutionChain();
                 var body = new List<IExperimentNode>();
                 foreach (var p in chain)
@@ -74,7 +73,7 @@ namespace HydrologyDesktop
                     IExperimentNode experimentNode = CreateExperimentNode(p);
                     if (experimentNode != null) body.Add(experimentNode);
                 }
-                return hydrologyCore.Loop(name, body, loopNode.VarName, loopNode.StartValue, loopNode.EndValue, loopNode.Step);
+                return hydrologyCore.Loop(body, loopNode.VarName, loopNode.StartValue, loopNode.EndValue, loopNode.Step);
             }
             return null;
         }

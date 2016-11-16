@@ -20,6 +20,8 @@ namespace HydrologyCore
 
         public bool IsSaveResults { get; set; }
         public string SaveResultsPath { get; set; }
+        public string SaveResultsFolder { get; set; }
+
 
         public bool IsStoreInContext { get { return true; } }
 
@@ -31,6 +33,7 @@ namespace HydrologyCore
         {
             Algorithm = (IAlgorithm)Activator.CreateInstance(algorithmType);
             Name = algorithmType.Name;
+            SaveResultsFolder = algorithmType.Name;
             Next = null;
             Prev = null;
             data = new DataSet();

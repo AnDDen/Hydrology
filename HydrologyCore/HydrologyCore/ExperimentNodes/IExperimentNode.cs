@@ -42,6 +42,11 @@ namespace HydrologyCore
         bool IsSaveResults { get; set; }
 
         /// <summary>
+        /// Name for the folder where results will be saved
+        /// </summary>
+        string SaveResultsFolder { get; set; }
+
+        /// <summary>
         /// Sets the path where execution results will be saved if SaveResults property is true
         /// </summary>
         string SaveResultsPath { get; set; }

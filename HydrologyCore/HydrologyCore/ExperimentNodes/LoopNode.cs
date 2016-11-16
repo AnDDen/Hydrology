@@ -18,9 +18,9 @@ namespace HydrologyCore.ExperimentNodes
         public IList<IExperimentNode> Body { get { return body; } }
 
         public string Name { get; set; }
-
         public bool IsSaveResults { get { return true; } set { } }
         public string SaveResultsPath { get; set; }
+        public string SaveResultsFolder { get; set; }
 
         public bool IsStoreInContext { get { return true; } }
 
@@ -32,10 +32,11 @@ namespace HydrologyCore.ExperimentNodes
         public double EndValue { get; set; }
         public double Step { get; set; }
 
-        public LoopNode(IList<IExperimentNode> body, string name, string loopVar, double initValue, double endValue, double step)
+        public LoopNode(IList<IExperimentNode> body, string loopVar, double initValue, double endValue, double step)
         {
             this.body = body;
-            Name = name;
+            Name = string.Format("Loop {0} = {1}..{2}, {3}", loopVar, initValue, endValue, step);
+            SaveResultsFolder = string.Format("Loop {0}", loopVar);
             LoopVar = loopVar;
             InitValue = initValue;
             EndValue = endValue;

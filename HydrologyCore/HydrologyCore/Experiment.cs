@@ -19,6 +19,7 @@ namespace HydrologyCore
 
         public delegate void ExperimentStatusHandler(IExperimentNode node);
 
+        public event ExperimentStatusHandler CurrentNodeChanged;
 
         private string initFolder;
 
@@ -43,7 +44,7 @@ namespace HydrologyCore
 
                 if (node.IsSaveResults)
                 {
-                    string nodeOutDir = OutDir + "/" + node.Name;
+                    string nodeOutDir = OutDir + "/" + node.SaveResultsFolder;
                     if (Directory.Exists(nodeOutDir))
                     {
                         int i = 2;
@@ -54,7 +55,14 @@ namespace HydrologyCore
                     node.SaveResultsPath = nodeOutDir;
                 }
 
-                node.Run(context);
+                try
+                {
+                    node.Run(context);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine(ex.ToString());
+                }
 
                 if (node.IsSaveResults)
                     node.SaveResults();

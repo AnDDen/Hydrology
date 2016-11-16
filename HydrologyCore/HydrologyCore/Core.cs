@@ -69,9 +69,9 @@ namespace HydrologyCore
             return new RunProcessNode(name);
         }
 
-        public LoopNode Loop(string name, IList<IExperimentNode> body, string loopVar, double initValue, double endValue, double step)
+        public LoopNode Loop(IList<IExperimentNode> body, string loopVar, double initValue, double endValue, double step)
         {
-            return new LoopNode(body, name, loopVar, initValue, endValue, step);
+            return new LoopNode(body, loopVar, initValue, endValue, step);
         }
     }
 }

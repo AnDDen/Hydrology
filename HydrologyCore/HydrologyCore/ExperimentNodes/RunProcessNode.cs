@@ -22,6 +22,7 @@ namespace HydrologyCore
         }
 
         public string Name { get; set; }
+        public string SaveResultsFolder { get; set; }
 
         public bool IsSaveResults { get { return false; } set { } }
         public string SaveResultsPath { get; set; }
