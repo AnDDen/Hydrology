@@ -45,6 +45,16 @@ namespace Transformation
             var type = h.GetValue<int>("TransformationType");
 
             DataTable src = ctx.Data.Tables[tableName];
+            if (src == null)
+            {
+                var sb = new StringBuilder();
+                for (var i = 0; i < ctx.Data.Tables.Count; i++)
+                {
+                    sb.AppendFormat(sb.Length > 0 ? "{0}, " : "{0}", ctx.Data.Tables[i].TableName);                   
+                }
+
+                throw new Exception(string.Format("No table '{0}' found in the input dataset. There is only '{1}' tables found", tableName, sb.ToString()));
+            }
 
             double[] series = GetTableValues(src, 0);
 
