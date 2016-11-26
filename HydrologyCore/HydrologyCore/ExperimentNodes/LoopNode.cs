@@ -85,7 +85,8 @@ namespace HydrologyCore.ExperimentNodes
                     if (node.IsStoreInContext)
                     {
                         row[node.Name] = node.Results;
-                    }                    
+                        (ctx as Context).History.Add(node); //???
+                    }
                 }
 
                 RestoreParamsTable(LoopVar);
