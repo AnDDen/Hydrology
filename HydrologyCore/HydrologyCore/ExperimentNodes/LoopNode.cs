@@ -55,6 +55,7 @@ namespace HydrologyCore.ExperimentNodes
             }
             for (double i = InitValue; i <= EndValue; i += Step)
             {
+                Context context = new Context(ctx);
                 string outDir = string.Format("{0}/{1}={2}", SaveResultsPath, LoopVar, i);
                 Directory.CreateDirectory(outDir);
                 DataRow row = table.NewRow();
@@ -77,7 +78,7 @@ namespace HydrologyCore.ExperimentNodes
                         node.SaveResultsPath = nodeOutDir;
                     }
 
-                    node.Run(ctx);
+                    node.Run(context);
 
                     if (node.IsSaveResults)
                         node.SaveResults();
@@ -85,7 +86,8 @@ namespace HydrologyCore.ExperimentNodes
                     if (node.IsStoreInContext)
                     {
                         row[node.Name] = node.Results;
-                        (ctx as Context).History.Add(node); //???
+                        context.History.Add(node);
+                        //(ctx as Context).History.Add(node); //???
                     }
                 }
 

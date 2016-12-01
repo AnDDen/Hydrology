@@ -34,6 +34,8 @@ namespace HydrologyCore
             }
         }
 
+        IContext _parentCtx;
+
         public DataSet InitialData
         {
             get;
@@ -51,6 +53,11 @@ namespace HydrologyCore
             }
         }
 
+        public Context(IContext parentCtx = null)
+        {
+            _parentCtx = parentCtx;
+        }
+
         /// <summary>
         /// Получение последнего результата работы алгоритма по его имени
         /// </summary>
@@ -66,6 +73,8 @@ namespace HydrologyCore
             }
             if (node.Name == name)
                 return node.Results;
+            if (_parentCtx != null)
+                return _parentCtx.GetData(name);
             return null;
         }
 
