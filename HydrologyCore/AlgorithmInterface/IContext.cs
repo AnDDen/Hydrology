@@ -48,5 +48,17 @@ namespace CoreInterfaces
         }
 
         DataSet InitialData { get; set; }
+
+        DataTable FindInHistory(string tableName);
+
+        /// <summary>
+        /// Pushes the context history one level down
+        /// </summary>
+        void PushHistory();
+
+        /// <summary>
+        /// Pops the context history one level up
+        /// </summary>
+        void PopHistory();
     }
 }

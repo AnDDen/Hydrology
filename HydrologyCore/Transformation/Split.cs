@@ -12,6 +12,7 @@ namespace Transformation
 {
     [Parameter("Table Name", "FlowSequence", typeof(string))]
     [Parameter("SplitPart", 0.3, typeof(double))]
+    [Parameter("Save", "0", typeof(string))]
     [Name("Разбиение")]
     class Split : IAlgorithm
     {

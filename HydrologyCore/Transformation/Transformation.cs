@@ -16,6 +16,7 @@ namespace Transformation
     [Parameter("Start", 0, typeof(int))]
     [Parameter("Lambda", 0.1, typeof(double))]
     [Parameter("TransformationType", 1, typeof(int))]
+    [Parameter("Save", "0", typeof(string))]
     [Name("Модификация")]
     public class Modification : IAlgorithm
     {
@@ -105,9 +106,9 @@ namespace Transformation
                                                  //else if (index == 2)
                                                  //Fx = -(double)(i + 1) / n_;      //linear 2
                 else if (index == 2)
-                    Fx = (double)((i + 1) / n_) * (double)((i + 1) / n_);   //parabola 1
+                    Fx = (double)((double)(i + 1) / (double)n_) * (double)((double)(i + 1) / (double)n_);   //parabola 1
                 else if (index == 3)
-                    Fx = -(double)((i + 1) / n_) * (double)((i + 1) / n_);      //parabola 2 
+                    Fx = (double)(1.0 - (double)(i + 1) / (double)n_) * (double)(1.0 - (double)(i + 1) / (double)n_);      //parabola 2 
 
                 double val = series[i] - Fx * lambda * middle;
                 if (val >= 0)

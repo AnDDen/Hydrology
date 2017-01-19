@@ -15,6 +15,7 @@ namespace Sequence
     [Parameter("CV", 0.8, typeof(Double))]
     [Parameter("N", 1000, typeof(Int32))]
     [Parameter("r", 0.1, typeof(Double))]
+    [Parameter("Save", "1", typeof(String))]
     [Name("Генерация последовательности стока")]
     public class FlowSequenceGeneration : IAlgorithm
     {
@@ -78,7 +79,19 @@ namespace Sequence
 
             DataTable optSource = ctx.InitialData.Tables["optsource_big"];
 
-            double[] kArray = Sequence(optSource, stat, n, r, cv, eta,eps);
+            double[] kArray = null;
+
+            try
+            {
+                kArray = Sequence(optSource, stat, n, r, cv, eta, eps);
+            }
+            catch (Exception ex)
+            {
+                string res = string.Format("Failed to generate sequence for n={0} r={1} cv={2} eta={3} eps={4}", n, r, cv, eta, eps);
+                System.Diagnostics.Trace.WriteLine(res);
+                throw new Exception(res, ex);
+            }
+                
 
             for (int i = 0; i < kArray.Length; i++)
             {

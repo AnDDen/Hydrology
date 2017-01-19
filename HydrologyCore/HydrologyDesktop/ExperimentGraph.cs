@@ -133,7 +133,7 @@ namespace HydrologyDesktop
 
             foreach (Arrow arrow in Arrows)
             {
-                if (arrow.From != null && arrow.To != null)
+                if (arrow.From != null && arrow.To != null && arrow.From != arrow.To)
                     ascendents[arrow.To].Add(arrow.From);
             }
 

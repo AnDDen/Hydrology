@@ -13,9 +13,13 @@ namespace HydrologyCore
         public Context()
         {
             _history = new List<IExperimentNode>();
+            _historyStack = new Stack<List<IExperimentNode>>();
             InitialData = new DataSet();
         }
         List<IExperimentNode> _history;
+
+        Stack<List<IExperimentNode>> _historyStack;
+
         public List<IExperimentNode> History
         {
             get
@@ -109,5 +113,39 @@ namespace HydrologyCore
                 return History.Count;
             }
         }
+
+        /// <summary>
+        /// Pushes the context history one level down
+        /// </summary>
+        public void PushHistory()
+        {
+            _historyStack.Push(_history);
+            List<IExperimentNode> newHistory = new List<IExperimentNode>(_history);
+            _history = newHistory;
+        }
+
+        /// <summary>
+        /// Pops the context history one level up
+        /// </summary>
+        public void PopHistory()
+        {
+            _history = _historyStack.Pop();
+        }
+
+
+        public DataTable FindInHistory(string tableName)
+        {
+            if (_history == null || _history.Count == 0)
+                return null;
+
+            foreach (var en in _history)
+            {
+                if (en.Results.Tables.Contains(tableName))
+                    return en.Results.Tables[tableName];
+            }
+
+            return null;
+        }
+
     }
 }

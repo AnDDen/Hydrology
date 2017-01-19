@@ -48,6 +48,7 @@ namespace HydrologyCore.ExperimentNodes
             results = new DataSet();
             DataTable table = new DataTable(Name);
             table.Columns.Add("value");
+            table.Columns.Add("result", typeof(DataSet));
             foreach (IExperimentNode node in body)
             {
                 if (node.IsStoreInContext)
@@ -62,11 +63,13 @@ namespace HydrologyCore.ExperimentNodes
 
                 ReplaceParamValue(LoopVar, i);
 
+                ctx.PushHistory();
+
                 foreach (IExperimentNode node in body)
                 {
                     if (node.IsSaveResults)
                     {
-                        string nodeOutDir = outDir + "/" + node.Name;
+                        string nodeOutDir = outDir + "/" + node.SaveResultsFolder;
                         if (Directory.Exists(nodeOutDir))
                         {
                             int j = 2;
@@ -88,7 +91,7 @@ namespace HydrologyCore.ExperimentNodes
                         (ctx as Context).History.Add(node); //???
                     }
                 }
-
+                ctx.PopHistory();
                 RestoreParamsTable(LoopVar);
                 table.Rows.Add(row);
             }

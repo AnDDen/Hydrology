@@ -7,6 +7,7 @@ using CoreInterfaces;
 using System.Data;
 using System.IO;
 using CsvParser;
+using Helpers;
 
 namespace HydrologyCore
 {
@@ -100,6 +101,10 @@ namespace HydrologyCore
             paramsTbl.TableName = "params";
             data.Tables.Add(paramsTbl);
             initialParams = data.Tables["params"];
+            var ph = new ParamsHelper(paramsTbl);
+
+            var needSave = ph.GetValue<string>("Save");
+            IsSaveResults = (needSave == null) || (needSave == "1");
             return this;
         }
 

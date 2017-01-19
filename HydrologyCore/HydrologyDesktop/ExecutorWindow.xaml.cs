@@ -154,7 +154,10 @@ namespace HydrologyDesktop
 
         public void PrepareExperiment(BackgroundWorker worker, DoWorkEventArgs e)
         {
-            experiment = new Experiment();
+            var rootFolder = System.Configuration.ConfigurationManager.AppSettings["ResultsRootFolder"];
+            if (rootFolder == null)
+                rootFolder = "";
+            experiment = new Experiment(string.Format("{0}\\Experiment.{1}", rootFolder == null ? "" : rootFolder, DateTime.Now.ToString("yyyyMMdd-HHmmss")));
 
             var chain = experimentGraph.CreateExecutionChain();
 

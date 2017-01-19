@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<experiment>
+  <nodes>
+    <node type="init" id="0" x="45.559999999999974" y="45.206666666666656">
+      <initpath>C:\VSU\Hydrology\experiment\initial</initpath>
+    </node>
+    <node type="loop" id="1" x="181.55999999999997" y="140.54">
+      <loopparams varname="r" start="0.5" end="0.5" step="0.1" />
+      <loopbody>
+        <nodes>
+          <node type="loopstart" id="0" x="50" y="50" />
+          <node type="loop" id="1" x="264.89333333333332" y="137.20666666666665">
+            <loopparams varname="N" start="20000" end="40000" step="10000" />
+            <loopbody>
+              <nodes>
+                <node type="loopstart" id="0" x="50" y="50" />
+                <node type="loop" id="1" x="143.55999999999997" y="137.87333333333331">
+                  <loopparams varname="ETA" start="1" end="2.5" step="0.5" />
+                  <loopbody>
+                    <nodes>
+                      <node type="loopstart" id="0" x="50" y="50" />
+                      <node type="loop" id="1" x="130.22666666666666" y="145.87333333333331">
+                        <loopparams varname="CV" start="0.2" end="0.6" step="0.1" />
+                        <loopbody>
+                          <nodes>
+                            <node type="loopstart" id="0" x="36.666666666666686" y="45.333333333333343" />
+                            <node type="algorithm" id="1" x="87.559999999999974" y="145.87333333333331">
+                              <initpath></initpath>
+                              <algorithmtype>FlowSequenceGeneration</algorithmtype>
+                              <params>
+                                <param name="eps" value="1E-07" />
+                                <param name="ETA" value="{ETA}" />
+                                <param name="CV" value="{CV}" />
+                                <param name="N" value="{N}" />
+                                <param name="r" value="{r}" />
+                                <param name="Save" value="1" />
+                              </params>
+                            </node>
+                            <node type="loop" id="2" x="273.57333333333321" y="184.53999999999994">
+                              <loopparams varname="G" start="1" end="1000" step="1" />
+                              <loopbody>
+                                <nodes>
+                                  <node type="loopstart" id="0" x="50" y="50" />
+                                  <node type="algorithm" id="1" x="147.57333333333332" y="163.20666666666665">
+                                    <initpath></initpath>
+                                    <algorithmtype>Take</algorithmtype>
+                                    <params>
+                                      <param name="Table Name" value="FlowSequence" />
+                                      <param name="GroupSize" value="20" />
+                                      <param name="Group" value="{G}" />
+                                      <param name="Save" value="0" />
+                                    </params>
+                                  </node>
+                                  <node type="loop" id="2" x="356.90666666666669" y="249.87333333333328">
+                                    <loopparams varname="part" start="0.3" end="0.7" step="0.1" />
+                                    <loopbody>
+                                      <nodes>
+                                        <node type="loopstart" id="0" x="50" y="50" />
+                                        <node type="algorithm" id="1" x="114.24000000000001" y="155.20666666666668">
+                                          <initpath></initpath>
+                                          <algorithmtype>Split</algorithmtype>
+                                          <params>
+                                            <param name="Table Name" value="Take" />
+                                            <param name="SplitPart" value="{part}" />
+                                            <param name="Save" value="0" />
+                                          </params>
+                                        </node>
+                                        <node type="algorithm" id="2" x="412.23999999999995" y="159.87333333333331">
+                                          <initpath></initpath>
+                                          <algorithmtype>StudentUniformity</algorithmtype>
+                                          <params>
+                                            <param name="Source1" value="Split1" />
+                                            <param name="Source2" value="Split2" />
+                                            <param name="Save" value="0" />
+                                          </params>
+                                        </node>
+                                      </nodes>
+                                      <arrows>
+                                        <arrow>
+                                          <from id="0" x="0.5" y="0.5" />
+                                          <to id="1" x="0.5" y="0" />
+                                        </arrow>
+                                        <arrow>
+                                          <from id="1" x="1" y="0.5" />
+                                          <to id="2" x="0.5" y="0" />
+                                        </arrow>
+                                      </arrows>
+                                    </loopbody>
+                                  </node>
+                                  <node type="algorithm" id="3" x="642.90666666666652" y="286.53999999999996">
+                                    <initpath></initpath>
+                                    <algorithmtype>JoinByColumns</algorithmtype>
+                                    <params>
+                                      <param name="Algorythm" value="StudentUniformity" />
+                                      <param name="Table Name" value="t" />
+                                      <param name="Start" value="0" />
+                                      <param name="Count" value="1000" />
+                                      <param name="Save" value="0" />
+                                    </params>
+                                  </node>
+                                </nodes>
+                                <arrows>
+                                  <arrow>
+                                    <from id="0" x="0.5" y="0.5" />
+                                    <to id="1" x="0.5" y="0" />
+                                  </arrow>
+                                  <arrow>
+                                    <from id="1" x="1" y="0.5" />
+                                    <to id="2" x="0.5" y="0" />
+                                  </arrow>
+                                  <arrow>
+                                    <from id="2" x="0.5" y="1" />
+                                    <to id="3" x="0" y="0.5" />
+                                  </arrow>
+                                </arrows>
+                              </loopbody>
+                            </node>
+                            <node type="algorithm" id="3" x="490.24" y="146.53999999999996">
+                              <initpath></initpath>
+                              <algorithmtype>JoinByRows</algorithmtype>
+                              <params>
+                                <param name="Algorythm" value="JoinByColumns" />
+                                <param name="Table Name" value="JoinByColumns" />
+                                <param name="Start" value="0" />
+                                <param name="Count" value="1000" />
+                                <param name="Save" value="0" />
+                              </params>
+                            </node>
+                            <node type="algorithm" id="4" x="720.24" y="147.87333333333334">
+                              <initpath></initpath>
+                              <algorithmtype>SortEachColumn</algorithmtype>
+                              <params>
+                                <param name="Table Name" value="JoinByRows" />
+                                <param name="Destination" value="1" />
+                                <param name="Save" value="1" />
+                              </params>
+                            </node>
+                          </nodes>
+                          <arrows>
+                            <arrow>
+                              <from id="0" x="0.5" y="0.5" />
+                              <to id="1" x="0.5" y="0" />
+                            </arrow>
+                            <arrow>
+                              <from id="1" x="1" y="0.5" />
+                              <to id="2" x="0" y="0.5" />
+                            </arrow>
+                            <arrow>
+                              <from id="2" x="1" y="0.5" />
+                              <to id="3" x="0" y="0.5" />
+                            </arrow>
+                            <arrow>
+                              <from id="3" x="1" y="0.5" />
+                              <to id="4" x="0" y="0.5" />
+                            </arrow>
+                            <arrow>
+                              <from id="4" x="0.5" y="0" />
+                              <to id="4" x="0.5" y="0" />
+                            </arrow>
+                          </arrows>
+                        </loopbody>
+                      </node>
+                    </nodes>
+                    <arrows>
+                      <arrow>
+                        <from id="0" x="0.5" y="0.5" />
+                        <to id="1" x="0.5" y="0" />
+                      </arrow>
+                    </arrows>
+                  </loopbody>
+                </node>
+              </nodes>
+              <arrows>
+                <arrow>
+                  <from id="0" x="0.5" y="0.5" />
+                  <to id="1" x="0.5" y="0" />
+                </arrow>
+              </arrows>
+            </loopbody>
+          </node>
+        </nodes>
+        <arrows>
+          <arrow>
+            <from id="0" x="0.5" y="0.5" />
+            <to id="1" x="0.5" y="0" />
+          </arrow>
+        </arrows>
+      </loopbody>
+    </node>
+  </nodes>
+  <arrows>
+    <arrow>
+      <from id="0" x="0.5" y="1" />
+      <to id="1" x="0.5" y="0" />
+    </arrow>
+  </arrows>
+</experiment>

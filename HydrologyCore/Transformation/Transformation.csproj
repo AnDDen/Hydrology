@@ -40,7 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JoinByColumns.cs" />
     <Compile Include="Split.cs" />
+    <Compile Include="JoinByRows.cs" />
+    <Compile Include="SortEachColumn.cs" />
+    <Compile Include="Take.cs" />
     <Compile Include="Transformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
