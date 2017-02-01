@@ -9,12 +9,14 @@ using HydrologyCore;
 using CoreInterfaces;
 using System.Data;
 using System.Reflection;
-using HydrologyDesktop.Controls;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using Microsoft.Win32;
 using System.Xml.Linq;
 using System.Globalization;
+using HydrologyCore.Experiment.Nodes;
+using HydrologyDesktop.Views.SettingWindows;
+using HydrologyDesktop.Views.Controls;
 
 namespace HydrologyDesktop
 {
@@ -28,9 +30,13 @@ namespace HydrologyDesktop
     /// </summary>
     public partial class MainWindow : Window
     {
-        public Core HydrologyCore;
+        public const string NODE_DRAG_DATA_OBJECT = "NodeDescriptor";
+        
+        public static Tuple<Type, Type> INIT_NODE_DESCRIPTOR = new Tuple<Type, Type>(typeof(InitNode), null);
+        public static Tuple<Type, Type> LOOP_NODE_DESCRIPTOR = new Tuple<Type, Type>(typeof(LoopNode), null);
 
         private ExperimentGraph experimentGraph;
+
 
         //private IList<NodeControl> nodes;
         //private IList<Arrow> arrows;
@@ -82,28 +88,19 @@ namespace HydrologyDesktop
             InitializeComponent();
             Init();
             NewExperiment();
-        }
+        }        
 
         private void Init()
         {
-            HydrologyCore = new Core();
-            IList<Type> algTypes = HydrologyCore.AlgorithmTypes.Values.ToList();
             FolderDialog = new System.Windows.Forms.FolderBrowserDialog();
             FileDialog = new OpenFileDialog() { Multiselect = false };
 
             // add algorithm buttons to toolkit
-            foreach (Type type in algTypes)
+            IDictionary<string, Type> algTypes = PluginManager.Instance.AlgorithmTypes;
+            foreach (var type in algTypes)
             {
-                Button b = new Button();
-                b.Tag = type.Name;
-                var attr = type.GetCustomAttribute(typeof(NameAttribute)) as NameAttribute;
-                b.Content = attr.Name;
-                b.Style = (Style)this.FindResource("AlgButtonStyle");
-                b.Click += algButton_Click;
-                b.PreviewMouseDown += Button_PreviewMouseDown;
-                b.PreviewMouseMove += algButton_PreviewMouseMove;
-                b.PreviewMouseUp += Button_PreviewMouseUp;
-                AlgorithmButtonsPanel.Children.Add(b);
+                var button = CreateAlgorithmButton(type.Key, type.Value);
+                AlgorithmButtonsPanel.Children.Add(button);
             }
         }
 
@@ -111,9 +108,236 @@ namespace HydrologyDesktop
         {
             Canvas.Children.Clear();
             experimentGraph = new ExperimentGraph();
-            //nodes = new List<NodeControl>();
-            //arrows = new List<Arrow>();
         }
+
+
+        public Button CreateAlgorithmButton(string typeName, Type type)
+        {
+            Button button = new Button();
+            button.Tag = new Tuple<Type, Type>(typeof(AlgorithmNode), type);
+            var attr = type.GetCustomAttribute(typeof(NameAttribute)) as NameAttribute;
+            button.Content = attr.Name;
+
+            button.Style = (Style)this.FindResource("AlgButtonStyle");
+
+            button.PreviewMouseDown += Button_PreviewMouseDown;
+            button.PreviewMouseUp += Button_PreviewMouseUp;
+            button.PreviewMouseMove += Button_PreviewMouseMove;
+
+            return button;
+        }
+
+        private void Button_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            startPoint = e.GetPosition(null);
+        }
+
+        private void Button_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            IsDragDrop = false;
+        }
+
+        private void Button_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            Point mousePos = e.GetPosition(null);
+            Vector diff = startPoint - mousePos;
+
+            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
+            {
+                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
+                    || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    IsDragDrop = true;
+                    Button btn = (Button)sender;
+                    DataObject dragData = new DataObject(NODE_DRAG_DATA_OBJECT, btn.Tag);
+                    DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
+                }
+            }
+        }
+
+        private void Canvas_Drop(object sender, DragEventArgs e)
+        {
+            if (IsDragDrop)
+            {
+                var nodeDescriptor = (Tuple<Type, Type>)e.Data.GetData(NODE_DRAG_DATA_OBJECT);
+
+                Point pos = e.GetPosition(Canvas);
+                IsDragDrop = false;
+
+                CreateNode(nodeDescriptor.Item1, nodeDescriptor.Item2, pos);
+
+                #region big comment
+                /* if (e.Data.GetDataPresent("NodeFormat"))
+                {
+                    BaseNodeControl node = (BaseNodeControl)e.Data.GetData("NodeFormat");
+                    if (node is InitNodeControl)
+                    {
+                        var initSettings = new InitSettingsWindow(FolderDialog)
+                        {
+                            Owner = this,
+                            InitPath = (node as InitNodeControl).InitPath,
+                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
+                        };
+                        bool? dialogResult = initSettings.ShowDialog();
+                        if (dialogResult.HasValue && dialogResult.Value)
+                        {
+                            (node as InitNodeControl).InitPath = initSettings.InitPath;
+                            Canvas.Children.Add(node);
+                            Point pos = e.GetPosition(Canvas);
+                            Canvas.SetLeft(node, pos.X);
+                            Canvas.SetTop(node, pos.Y);
+                            experimentGraph.Nodes.Add(node);
+                        }
+                        IsDragDrop = false;
+                    }
+                    else if (node is RunProcessNodeControl)
+                    {
+                        var runProcessSettings = new RunProcessSettingsWindow(FileDialog)
+                        {
+                            ProcessName = (node as RunProcessNodeControl).ProcessName,
+                            Owner = this,
+                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
+                        };
+                        bool? dialogResult = runProcessSettings.ShowDialog();
+                        if (dialogResult.HasValue && dialogResult.Value)
+                        {
+                            (node as RunProcessNodeControl).ProcessName = runProcessSettings.ProcessName;
+                            Canvas.Children.Add(node);
+                            Point pos = e.GetPosition(Canvas);
+                            Canvas.SetLeft(node, pos.X);
+                            Canvas.SetTop(node, pos.Y);
+                            experimentGraph.Nodes.Add(node);
+                        }
+                        IsDragDrop = false;
+                    }
+                    else if (node is LoopControl)
+                    {
+                        var loopSettings = new LoopSettingsWindow()
+                        {
+                            Owner = this,
+                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
+                        };
+                        bool? dialogResult = loopSettings.ShowDialog();
+                        if (dialogResult.HasValue && dialogResult.Value)
+                        {
+                            (node as LoopControl).VarName = loopSettings.VarName;
+                            (node as LoopControl).StartValue = loopSettings.StartValue;
+                            (node as LoopControl).EndValue = loopSettings.EndValue;
+                            (node as LoopControl).Step = loopSettings.Step;
+
+                            Canvas.Children.Add(node);
+                            Point pos = e.GetPosition(Canvas);
+                            Canvas.SetLeft(node, pos.X);
+                            Canvas.SetTop(node, pos.Y);
+                            experimentGraph.Nodes.Add(node);
+                        }
+                        IsDragDrop = false;
+                    }
+                }
+
+                if (e.Data.GetDataPresent("NodeNameFormat"))
+                {
+                    String nodeName = e.Data.GetData("NodeNameFormat").ToString();
+                    Point pos = e.GetPosition(Canvas);
+                    AddAlgNode(nodeName, pos.X, pos.Y);
+                    IsDragDrop = false;
+                } */
+                #endregion
+            }
+        }
+
+        public void CreateNode(Type nodeType, Type algType, Point pos)
+        {
+            var window = SettingsWindowHelper.CreateSettingWindow(nodeType, algType, this);
+            bool? dialogResult = window.ShowDialog();
+            if (dialogResult.HasValue && dialogResult.Value)
+            {
+                // todo
+                NodeControl nodeControl = new NodeControl(window.CreateNode());
+                nodeControl.Style = (Style)this.FindResource("NodeStyle");
+
+                //nodeControl.MouseLeftButtonDown += node_MouseLeftButtonDown;
+                //nodeControl.MouseLeftButtonUp += node_MouseLeftButtonUp;
+                //nodeControl.MouseMove += node_MouseMove;
+                //nodeControl.LostMouseCapture += node_LostMouseCapture;
+
+                //nodeControl.SettingsButtonClick += node_SettingsClicked;
+                //nodeControl.EditButtonClick += ....
+
+                Canvas.Children.Add(nodeControl);
+                Canvas.SetLeft(nodeControl, pos.X);
+                Canvas.SetTop(nodeControl, pos.Y);
+
+                // todo: add to experiment graph
+            }
+        }
+
+        public void NodeControl_LostMouseCapture(object sender, MouseEventArgs e)
+        {
+            isMove = false;
+        }
+
+        object moveControl = null;
+
+        public void NodeControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (moveControl == null && sender is NodeControl)
+            {
+                NodeControl node = sender as NodeControl;
+                isMove = true;
+                Point pos = e.GetPosition(Canvas);
+                delta = new Vector(pos.X - Canvas.GetLeft(node), pos.Y - Canvas.GetTop(node));
+                node.CaptureMouse();
+                moveControl = node;
+            }
+        }
+
+        public void NodeControl_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            isMove = false;
+            moveControl = null;
+            (sender as UserControl).ReleaseMouseCapture();
+        }
+
+        public void NodeControl_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isMove && moveControl == sender)
+            {
+                NodeControl node = sender as NodeControl;
+                Point pos = e.GetPosition(Canvas);
+                Canvas.SetLeft(node, pos.X - delta.X);
+                Canvas.SetTop(node, pos.Y - delta.Y);
+                
+                // todo : arrows 
+
+
+                //if (viewedloop == null)
+                //{
+                //    foreach (arrow arrow in experimentgraph.arrows)
+                //    {
+                //        if (arrow.from == node || arrow.to == node)
+                //        {
+                //            arrow.draw();
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    foreach (arrow arrow in viewedloop.loopbody.arrows)
+                //    {
+                //        if (arrow.from == node || arrow.to == node)
+                //        {
+                //            arrow.draw();
+                //        }
+                //    }
+                //}
+            }
+        }
+
+
+
+
+
 
         void AddAlgNode(string algName, double x = 0, double y = 0, LoopControl loop = null)
         {
@@ -174,8 +398,6 @@ namespace HydrologyDesktop
         {
             isMove = false;
         }
-
-        object moveControl = null;
 
         public void node_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {  
@@ -289,33 +511,7 @@ namespace HydrologyDesktop
                 MessageBox.Show(string.Format("Произошла ошибка во время сохранения настроек: {0}", ex.Message),
                     "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        void algButton_Click(object sender, RoutedEventArgs e)
-        {
-            Button btn = (Button)sender;
-            string algName = btn.Content.ToString();
-
-            AddAlgNode(algName);
-        }
-
-        private void algButton_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            Point mousePos = e.GetPosition(null);
-            Vector diff = startPoint - mousePos;
-
-            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
-            {
-                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
-                    || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
-                {
-                    IsDragDrop = true;
-                    Button btn = (Button)sender;
-                    DataObject dragData = new DataObject("NodeNameFormat", btn.Tag);
-                    DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
-                }
-            }
-        }
+        } 
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -327,97 +523,7 @@ namespace HydrologyDesktop
             experimentWindow.ShowDialog(); 
         }
 
-        private void Canvas_Drop(object sender, DragEventArgs e)
-        {
-            if (IsDragDrop)
-            { 
-                if (e.Data.GetDataPresent("NodeFormat"))
-                {
-                    BaseNodeControl node = (BaseNodeControl)e.Data.GetData("NodeFormat");
-                    if (node is InitNodeControl)
-                    {
-                        var initSettings = new InitSettingsWindow(FolderDialog)
-                        {
-                            Owner = this,
-                            InitPath = (node as InitNodeControl).InitPath,
-                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
-                        };
-                        bool? dialogResult = initSettings.ShowDialog();
-                        if (dialogResult.HasValue && dialogResult.Value)
-                        {
-                            (node as InitNodeControl).InitPath = initSettings.InitPath;
-                            Canvas.Children.Add(node);
-                            Point pos = e.GetPosition(Canvas);
-                            Canvas.SetLeft(node, pos.X);
-                            Canvas.SetTop(node, pos.Y);
-                            experimentGraph.Nodes.Add(node);
-                        }
-                        IsDragDrop = false;
-                    }
-                    else if (node is RunProcessNodeControl)
-                    {
-                        var runProcessSettings = new RunProcessSettingsWindow(FileDialog)
-                        {
-                            ProcessName = (node as RunProcessNodeControl).ProcessName,
-                            Owner = this,
-                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
-                        };
-                        bool? dialogResult = runProcessSettings.ShowDialog();
-                        if (dialogResult.HasValue && dialogResult.Value)
-                        {
-                            (node as RunProcessNodeControl).ProcessName = runProcessSettings.ProcessName;
-                            Canvas.Children.Add(node);
-                            Point pos = e.GetPosition(Canvas);
-                            Canvas.SetLeft(node, pos.X);
-                            Canvas.SetTop(node, pos.Y);
-                            experimentGraph.Nodes.Add(node);
-                        }
-                        IsDragDrop = false;
-                    }
-                    else if (node is LoopControl)
-                    {
-                        var loopSettings = new LoopSettingsWindow()
-                        {
-                            Owner = this,
-                            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
-                        };
-                        bool? dialogResult = loopSettings.ShowDialog();
-                        if (dialogResult.HasValue && dialogResult.Value)
-                        {
-                            (node as LoopControl).VarName = loopSettings.VarName;
-                            (node as LoopControl).StartValue = loopSettings.StartValue;
-                            (node as LoopControl).EndValue = loopSettings.EndValue;
-                            (node as LoopControl).Step = loopSettings.Step;
-
-                            Canvas.Children.Add(node);
-                            Point pos = e.GetPosition(Canvas);
-                            Canvas.SetLeft(node, pos.X);
-                            Canvas.SetTop(node, pos.Y);
-                            experimentGraph.Nodes.Add(node);
-                        }
-                        IsDragDrop = false;
-                    }
-                }
-
-                if (e.Data.GetDataPresent("NodeNameFormat"))
-                {
-                    String nodeName = e.Data.GetData("NodeNameFormat").ToString();
-                    Point pos = e.GetPosition(Canvas);
-                    AddAlgNode(nodeName, pos.X, pos.Y);
-                    IsDragDrop = false;
-                }
-            }
-        }
-
-        private void Button_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            startPoint = e.GetPosition(null);
-        }
-
-        private void Button_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            IsDragDrop = false;
-        }
+        
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -452,36 +558,7 @@ namespace HydrologyDesktop
                     }
                 }
             }
-        }
-
-        private void initButton_MouseMove(object sender, MouseEventArgs e)
-        {
-            Point mousePos = e.GetPosition(null);
-            Vector diff = startPoint - mousePos;
-
-            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
-            {
-                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
-                    || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
-                {
-                    IsDragDrop = true;
-
-                    Button btn = (Button)sender;
-
-                    InitNodeControl node = new InitNodeControl() { CornerRadius = new CornerRadius(10) };
-                    node.NodeName = "Инициализация";
-                    node.Style = (Style)this.FindResource("NodeStyle");
-                    node.MouseLeftButtonDown += node_MouseLeftButtonDown;
-                    node.MouseLeftButtonUp += node_MouseLeftButtonUp;
-                    node.MouseMove += node_MouseMove;
-                    node.LostMouseCapture += node_LostMouseCapture;
-                    node.SettingsButtonClick += initNode_SettingsButtonClick;
-
-                    DataObject dragData = new DataObject("NodeFormat", node);
-                    DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
-                }
-            }
-        }
+        }        
 
         private void initNode_SettingsButtonClick(object sender, EventArgs e)
         {
@@ -497,34 +574,7 @@ namespace HydrologyDesktop
             {
                 node.InitPath = initSettings.InitPath;
             }
-        }
-
-        private void loopButton_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            Point mousePos = e.GetPosition(null);
-            Vector diff = startPoint - mousePos;
-
-            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
-            {
-                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
-                    || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
-                {
-                    IsDragDrop = true;
-
-                    Button btn = (Button)sender;
-
-                    LoopControl node = new LoopControl(this);
-                    node.MouseLeftButtonDown += node_MouseLeftButtonDown;
-                    node.MouseLeftButtonUp += node_MouseLeftButtonUp;
-                    node.MouseMove += node_MouseMove;
-                    node.LostMouseCapture += node_LostMouseCapture;
-                    node.SettingsButtonClick += loopNode_SettingsButtonClick;
-
-                    DataObject dragData = new DataObject("NodeFormat", node);
-                    DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
-                }
-            }
-        }
+        }       
 
         private void loopNode_SettingsButtonClick(object sender, EventArgs e)
         {
@@ -696,34 +746,7 @@ namespace HydrologyDesktop
             }
         }
 
-        private void exportButton_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            Point mousePos = e.GetPosition(null);
-            Vector diff = startPoint - mousePos;
-
-            if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
-            {
-                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
-                    || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
-                {
-                    IsDragDrop = true;
-
-                    Button btn = (Button)sender;
-
-                    RunProcessNodeControl node = new RunProcessNodeControl() { CornerRadius = new CornerRadius(10) };
-                    node.NodeName = "Запуск приложения";
-                    node.Style = (Style)this.FindResource("NodeStyle");
-                    node.MouseLeftButtonDown += node_MouseLeftButtonDown;
-                    node.MouseLeftButtonUp += node_MouseLeftButtonUp;
-                    node.MouseMove += node_MouseMove;
-                    node.LostMouseCapture += node_LostMouseCapture;
-                    node.SettingsButtonClick += exportNode_SettingsButtonClick;
-
-                    DataObject dragData = new DataObject("NodeFormat", node);
-                    DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
-                }
-            }
-        }
+        
 
         void exportNode_SettingsButtonClick(object sender, EventArgs e)
         {
@@ -1027,5 +1050,91 @@ namespace HydrologyDesktop
                 ViewedLoop = null;                
             }
         }
+
+
+
+
+        //private void exportButton_PreviewMouseMove(object sender, MouseEventArgs e)
+        //{
+        //    Point mousePos = e.GetPosition(null);
+        //    Vector diff = startPoint - mousePos;
+
+        //    if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
+        //    {
+        //        if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
+        //            || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+        //        {
+        //            IsDragDrop = true;
+
+        //            Button btn = (Button)sender;
+
+        //            RunProcessNodeControl node = new RunProcessNodeControl() { CornerRadius = new CornerRadius(10) };
+        //            node.NodeName = "Запуск приложения";
+        //            node.Style = (Style)this.FindResource("NodeStyle");
+        //            node.MouseLeftButtonDown += node_MouseLeftButtonDown;
+        //            node.MouseLeftButtonUp += node_MouseLeftButtonUp;
+        //            node.MouseMove += node_MouseMove;
+        //            node.LostMouseCapture += node_LostMouseCapture;
+        //            node.SettingsButtonClick += exportNode_SettingsButtonClick;
+
+        //            DataObject dragData = new DataObject("NodeFormat", node);
+        //            DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
+        //        }
+        //    }
+        //}
+        //private void loopButton_PreviewMouseMove(object sender, MouseEventArgs e)
+        //{
+        //    Point mousePos = e.GetPosition(null);
+        //    Vector diff = startPoint - mousePos;
+
+        //    if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
+        //    {
+        //        if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
+        //            || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+        //        {
+        //            IsDragDrop = true;
+
+        //            Button btn = (Button)sender;
+
+        //            LoopControl node = new LoopControl(this);
+        //            node.MouseLeftButtonDown += node_MouseLeftButtonDown;
+        //            node.MouseLeftButtonUp += node_MouseLeftButtonUp;
+        //            node.MouseMove += node_MouseMove;
+        //            node.LostMouseCapture += node_LostMouseCapture;
+        //            node.SettingsButtonClick += loopNode_SettingsButtonClick;
+
+        //            DataObject dragData = new DataObject("NodeFormat", node);
+        //            DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
+        //        }
+        //    }
+        //}
+        //private void initButton_MouseMove(object sender, MouseEventArgs e)
+        //{
+        //    Point mousePos = e.GetPosition(null);
+        //    Vector diff = startPoint - mousePos;
+
+        //    if (e.LeftButton == MouseButtonState.Pressed && !IsDragDrop)
+        //    {
+        //        if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance
+        //            || Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+        //        {
+        //            IsDragDrop = true;
+
+        //            Button btn = (Button)sender;
+
+        //            InitNodeControl node = new InitNodeControl() { CornerRadius = new CornerRadius(10) };
+        //            node.NodeName = "Инициализация";
+        //            node.Style = (Style)this.FindResource("NodeStyle");
+        //            node.MouseLeftButtonDown += node_MouseLeftButtonDown;
+        //            node.MouseLeftButtonUp += node_MouseLeftButtonUp;
+        //            node.MouseMove += node_MouseMove;
+        //            node.LostMouseCapture += node_LostMouseCapture;
+        //            node.SettingsButtonClick += initNode_SettingsButtonClick;
+
+        //            DataObject dragData = new DataObject("NodeFormat", node);
+        //            DragDrop.DoDragDrop(btn, dragData, DragDropEffects.Move);
+        //        }
+        //    }
+        //}
     }
 }

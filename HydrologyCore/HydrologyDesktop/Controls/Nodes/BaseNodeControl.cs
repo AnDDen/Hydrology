@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HydrologyCore.Experiment.Nodes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace HydrologyDesktop.Controls
 {
     public class BaseNodeControl : UserControl
     {
+        public AbstractNode Node { get; set; }
+
         public virtual Thickness Thickness { get; set; }
 
         public virtual Point FindAttachPoint(Point pos) { return pos; }

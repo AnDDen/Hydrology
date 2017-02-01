@@ -48,9 +48,9 @@
                                     <Button x:Name="PointerBtn" Click="PointerBtn_Click" Style="{StaticResource AlgButtonStyle}" Tag="Selected">
                                         <TextBlock>Указатель</TextBlock>
                                     </Button>
-                                    <Button x:Name="ArrowBtn" Click="ArrowBtn_Click"  Style="{StaticResource AlgButtonStyle}">
+                                    <!-- <Button x:Name="ArrowBtn" Click="ArrowBtn_Click"  Style="{StaticResource AlgButtonStyle}">
                                         <TextBlock>Соединительная линия</TextBlock>
-                                    </Button>
+                                    </Button> -->
                                     <Expander IsExpanded="True" Template="{StaticResource ExpanderTemplate}">
                                         <Expander.Header>
                                             <TextBlock>Общие элементы</TextBlock>
@@ -58,11 +58,12 @@
                                         <Expander.Content>
                                             <StackPanel Margin="0">
                                                 <Button Style="{StaticResource AlgButtonStyle}" Content="Инициализация" PreviewMouseDown="Button_PreviewMouseDown"
-                                                            PreviewMouseMove="initButton_MouseMove" PreviewMouseUp="Button_PreviewMouseUp" />
+                                                            PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding INIT_NODE_DESCRIPTOR}" />
                                                 <Button Style="{StaticResource AlgButtonStyle}" Content="Цикл" PreviewMouseDown="Button_PreviewMouseDown" 
-                                                            PreviewMouseMove="loopButton_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" />
-                                                <Button Style="{StaticResource AlgButtonStyle}" Content="Запуск приложения" PreviewMouseDown="Button_PreviewMouseDown" 
-                                                            PreviewMouseMove="exportButton_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" />
+                                                            PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding LOOP_NODE_DESCRIPTOR}"/>
+                                                <!-- <Button Style="{StaticResource AlgButtonStyle}" Content="Запуск приложения" PreviewMouseDown="Button_PreviewMouseDown" 
+                                                            PreviewMouseMove="exportButton_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" 
+                                                        BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" /> -->
                                             </StackPanel>
                                         </Expander.Content>
                                     </Expander>

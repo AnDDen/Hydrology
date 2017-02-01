@@ -14,7 +14,7 @@ namespace ConsoleDemo
         {
             Core core = new Core();
 
-            Experiment experiment = new Experiment();
+            OldExperiment experiment = new OldExperiment();
             experiment.StartFrom("experiment/initial")
                 .Then(core.Algorithm("RepresentationCheck").InitFromFolder("experiment/alg1/input/"))
                 .Then(core.Algorithm("Statistics").InitFromFolder("experiment/alg2/input/"));

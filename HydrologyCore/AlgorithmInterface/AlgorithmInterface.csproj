@@ -39,11 +39,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArgumentAttribute.cs" />
     <Compile Include="IContext.cs" />
     <Compile Include="IAlgorithm.cs" />
+    <Compile Include="InputAttribute.cs" />
     <Compile Include="IReader.cs" />
     <Compile Include="IWriter.cs" />
     <Compile Include="NameAttribute.cs" />
+    <Compile Include="OutputAttribute.cs" />
     <Compile Include="ParameterAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

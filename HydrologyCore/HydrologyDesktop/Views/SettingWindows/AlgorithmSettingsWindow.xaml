@@ -1,0 +1,94 @@
+﻿<local:SettingsWindow x:Class="HydrologyDesktop.Views.SettingWindows.AlgorithmSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HydrologyDesktop.Views.SettingWindows"
+        mc:Ignorable="d"
+        Title="Свойства узла" Height="400" Width="500">
+    <Grid>
+        <StackPanel>
+            <DockPanel Margin="5 5 5 0">
+                <Label Padding="7 3 10 3">Имя</Label>
+                <TextBox Text="{Binding NodeName}" />
+            </DockPanel>
+            <DockPanel Margin="5 5 5 0">
+                <Label Padding="7 3">Тип</Label>
+                <Label Padding="7 3" FontStyle="Italic">
+                    <TextBlock Text="{Binding AlgorithmType}" />
+                </Label>
+            </DockPanel>
+            <Label FontWeight="Bold" Margin="0 5 0 0" Padding="10 5">
+                <Label.Background>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+                </Label.Background> Входные данные
+            </Label>
+            <ListBox Grid.Column="0" ItemsSource="{Binding InputParams}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <Label Padding="7 3">
+                                <TextBlock Text="{Binding Path=VarInfo.Name}" />
+                            </Label>
+                            <WrapPanel>
+                                <ComboBox Margin="5 0 0 0" Width="100" 
+                                          ItemsSource="{Binding Path=VarTypes}" 
+                                          SelectedItem="{Binding Path=VarType}" />
+                                <TextBox Margin="5 0 0 0" Width="300" 
+                                         Text="{Binding Path=VarValue.Value}"></TextBox>
+                            </WrapPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <!-- <ScrollViewer Height="140" Margin="0">
+                <StackPanel Margin="5 0 5 5">
+                    <StackPanel>
+                        <Label Padding="7 3">Параметр1</Label>
+                        <WrapPanel>
+                            <ComboBox Margin="5 0 0 0" Width="100"></ComboBox>
+                            <TextBox Margin="5 0 0 0" Width="300"></TextBox>
+                        </WrapPanel>
+                    </StackPanel>
+                    <StackPanel>
+                        <Label Padding="7 3">Параметр2</Label>
+                        <WrapPanel>
+                            <ComboBox Margin="5 0 0 0" Width="100">Значение</ComboBox>
+                            <TextBox Margin="5 0 0 0" Width="300"></TextBox>
+                        </WrapPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer> -->
+            <Label FontWeight="Bold" Padding="10 5">
+                <Label.Background>
+                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
+                </Label.Background> Выходные данные
+            </Label>
+            <ListBox Grid.Column="0" ItemsSource="{Binding OutputParams}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <WrapPanel>
+                            <Label Padding="7 3">
+                                <TextBlock Text="{Binding Path=VarInfo.Name}" />
+                            </Label>
+                            <CheckBox Margin="4" 
+                                      IsChecked="{Binding Path=IsSaveToFile}">Сохранять в файл</CheckBox>
+                        </WrapPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <!-- <ScrollViewer Height="70">
+                <StackPanel Margin="5 0 5 5">
+                    <WrapPanel>
+                        <Label Padding="7 3">Параметр1</Label>
+                        <CheckBox Margin="4">Сохранять в файл</CheckBox>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <Label Padding="7 3">Параметр2</Label>
+                        <CheckBox Margin="4">Сохранять в файл</CheckBox>
+                    </WrapPanel>                    
+                </StackPanel>
+            </ScrollViewer> -->
+        </StackPanel>
+    </Grid>
+</local:SettingsWindow>

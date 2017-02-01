@@ -14,6 +14,7 @@
               Margin="10" Padding="0 0 25 0" FontWeight="SemiBold" FontSize="11">
                 Название узла
             </Label>
+            
             <StackPanel x:Name="paramsExpander" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
                   Margin="7 0 7 10" Background="#FFFAFAFA">
                 <Label FontSize="11" Padding="10 5" FontWeight="Medium">

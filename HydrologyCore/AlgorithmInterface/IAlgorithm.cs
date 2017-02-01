@@ -10,7 +10,7 @@ namespace CoreInterfaces
     public interface IAlgorithm
     {
         void Init (DataSet data);
-        void Run(IContext ctx);
+        void Run(IContext ctx = null);
         DataSet Results { get; }
     }
 }

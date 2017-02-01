@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="HydrologyDesktop.Views.Controls.NodeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HydrologyDesktop.Views.Controls"
+             mc:Ignorable="d" 
+             d:DesignWidth="160">
+    <Grid>
+        <Border x:Name="Border" BorderThickness="1" 
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" 
+                Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" 
+                CornerRadius="0" />
+        <StackPanel>
+            <Label Foreground="#FF303030" HorizontalAlignment="Left" VerticalAlignment="Top"
+              Margin="10 10 10 0" Padding="0 0 48 0" FontFamily="Segoe UI Semibold">
+                <TextBlock Text="Название узла" />
+            </Label>
+            <Label x:Name="TypeLabel" Foreground="#FF303030" HorizontalAlignment="Left" VerticalAlignment="Top"
+              Margin="10 5 10 10" Padding="0" FontSize="11" FontStyle="Italic" >
+                <TextBlock Text="Тип узла" FontWeight="Normal" />
+            </Label>            
+        </StackPanel>
+        <DockPanel HorizontalAlignment="Right" Width="48" Margin="5">
+            <Button Content="&#xE104;" VerticalAlignment="Top" Width="24" Height="24" FontFamily="Segoe UI Symbol" 
+                    Visibility="{Binding ShowEditButton}" 
+                    Style="{StaticResource NodeButtonStyle}" Click="EditButton_Click"/>
+            <Button Content="&#xE115;" VerticalAlignment="Top" Width="24" Height="24" FontFamily="Segoe UI Symbol"
+                    Style="{StaticResource NodeButtonStyle}" Click="SettingButton_Click" />
+        </DockPanel>
+    </Grid>
+    <UserControl.ToolTip>
+        <StackPanel>
+            <TextBlock FontWeight="Bold" Text="Название узла"></TextBlock>
+            <TextBlock FontStyle="Italic" Text="Тип узла"></TextBlock>
+            <StackPanel Name="AdditionalInfo" Visibility="Hidden"/>
+        </StackPanel>
+    </UserControl.ToolTip>
+</UserControl>

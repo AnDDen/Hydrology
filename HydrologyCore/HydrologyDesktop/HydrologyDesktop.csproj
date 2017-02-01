@@ -74,6 +74,19 @@
     <Compile Include="ExecutorWindow.xaml.cs">
       <DependentUpon>ExecutorWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NodeContainerGraph.cs" />
+    <Compile Include="UIConsts.cs" />
+    <Compile Include="Views\Controls\NodeControl.xaml.cs">
+      <DependentUpon>NodeControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingWindows\AlgorithmSettingsWindow.xaml.cs">
+      <DependentUpon>AlgorithmSettingsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingWindows\InputParameter.cs" />
+    <Compile Include="Views\SettingWindows\OutputParameter.cs" />
+    <Compile Include="Views\SettingWindows\SettingsWindow.cs" />
+    <Compile Include="Views\SettingWindows\SettingsWindowFactory.cs" />
+    <Compile Include="VariableTypeHelper.cs" />
     <Page Include="AlgorithmSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -132,6 +145,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="ExecutorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\NodeControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SettingWindows\AlgorithmSettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

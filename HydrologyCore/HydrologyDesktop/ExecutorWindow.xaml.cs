@@ -30,7 +30,7 @@ namespace HydrologyDesktop
 
     public partial class ExecutorWindow : Window
     {
-        private Experiment experiment;
+        private OldExperiment experiment;
         private ExperimentGraph experimentGraph;
         private double percent = 0;
 
@@ -48,7 +48,7 @@ namespace HydrologyDesktop
             RunExecutor();            
         }
 
-        public void PrepareInitNode(InitNodeControl node, Experiment experiment)
+        public void PrepareInitNode(InitNodeControl node, OldExperiment experiment)
         {
             experiment.StartFrom(node.InitPath);
         }
@@ -79,11 +79,11 @@ namespace HydrologyDesktop
         }
 
         #region OLD
-        public void PrepareRunProcessNode(RunProcessNodeControl node, Experiment experiment)
+        public void PrepareRunProcessNode(RunProcessNodeControl node, OldExperiment experiment)
         {
             experiment.Then(CreateExperimentNode(node));
         }
-        public void PrepareAlgorithmNode(AlgorithmNodeControl node, Experiment experiment)
+        public void PrepareAlgorithmNode(AlgorithmNodeControl node, OldExperiment experiment)
         {
             DataTable algParams = node.ParamsTable.Copy();
 
@@ -111,7 +111,7 @@ namespace HydrologyDesktop
                 }
             }
         }
-        public void PrepareLoop(LoopControl loop, Experiment experiment, BackgroundWorker worker, DoWorkEventArgs e, double p)
+        public void PrepareLoop(LoopControl loop, OldExperiment experiment, BackgroundWorker worker, DoWorkEventArgs e, double p)
         {
             var chain = loop.LoopBody.CreateExecutionChain();
 
@@ -154,7 +154,7 @@ namespace HydrologyDesktop
 
         public void PrepareExperiment(BackgroundWorker worker, DoWorkEventArgs e)
         {
-            experiment = new Experiment();
+            experiment = new OldExperiment();
 
             var chain = experimentGraph.CreateExecutionChain();
 

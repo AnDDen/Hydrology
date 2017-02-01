@@ -39,14 +39,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Context.cs" />
     <Compile Include="Core.cs" />
-    <Compile Include="Experiment.cs" />
-    <Compile Include="ExperimentNodes\AlgorithmNode.cs" />
-    <Compile Include="ExperimentNodes\IExperimentNode.cs" />
-    <Compile Include="ExperimentNodes\LoopNode.cs" />
+    <Compile Include="Data\DataType.cs" />
+    <Compile Include="Data\VariableType.cs" />
+    <Compile Include="Data\VariableInfo.cs" />
+    <Compile Include="Data\VariableValue.cs" />
+    <Compile Include="Experiment\Experiment.cs" />
+    <Compile Include="Experiment\NodeContainer.cs" />
+    <Compile Include="Experiment\Nodes\AlgorithmNode.cs" />
+    <Compile Include="Experiment\Nodes\AbstractNode.cs" />
+    <Compile Include="Experiment\Nodes\InitNode.cs" />
+    <Compile Include="Experiment\Nodes\LoopNode.cs" />
+    <Compile Include="PluginManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ExperimentNodes\RunProcessNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AlgorithmInterface\AlgorithmInterface.csproj">
@@ -58,6 +63,7 @@
       <Name>CsvParser</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

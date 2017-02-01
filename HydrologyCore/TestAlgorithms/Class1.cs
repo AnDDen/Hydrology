@@ -19,6 +19,15 @@ namespace TestAlgorithms
         private string[] values = new string[5];
         private int start = 0, end = 4, step = 1;
 
+        [Argument]
+        public int Start { get; set; }
+
+        [Argument(4)]
+        public int End { get; set; }
+
+        [Argument(1)]
+        public int Step { get; set; }
+
         public DataSet Results
         {
             get { return results; }

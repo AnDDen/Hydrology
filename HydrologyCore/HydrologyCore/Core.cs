@@ -7,71 +7,34 @@ using CoreInterfaces;
 using System.IO;
 using System.Reflection;
 using System.Data;
-using HydrologyCore.ExperimentNodes;
+using HydrologyCore.Experiment.Nodes;
+using HydrologyCore.Data;
 
 namespace HydrologyCore
 {
     public class Core
     {
-        private const string pluginRelativeDir = @"\Algorithms",
-                             assemblyPattern = "*.dll";
-
-        private IDictionary<string, Type> algorithmTypes;
-
-        public IDictionary<string, Type> AlgorithmTypes
+        private static Core instance;
+        public static Core Instance
         {
-            get { return algorithmTypes; }
-        }
-
-        public Core()
-        {
-            LoadPlugins();
-        }
-
-        private void LoadPlugins()
-        {
-            algorithmTypes = new Dictionary<string, Type>();
-
-            string pluginDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + pluginRelativeDir;
-            string[] files = Directory.GetFiles(pluginDir);
-            string[] assemblyFiles = Directory.GetFiles(pluginDir, assemblyPattern);
-
-            foreach (string assemblyFile in assemblyFiles)
+            get
             {
-                try
-                {
-                    Assembly assembly = Assembly.LoadFile(assemblyFile);
-                    Type[] types = assembly.GetTypes();
-                    foreach (Type type in types)
-                    {
-                        if (type.GetInterfaces().Contains(typeof(IAlgorithm)) && type.IsClass && !type.IsAbstract)
-                        {
-                            algorithmTypes[type.Name] = type;
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    Console.Error.WriteLine("Error loading plugin {0}", assemblyFile);
-                }
+                if (instance == null)
+                    instance = new Core();
+                return instance;
             }
         }
 
-        public AlgorithmNode Algorithm(string name)
+        private const string pluginRelativeDir = @"\Algorithms", assemblyPattern = "*.dll";
+
+        private Core()
         {
-            if (algorithmTypes.ContainsKey(name))
-                return new AlgorithmNode(algorithmTypes[name]);
-            throw new ApplicationException("Can not find algorithm " + name);
+            PluginManager.Instance.LoadPlugins(pluginRelativeDir, assemblyPattern);
         }
 
-        public RunProcessNode RunProcess(string name)
+        public Experiment.Experiment NewExperiment()
         {
-            return new RunProcessNode(name);
-        }
-
-        public LoopNode Loop(IList<IExperimentNode> body, string loopVar, double initValue, double endValue, double step)
-        {
-            return new LoopNode(body, loopVar, initValue, endValue, step);
+            return new Experiment.Experiment();
         }
     }
 }
