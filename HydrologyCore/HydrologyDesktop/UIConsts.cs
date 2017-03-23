@@ -14,5 +14,7 @@ namespace HydrologyDesktop
         public const string VALUE_TYPE_NAME = "Значение";
         public const string REFERENCE_TYPE_NAME = "Ссылка";
         public const string LOOP_TYPE_NAME = "Переменная цикла";
+
+        public const string EXPERIMENT_NAME = "Эксперимент";
     }
 }

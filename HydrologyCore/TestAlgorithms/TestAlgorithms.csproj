@@ -40,10 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
-    <Compile Include="Class2.cs" />
+    <Compile Include="ArrayMeanAlgorithm.cs" />
+    <Compile Include="CreateTable.cs" />
+    <Compile Include="DataTableArrayConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestArguments.cs" />
+    <Compile Include="SaveTable.cs" />
+    <Compile Include="SaveValueInTable.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AlgorithmInterface\AlgorithmInterface.csproj">

@@ -1,4 +1,8 @@
-﻿namespace HydrologyCore.Experiment
+﻿using HydrologyCore.Experiment.Nodes;
+using System;
+using System.ComponentModel;
+
+namespace HydrologyCore.Experiment
 {
     public class Experiment
     {
@@ -18,7 +22,19 @@
         public void Run()
         {
             NodeContainer.Run();
-            // check and todo
+        }
+
+        public void Run(BackgroundWorker worker)
+        {
+            var count = NodeContainer.TotalNodeCount() * 2;
+            int current = 0;
+            NodeContainer.Run(worker, count, ref current);
+            Core.Instance.UpdateWorker(worker, 1, 1, null);
+        }
+
+        public AbstractNode ResolveNode(string name)
+        {
+            return NodeContainer.ResolveNode(name);
         }
     }
 }

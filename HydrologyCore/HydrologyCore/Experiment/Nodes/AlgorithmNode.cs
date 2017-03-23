@@ -9,6 +9,7 @@ using CoreInterfaces;
 using HydrologyCore.Data;
 using System.IO;
 using CsvParser;
+using System.Xml.Linq;
 
 namespace HydrologyCore.Experiment.Nodes
 {
@@ -41,6 +42,7 @@ namespace HydrologyCore.Experiment.Nodes
             inputInfo = new Dictionary<string, VariableInfo>();
             inputValues = new Dictionary<string, VariableValue>();
             InitInputVariables();
+            InitOutputInfo();
         }
 
         private void InitInputVariables()
@@ -64,6 +66,7 @@ namespace HydrologyCore.Experiment.Nodes
 
         private void InitOutputInfo()
         {
+            saveToFile = new Dictionary<string, bool>();
             foreach (PropertyInfo property in algorithmType.GetProperties())
             {
                 var attr = property.GetCustomAttribute<OutputAttribute>();
@@ -84,8 +87,7 @@ namespace HydrologyCore.Experiment.Nodes
             {
                 if (v.VariableType != VariableType.VALUE)
                 {
-                    var nodeName = v.GetReferenceInfo().Item1;
-                    if (nodeName == node.Name)
+                    if (v.RefNode != null && v.RefNode.Name == node.Name)
                         return true;
                 }
             }
@@ -156,6 +158,32 @@ namespace HydrologyCore.Experiment.Nodes
                     } 
                 }
             }
-        }        
+        }
+
+        public override XElement ToXml()
+        {
+            XElement algorithm = new XElement("algorithm", new XAttribute("name", Name), new XAttribute("type", algorithmType.Name));
+
+            XElement inputs = new XElement("inputs");
+            algorithm.Add(inputs);
+            foreach (var v in inputValues)
+            {
+                inputs.Add(new XElement("input", 
+                    new XAttribute("name", v.Key), 
+                    new XAttribute("varType", v.Value.VariableType),
+                    new XAttribute("varValue", v.Value.GetValueAsString())));
+            }
+
+            XElement outputs = new XElement("outputs");
+            algorithm.Add(outputs);
+            foreach (var v in saveToFile)
+            {
+                outputs.Add(new XElement("output",
+                    new XAttribute("name", v.Key),
+                    new XAttribute("saveToFile", v.Value ? "yes" : "no")));
+            }
+
+            return algorithm;
+        }
     }
 }

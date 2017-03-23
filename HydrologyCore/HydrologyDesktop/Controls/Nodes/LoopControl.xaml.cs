@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Reflection;
+using HydrologyCore;
 
 namespace HydrologyDesktop.Controls
 {
@@ -125,10 +126,10 @@ namespace HydrologyDesktop.Controls
             Canvas.SetTop(startNode, 50);
             Canvas.SetLeft(startNode, 50);
 
-            startNode.MouseLeftButtonDown += Window.node_MouseLeftButtonDown;
-            startNode.MouseLeftButtonUp += Window.node_MouseLeftButtonUp;
-            startNode.MouseMove += Window.node_MouseMove;
-            startNode.LostMouseCapture += Window.node_LostMouseCapture;
+            startNode.MouseLeftButtonDown += Window.NodeControl_MouseLeftButtonDown;
+            startNode.MouseLeftButtonUp += Window.NodeControl_MouseLeftButtonUp;
+            startNode.MouseMove += Window.NodeControl_MouseMove;
+            startNode.LostMouseCapture += Window.NodeControl_LostMouseCapture;
 
             Canvas.Children.Add(startNode);
             loopBody.Nodes.Add(startNode);
@@ -236,19 +237,19 @@ namespace HydrologyDesktop.Controls
 
         void AddAlgNode(string algName, double x = 0, double y = 0, LoopControl loop = null)
         {
-            Type algType = Window.HydrologyCore.AlgorithmTypes[algName];
+            Type algType = PluginManager.Instance.AlgorithmTypes[algName];
 
             DataTable paramsTable = new DataTable();
             paramsTable.Columns.Add("Name");
             paramsTable.Columns.Add("Value");
 
-            foreach (ParameterAttribute attr in algType.GetCustomAttributes<ParameterAttribute>())
-            {
-                DataRow row = paramsTable.NewRow();
-                row["Name"] = attr.Name;
-                row["Value"] = attr.DefaultValue;
-                paramsTable.Rows.Add(row);
-            }
+            //foreach (parameterattribute attr in algtype.getcustomattributes<parameterattribute>())
+            //{
+            //    datarow row = paramstable.newrow();
+            //    row["name"] = attr.name;
+            //    row["value"] = attr.defaultvalue;
+            //    paramstable.rows.add(row);
+            //}
 
             var algSettings = new AlgorithmSettings(Window.FolderDialog, paramsTable, algType)
             {
@@ -275,11 +276,11 @@ namespace HydrologyDesktop.Controls
                 VarLoop = varLoop
             };
             node.Style = (Style)Window.FindResource("NodeStyle");
-            node.SettingsButtonClick += Window.node_SettingsClicked;
-            node.MouseLeftButtonDown += Window.node_MouseLeftButtonDown;
-            node.MouseLeftButtonUp += Window.node_MouseLeftButtonUp;
-            node.MouseMove += Window.node_MouseMove;
-            node.LostMouseCapture += Window.node_LostMouseCapture;
+            node.SettingsButtonClick += Window.NodeControl_SettingsClicked;
+            node.MouseLeftButtonDown += Window.NodeControl_MouseLeftButtonDown;
+            node.MouseLeftButtonUp += Window.NodeControl_MouseLeftButtonUp;
+            node.MouseMove += Window.NodeControl_MouseMove;
+            node.LostMouseCapture += Window.NodeControl_LostMouseCapture;
 
             Canvas.Children.Add(node);
             loopBody.Nodes.Add(node);
@@ -290,160 +291,160 @@ namespace HydrologyDesktop.Controls
 
         private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (Window.Mode == EditorMode.Arrow && Window.EditingArrow != null)
-            {
-                Point pos = e.GetPosition(Canvas);
-                bool found = false;
-                for (int i = Canvas.Children.Count - 1; i >= 0 && !found; i--)
-                {
-                    UIElement child = Canvas.Children[i];
-                    if (child is BaseNodeControl)
-                    {
-                        BaseNodeControl node = child as BaseNodeControl;
-                        double x = Canvas.GetLeft(node), y = Canvas.GetTop(node);
-                        if (loopBody.Arrows.FirstOrDefault((a) => { return a.From == Window.EditingArrow.From && a.To == node; }) == null)
-                        {
-                            if (pos.X >= x - 4 && pos.X <= x + node.ActualWidth + 4 && pos.Y >= y - 4 && pos.Y <= y + node.ActualHeight + 4)
-                            {
-                                Window.EditingArrow.To = node;
-                                if (node.AttachEllipse != null)
-                                {
-                                    Point p = node.AttachPoint;
-                                    p.X = p.X / node.ActualWidth;
-                                    p.Y = p.Y / node.ActualHeight;
-                                    Window.EditingArrow.EndRelative = p;
-                                }
-                                else
-                                {
-                                    Point p = node.FindAttachPoint(e.GetPosition(node));
-                                    p.X = p.X / node.ActualWidth;
-                                    p.Y = p.Y / node.ActualHeight;
-                                    Window.EditingArrow.EndRelative = p;
-                                }
+            //if (Window.Mode == EditorMode.Arrow && Window.EditingArrow != null)
+            //{
+            //    Point pos = e.GetPosition(Canvas);
+            //    bool found = false;
+            //    for (int i = Canvas.Children.Count - 1; i >= 0 && !found; i--)
+            //    {
+            //        UIElement child = Canvas.Children[i];
+            //        if (child is BaseNodeControl)
+            //        {
+            //            BaseNodeControl node = child as BaseNodeControl;
+            //            double x = Canvas.GetLeft(node), y = Canvas.GetTop(node);
+            //            if (loopBody.Arrows.FirstOrDefault((a) => { return a.From == Window.EditingArrow.From && a.To == node; }) == null)
+            //            {
+            //                if (pos.X >= x - 4 && pos.X <= x + node.ActualWidth + 4 && pos.Y >= y - 4 && pos.Y <= y + node.ActualHeight + 4)
+            //                {
+            //                    Window.EditingArrow.To = node;
+            //                    if (node.AttachEllipse != null)
+            //                    {
+            //                        Point p = node.AttachPoint;
+            //                        p.X = p.X / node.ActualWidth;
+            //                        p.Y = p.Y / node.ActualHeight;
+            //                        Window.EditingArrow.EndRelative = p;
+            //                    }
+            //                    else
+            //                    {
+            //                        Point p = node.FindAttachPoint(e.GetPosition(node));
+            //                        p.X = p.X / node.ActualWidth;
+            //                        p.Y = p.Y / node.ActualHeight;
+            //                        Window.EditingArrow.EndRelative = p;
+            //                    }
 
-                                Window.EditingArrow.MouseDown += Window.Arrow_MouseDown;
-                                Window.EditingArrow.MouseMove += Arrow_MouseMove;
-                                Window.EditingArrow.MouseUp += Arrow_MouseUp;
+            //                    Window.EditingArrow.MouseDown += Window.Arrow_MouseDown;
+            //                    Window.EditingArrow.MouseMove += Arrow_MouseMove;
+            //                    Window.EditingArrow.MouseUp += Arrow_MouseUp;
 
-                                loopBody.Arrows.Add(Window.EditingArrow);
+            //                    loopBody.Arrows.Add(Window.EditingArrow);
 
-                                Window.EditingArrow = null;
-                                found = true;
-                            }
-                        }
-                    }
-                }
-                if (!found)
-                {
-                    Canvas.Children.Remove(Window.EditingArrow);
-                    Window.EditingArrow = null;
-                }
-            }
+            //                    Window.EditingArrow = null;
+            //                    found = true;
+            //                }
+            //            }
+            //        }
+            //    }
+            //    if (!found)
+            //    {
+            //        Canvas.Children.Remove(Window.EditingArrow);
+            //        Window.EditingArrow = null;
+            //    }
+            //}
         }
 
         public void Arrow_MouseMove(object sender, MouseEventArgs e)
         {
-            Arrow arrow = sender as Arrow;
-            if (arrow.MoveEllipse != null && Window.EditingArrow == arrow)
-            {
-                if (arrow.MoveEllipse == arrow.pointFrom)
-                {
-                    arrow.From = null;
-                    arrow.Start = e.GetPosition(Canvas);
-                }
-                else
-                {
-                    arrow.To = null;
-                    arrow.End = e.GetPosition(Canvas) - new Vector(0, 2);
-                }
-            }
+            //Arrow arrow = sender as Arrow;
+            //if (arrow.MoveEllipse != null && Window.EditingArrow == arrow)
+            //{
+            //    if (arrow.MoveEllipse == arrow.pointFrom)
+            //    {
+            //        arrow.From = null;
+            //        arrow.Start = e.GetPosition(Canvas);
+            //    }
+            //    else
+            //    {
+            //        arrow.To = null;
+            //        arrow.End = e.GetPosition(Canvas) - new Vector(0, 2);
+            //    }
+            //}
         }
 
         public void Arrow_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            Arrow arrow = sender as Arrow;
-            Point p = e.GetPosition(Canvas);
+            //Arrow arrow = sender as Arrow;
+            //Point p = e.GetPosition(Canvas);
 
-            if (arrow.MoveEllipse != null && Window.EditingArrow == arrow)
-            {
-                foreach (UIElement element in Canvas.Children)
-                {
-                    if (element is BaseNodeControl)
-                    {
-                        BaseNodeControl node = element as BaseNodeControl;
-                        double x = Canvas.GetLeft(node);
-                        double y = Canvas.GetTop(node);
+            //if (arrow.MoveEllipse != null && Window.EditingArrow == arrow)
+            //{
+            //    foreach (UIElement element in Canvas.Children)
+            //    {
+            //        if (element is BaseNodeControl)
+            //        {
+            //            BaseNodeControl node = element as BaseNodeControl;
+            //            double x = Canvas.GetLeft(node);
+            //            double y = Canvas.GetTop(node);
 
-                        if (p.X >= x && p.X <= x + node.ActualWidth && p.Y >= y && p.Y <= y + node.ActualHeight)
-                        {
-                            Point relative = node.FindAttachPoint(e.GetPosition(node));
-                            relative.X = relative.X * 1.0 / node.ActualWidth;
-                            relative.Y = relative.Y * 1.0 / node.ActualHeight;
+            //            if (p.X >= x && p.X <= x + node.ActualWidth && p.Y >= y && p.Y <= y + node.ActualHeight)
+            //            {
+            //                Point relative = node.FindAttachPoint(e.GetPosition(node));
+            //                relative.X = relative.X * 1.0 / node.ActualWidth;
+            //                relative.Y = relative.Y * 1.0 / node.ActualHeight;
 
-                            if (arrow.MoveEllipse == arrow.pointFrom)
-                            {
-                                arrow.From = node;
-                                arrow.StartRelative = relative;
-                            }
-                            else if (arrow.MoveEllipse == arrow.pointTo)
-                            {
-                                arrow.To = node;
-                                arrow.EndRelative = relative;
-                            }
-                            arrow.Draw();
-                            arrow.MoveEllipse = null;
-                            break;
-                        }
-                    }
-                }
+            //                if (arrow.MoveEllipse == arrow.pointFrom)
+            //                {
+            //                    arrow.From = node;
+            //                    arrow.StartRelative = relative;
+            //                }
+            //                else if (arrow.MoveEllipse == arrow.pointTo)
+            //                {
+            //                    arrow.To = node;
+            //                    arrow.EndRelative = relative;
+            //                }
+            //                arrow.Draw();
+            //                arrow.MoveEllipse = null;
+            //                break;
+            //            }
+            //        }
+            //    }
 
-                Window.EditingArrow = null;
-                arrow.pointTo.ReleaseMouseCapture();
-                arrow.pointFrom.ReleaseMouseCapture();
-            }
+            //    Window.EditingArrow = null;
+            //    arrow.pointTo.ReleaseMouseCapture();
+            //    arrow.pointFrom.ReleaseMouseCapture();
+            //}
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed && Window.Mode == EditorMode.Arrow && Window.EditingArrow != null)
-            {
-                Window.EditingArrow.End = e.GetPosition(Canvas) - new Vector(0, 2);
-            }
+            //if (e.LeftButton == MouseButtonState.Pressed && Window.Mode == EditorMode.Arrow && Window.EditingArrow != null)
+            //{
+            //    Window.EditingArrow.End = e.GetPosition(Canvas) - new Vector(0, 2);
+            //}
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Window.Selected = null;
-            for (int i = Canvas.Children.Count - 1; i >= 0; i--)
-            {
-                UIElement child = Canvas.Children[i];
-                if (child is BaseNodeControl)
-                {
-                    BaseNodeControl node = child as BaseNodeControl;
-                    if (node.IsMouseOver)
-                    {
-                        node.Thickness = new Thickness(3);
-                        Window.Selected = child;
-                    }
-                    else
-                    {
-                        node.Thickness = new Thickness(1);
-                    }
-                }
-                else if (child is Arrow)
-                {
-                    Arrow arrow = child as Arrow;
-                    if (arrow.IsMouseOver)
-                    {
-                        arrow.AttachPointsVisibility = Visibility.Visible;
-                        Window.Selected = arrow;
-                    }
-                    else
-                    {
-                        arrow.AttachPointsVisibility = Visibility.Hidden;
-                    }
-                }
-            }
+            //Window.Selected = null;
+            //for (int i = Canvas.Children.Count - 1; i >= 0; i--)
+            //{
+            //    UIElement child = Canvas.Children[i];
+            //    if (child is BaseNodeControl)
+            //    {
+            //        BaseNodeControl node = child as BaseNodeControl;
+            //        if (node.IsMouseOver)
+            //        {
+            //            node.Thickness = new Thickness(3);
+            //            Window.Selected = child;
+            //        }
+            //        else
+            //        {
+            //            node.Thickness = new Thickness(1);
+            //        }
+            //    }
+            //    else if (child is Arrow)
+            //    {
+            //        Arrow arrow = child as Arrow;
+            //        if (arrow.IsMouseOver)
+            //        {
+            //            arrow.AttachPointsVisibility = Visibility.Visible;
+            //            Window.Selected = arrow;
+            //        }
+            //        else
+            //        {
+            //            arrow.AttachPointsVisibility = Visibility.Hidden;
+            //        }
+            //    }
+            //}
         }
 
         public event EventHandler<EventArgs> SettingsButtonClick;
@@ -456,7 +457,7 @@ namespace HydrologyDesktop.Controls
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
-            Window.ViewedLoop = this;
+            //Window.ViewedLoop = this;
         }
 
         private Ellipse attachEllipse = null;

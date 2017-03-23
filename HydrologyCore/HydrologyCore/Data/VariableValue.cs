@@ -11,17 +11,23 @@ namespace HydrologyCore.Data
     public class VariableValue
     {
         public VariableType VariableType { get; set; }
-        public string Value { get; set; }
+        private string value;
+        private AbstractNode node;
+        private string refVarName;
+
+        public string Value { get { return value; } }
+        public AbstractNode RefNode { get { return node; } }
+        public string RefVarName { get { return refVarName; } }
 
         public VariableValue(VariableType varType, string value)
         {
             VariableType = varType;
-            Value = value;
+            this.value = value;
         }
         
         public VariableValue(VariableType varType) : this(varType, "") { }
 
-        public Tuple<string, string> GetReferenceInfo()
+        private Tuple<string, string> GetReferenceInfo(string path)
         {
             switch (VariableType)
             {
@@ -32,18 +38,63 @@ namespace HydrologyCore.Data
                 case VariableType.REFERENCE:
                 case VariableType.LOOP:
                     {
-                        int pos = Value.IndexOf('/');
+                        int pos = path.LastIndexOf('/');
                         if (pos < 0)
                         {
-                            return new Tuple<string, string>(Value, null);
+                            return new Tuple<string, string>(path, null);
                         }
                         else
                         {
-                            return new Tuple<string, string>(Value.Substring(0, pos - 1), Value.Substring(pos + 1));
+                            return new Tuple<string, string>(path.Substring(0, pos - 1), path.Substring(pos + 1));
                         }
                     }
             }
             return null;            
+        }
+
+        public void SetValue(AbstractNode thisNode, VariableType type, string value)
+        {
+            switch (VariableType)
+            {
+                case VariableType.VALUE:
+                    {
+                        this.value = value;
+                        break;
+                    }
+                case VariableType.REFERENCE:
+                    {
+                        int pos = value.LastIndexOf('/');
+                        string nodeName = value.Substring(0, pos);
+                        node = thisNode.NodeContainer.RootContainer.ResolveNode(nodeName);
+                        refVarName = value.Substring(pos + 1);
+                        break;
+                    }
+                case VariableType.LOOP:
+                    {
+                        node = thisNode.NodeContainer.RootContainer.ResolveNode(value);
+                        break;
+                    }
+            }
+        }
+
+        public string GetValueAsString()
+        {
+            switch (VariableType)
+            {
+                case VariableType.VALUE:
+                    {
+                        return value;
+                    }
+                case VariableType.REFERENCE:
+                    {
+                        return node.Name + "/" + refVarName;
+                    }
+                case VariableType.LOOP:
+                    {
+                        return node.Name;
+                    }
+            }
+            return null;
         }
 
         public object GetValue(NodeContainer nodeContainer, Type type)
@@ -52,18 +103,14 @@ namespace HydrologyCore.Data
             {
                 case VariableType.VALUE:
                     {
-                        return Convert.ChangeType(Value, type);
+                        return Convert.ChangeType(value, type);
                     }
                 case VariableType.REFERENCE:
                     {
-                        var refInfo = GetReferenceInfo();
-                        var node = nodeContainer.FindNode(refInfo.Item1);
-                        return node.GetVarValue(refInfo.Item2);
+                        return node.GetVarValue(refVarName);
                     }
                 case VariableType.LOOP:
                     {
-                        var refInfo = GetReferenceInfo();
-                        var node = nodeContainer.FindNode(refInfo.Item1);
                         return (node as LoopNode).Value;
                     }
             }

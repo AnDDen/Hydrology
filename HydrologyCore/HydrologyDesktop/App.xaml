@@ -1,13 +1,9 @@
 ﻿<Application x:Class="HydrologyDesktop.App"
-             xmlns:Controls="clr-namespace:HydrologyDesktop.Controls"  
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <Path x:Key="IconTriangle" x:Shared="False" Stretch="Uniform" Data="M50,130 L50,150 65,140 z" Fill="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}"/>
-        <Style x:Key="NodeStyle">
-            <Setter Property="Controls:NodeControl.Width" Value="150"></Setter>
-        </Style>
         <Style x:Key="CanvasStyle" TargetType="{x:Type Canvas}">
             <Setter Property="Background">
                 <Setter.Value>

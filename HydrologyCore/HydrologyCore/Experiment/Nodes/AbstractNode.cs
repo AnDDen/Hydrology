@@ -1,10 +1,12 @@
 ﻿using HydrologyCore.Data;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace HydrologyCore.Experiment.Nodes
 {
@@ -43,7 +45,16 @@ namespace HydrologyCore.Experiment.Nodes
             outputInfo = new Dictionary<string, VariableInfo>();
             output = new Dictionary<string, object>();
         }
-        
+
         public abstract void Run();
+        
+        public virtual void Run(BackgroundWorker worker, int count, ref int current)
+        {
+            Core.Instance.UpdateWorker(worker, ++current, count, Name);
+            Run();
+            Core.Instance.UpdateWorker(worker, ++current, count, null);
+        }
+
+        public abstract XElement ToXml();
     }
 }

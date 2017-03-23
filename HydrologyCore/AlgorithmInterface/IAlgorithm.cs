@@ -9,8 +9,6 @@ namespace CoreInterfaces
 {
     public interface IAlgorithm
     {
-        void Init (DataSet data);
-        void Run(IContext ctx = null);
-        DataSet Results { get; }
+        void Run();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HydrologyCore.Experiment.Nodes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,8 @@ namespace HydrologyCore.Experiment
 
         public NodeContainer Parent { get; set; }
 
+        public LoopNode LoopNode { get; set; }
+
         public NodeContainer RootContainer
         {
             get
@@ -25,6 +28,11 @@ namespace HydrologyCore.Experiment
                     p = p.Parent;
                 return p;
             }
+        }
+
+        public NodeContainer()
+        {
+            nodes = new List<AbstractNode>();
         }
                 
         public void Run()
@@ -36,6 +44,22 @@ namespace HydrologyCore.Experiment
                 foreach (var node in forExecute)
                 {
                     node.Run();
+                    left.Remove(node);
+                }
+            }
+        }
+
+        public void Run(BackgroundWorker worker, int count, ref int current)
+        {
+            List<AbstractNode> left = new List<AbstractNode>(nodes);
+            while (left.Count != 0)
+            {
+                var forExecute = new List<AbstractNode>(left.Where((x) => left.Intersect(x.Previous).Count() == 0));
+                foreach (var node in forExecute)
+                {
+                    if (Core.Instance.CheckWorkerCancel(worker))
+                        return;
+                    node.Run(worker, count, ref current);
                     left.Remove(node);
                 }
             }
@@ -76,12 +100,36 @@ namespace HydrologyCore.Experiment
             return res;
         }
 
+        public NodeContainer AddNode(AbstractNode node)
+        {
+            nodes.Add(node);
+            return this;
+        }
+
+        public NodeContainer RemoveNode(AbstractNode node)
+        {
+            nodes.Remove(node);
+            // todo : remove references
+            return this;
+        }
+
         public AbstractNode FindNode(string name)
         {
             AbstractNode node = nodes.Find((x) => x.Name == name);
             if (node == null)
                 node = Parent.FindNode(name);
             return node;
+        }
+
+        public int TotalNodeCount()
+        {
+            int res = nodes.Count;
+            var loops = nodes.Where(x => x is LoopNode);
+            foreach (var loop in loops)
+            {
+                res += (loop as LoopNode).LoopBody.TotalNodeCount();
+            }
+            return res;
         }
 
         private bool DFS(AbstractNode v, Dictionary<AbstractNode, int> color)
@@ -112,6 +160,20 @@ namespace HydrologyCore.Experiment
                 if (f) return true;
             }
             return false;
+        }
+
+        public AbstractNode ResolveNode(string name)
+        {
+            AbstractNode node = nodes.Find(x => x.Name == name);
+            if (node != null)
+                return node;
+            else 
+                foreach (var loop in nodes.Where(x => x is LoopNode)) {
+                    node = (loop as LoopNode).LoopBody.ResolveNode(name);
+                    if (node != null)
+                        return node;
+                }
+            return null;
         }
     }
 }

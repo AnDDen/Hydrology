@@ -5,14 +5,16 @@ namespace HydrologyDesktop.Views.SettingWindows
     public class OutputParameter
     {
         public VariableInfo VarInfo { get; set; }
+
+        public string Name { get; set; }
+
         public bool IsSaveToFile { get; set; }
 
-        public OutputParameter(VariableInfo varInfo, bool isSaveToFile)
+        public OutputParameter(string name, VariableInfo varInfo)
         {
+            Name = name;
             VarInfo = varInfo;
-            IsSaveToFile = isSaveToFile;
+            IsSaveToFile = true;
         }
-
-        public OutputParameter() : this(null, false) { }
     }
 }

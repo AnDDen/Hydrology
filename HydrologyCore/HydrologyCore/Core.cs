@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Data;
 using HydrologyCore.Experiment.Nodes;
 using HydrologyCore.Data;
+using System.ComponentModel;
 
 namespace HydrologyCore
 {
@@ -29,12 +30,37 @@ namespace HydrologyCore
 
         private Core()
         {
+            
+        }
+
+        public void LoadPlugins()
+        {
             PluginManager.Instance.LoadPlugins(pluginRelativeDir, assemblyPattern);
         }
 
         public Experiment.Experiment NewExperiment()
         {
             return new Experiment.Experiment();
+        }
+
+        public void UpdateWorker(BackgroundWorker worker, int current, int total, string nodeName)
+        {
+            if (worker != null)
+            {
+                if (worker.WorkerReportsProgress)
+                {
+                    worker.ReportProgress(current * 100 / total, nodeName);
+                }
+            }
+        }
+
+        public bool CheckWorkerCancel(BackgroundWorker worker)
+        {
+            if (worker != null)
+            {
+                return worker.CancellationPending;
+            }
+            return false;
         }
     }
 }

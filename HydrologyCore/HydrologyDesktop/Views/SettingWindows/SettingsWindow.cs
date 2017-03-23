@@ -11,14 +11,32 @@ namespace HydrologyDesktop.Views.SettingWindows
     public class SettingsWindow : Window
     {
         public AbstractNode Node { get; set; }
-        public AbstractNode CreateNode()
+
+        public virtual AbstractNode GetNode()
         {
-            return null;
+            return Node;
+        }
+
+        public virtual bool Validate()
+        {
+            return true;
         }
 
         public SettingsWindow()
         {
 
+        }
+
+        public string NodeName
+        {
+            get { return Node.Name; }
+            set { Node.Name = value; }
+        }
+
+        protected void OKButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Validate())
+                DialogResult = true;
         }
     }
 }

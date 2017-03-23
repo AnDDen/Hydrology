@@ -1,4 +1,5 @@
 ﻿using HydrologyCore.Data;
+using HydrologyCore.Experiment.Nodes;
 using System.Collections.ObjectModel;
 
 namespace HydrologyDesktop.Views.SettingWindows
@@ -8,7 +9,17 @@ namespace HydrologyDesktop.Views.SettingWindows
         private VariableInfo varInfo;        
         public VariableInfo VarInfo { get { return varInfo; } }
 
+        public string Name { get; set; }
+
         public VariableValue VarValue { get; set; }
+
+        private AbstractNode node;
+
+        public string Value
+        {
+            get { return VarValue.GetValueAsString(); }
+            set { VarValue.SetValue(node, VarValue.VariableType, value); }
+        }
 
         public string VarType
         {
@@ -32,9 +43,13 @@ namespace HydrologyDesktop.Views.SettingWindows
             }
         }
 
-        public InputParameter()
+        public InputParameter(AbstractNode node, string name, VariableInfo varInfo)
         {
+            this.node = node;
+            Name = name;
             varTypes = new ObservableCollection<string>(VariableTypeHelper.GetAllVariableTypeStrings());
+            this.varInfo = varInfo;
+            VarValue = new VariableValue(VariableType.VALUE);
         }
     }
 }

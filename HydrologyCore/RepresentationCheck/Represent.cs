@@ -9,55 +9,40 @@ using System.Reflection;
 
 namespace RepresentationCheck
 {
-    [Parameter("n", 20, typeof(Int32))]
-    [Name("Расчет коэффициентов")]
+    [Name("Рассчет коэффициентов")]
     public class RepresentationCheck : IAlgorithm
     {
-        private DataSet data;
-        private DataSet resultSet;
+        public DataSet Data { get; set; }
 
-        public void Init(DataSet data)
-        {
-            this.data = data;
-        }
+        [Input("n", 20)]
+        public int N { get; set; }
 
-        public void Run(IContext ctx)
+        [Input("FlowSequenceGeneration")]
+        public DataTable X_Table { get; set; }
+
+        [Output("Результат")]
+        public DataSet ResultSet { get; set; }
+
+        public void Run()
         {
-            resultSet = new DataSet();
+            ResultSet = new DataSet();
             DataTable kTable = new DataTable() { TableName = "Coefficient" };
             kTable.Columns.Add("Period");
             kTable.Columns.Add("K_srednee");
             kTable.Columns.Add("K_sigma");
             kTable.Columns.Add("K_cv");
             kTable.Columns.Add("K_cs");
-            kTable.Columns.Add("K_eta");
+            kTable.Columns.Add("K_eta");           
 
-            DataTable paramsTable = data.Tables["params"];
-            var attrs = typeof(RepresentationCheck).GetCustomAttributes<ParameterAttribute>();
-
-            int n = (int)attrs.First((param) => { return param.Name == "n"; }).DefaultValue;
-
-            foreach (DataRow row in paramsTable.Rows)
-            {
-                switch (row["Name"].ToString())
-                {
-                    case "n":
-                        n = int.Parse(row["Value"].ToString());
-                        break;
-                }
-            }
-            
-            DataTable X_Table = ctx.GetData("FlowSequenceGeneration").Tables["FlowSequence"];
-
-            List<double> k1 = CoefAvg(X_Table, new statistics(), n);
-            List<double> k2 = CoefSigma(X_Table, new statistics(), n);
-            List<double> k3 = Coef_Cv(X_Table, new statistics(), n);
-            List<double> k4 = Coef_Cs(X_Table, new statistics(), n);
-            List<double> k5 = Coef_Eta(X_Table, new statistics(), n);
+            List<double> k1 = CoefAvg(X_Table, new statistics(), N);
+            List<double> k2 = CoefSigma(X_Table, new statistics(), N);
+            List<double> k3 = Coef_Cv(X_Table, new statistics(), N);
+            List<double> k4 = Coef_Cs(X_Table, new statistics(), N);
+            List<double> k5 = Coef_Eta(X_Table, new statistics(), N);
             for (int i = 0; i < k1.Count; i++)
             {
                 DataRow row = kTable.NewRow();
-                row["Period"] = i + ".." + (i + n);
+                row["Period"] = i + ".." + (i + N);
                 row["K_srednee"] = k1[i];
                 row["K_sigma"] = k2[i];
                 row["K_cv"] = k3[i];
@@ -65,13 +50,9 @@ namespace RepresentationCheck
                 row["K_eta"] = k5[i];
                 kTable.Rows.Add(row);
             }
-            resultSet.Tables.Add(kTable);
+            ResultSet.Tables.Add(kTable);
         }
 
-        public DataSet Results
-        {
-            get { return resultSet; }
-        }
         //значения из  столбца source
         public double[] TableValues(DataTable X_Table, int col)
         {
@@ -150,6 +131,7 @@ namespace RepresentationCheck
             return k5;
 
         }
+
         [Parameter("resN", 500, typeof(Int32))]
         [Name("Вероятности превышения")]
         public class Probability : IAlgorithm

@@ -55,23 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Controls\Nodes\BaseNodeControl.cs" />
-    <Compile Include="Controls\Nodes\LoopControl.xaml.cs">
-      <DependentUpon>LoopControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Nodes\AlgorithmNodeControl.cs" />
-    <Compile Include="Controls\Arrow.xaml.cs">
-      <DependentUpon>Arrow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Nodes\RunProcessNodeControl.cs" />
-    <Compile Include="Controls\Nodes\InitNodeControl.cs" />
-    <Compile Include="Controls\Nodes\NodeControl.xaml.cs">
-      <DependentUpon>NodeControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Nodes\StartLoopNodeControl.xaml.cs">
-      <DependentUpon>StartLoopNodeControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ExecutorWindow.xaml.cs">
+    <Compile Include="Views\ExecutorWindow.xaml.cs">
       <DependentUpon>ExecutorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="NodeContainerGraph.cs" />
@@ -82,69 +66,31 @@
     <Compile Include="Views\SettingWindows\AlgorithmSettingsWindow.xaml.cs">
       <DependentUpon>AlgorithmSettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SettingWindows\FileParemeter.cs" />
+    <Compile Include="Views\SettingWindows\InitNodeSettingsWindow.xaml.cs">
+      <DependentUpon>InitNodeSettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingWindows\InputParameter.cs" />
+    <Compile Include="Views\SettingWindows\LoopNodeSettingsWindow.xaml.cs">
+      <DependentUpon>LoopNodeSettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingWindows\OutputParameter.cs" />
     <Compile Include="Views\SettingWindows\SettingsWindow.cs" />
-    <Compile Include="Views\SettingWindows\SettingsWindowFactory.cs" />
+    <Compile Include="Views\SettingWindows\SettingsWindowHelper.cs" />
     <Compile Include="VariableTypeHelper.cs" />
-    <Page Include="AlgorithmSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Arrow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Nodes\LoopControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Nodes\NodeControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Nodes\StartLoopNodeControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="LoopSettingsWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RunProcessSettingsWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="InitSettingsWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="AlgorithmSettings.xaml.cs">
-      <DependentUpon>AlgorithmSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ExperimentGraph.cs" />
-    <Compile Include="LoopSettingsWindow.xaml.cs">
-      <DependentUpon>LoopSettingsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="RunProcessSettingsWindow.xaml.cs">
-      <DependentUpon>RunProcessSettingsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="InitSettingsWindow.xaml.cs">
-      <DependentUpon>InitSettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="ExecutorWindow.xaml">
+    <Page Include="Views\ExecutorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -153,6 +99,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SettingWindows\AlgorithmSettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SettingWindows\InitNodeSettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SettingWindows\LoopNodeSettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

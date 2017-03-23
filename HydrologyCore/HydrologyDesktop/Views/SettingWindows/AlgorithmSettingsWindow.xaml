@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HydrologyDesktop.Views.SettingWindows"
         mc:Ignorable="d"
-        Title="Свойства узла" Height="400" Width="500">
+        Title="Свойства узла" Height="400" Width="500"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
         <StackPanel>
             <DockPanel Margin="5 5 5 0">
@@ -26,39 +27,21 @@
             <ListBox Grid.Column="0" ItemsSource="{Binding InputParams}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel>
+                        <StackPanel Margin="0 5">
                             <Label Padding="7 3">
                                 <TextBlock Text="{Binding Path=VarInfo.Name}" />
                             </Label>
                             <WrapPanel>
-                                <ComboBox Margin="5 0 0 0" Width="100" 
+                                <ComboBox Margin="5 0 0 0" Width="100"
                                           ItemsSource="{Binding Path=VarTypes}" 
-                                          SelectedItem="{Binding Path=VarType}" />
+                                          SelectedItem="{Binding Path=VarType}"/>
                                 <TextBox Margin="5 0 0 0" Width="300" 
-                                         Text="{Binding Path=VarValue.Value}"></TextBox>
+                                         Text="{Binding Path=Value}"></TextBox>
                             </WrapPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <!-- <ScrollViewer Height="140" Margin="0">
-                <StackPanel Margin="5 0 5 5">
-                    <StackPanel>
-                        <Label Padding="7 3">Параметр1</Label>
-                        <WrapPanel>
-                            <ComboBox Margin="5 0 0 0" Width="100"></ComboBox>
-                            <TextBox Margin="5 0 0 0" Width="300"></TextBox>
-                        </WrapPanel>
-                    </StackPanel>
-                    <StackPanel>
-                        <Label Padding="7 3">Параметр2</Label>
-                        <WrapPanel>
-                            <ComboBox Margin="5 0 0 0" Width="100">Значение</ComboBox>
-                            <TextBox Margin="5 0 0 0" Width="300"></TextBox>
-                        </WrapPanel>
-                    </StackPanel>
-                </StackPanel>
-            </ScrollViewer> -->
             <Label FontWeight="Bold" Padding="10 5">
                 <Label.Background>
                     <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}"/>
@@ -67,7 +50,7 @@
             <ListBox Grid.Column="0" ItemsSource="{Binding OutputParams}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <WrapPanel>
+                        <WrapPanel Margin="0 5">
                             <Label Padding="7 3">
                                 <TextBlock Text="{Binding Path=VarInfo.Name}" />
                             </Label>
@@ -77,18 +60,10 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <!-- <ScrollViewer Height="70">
-                <StackPanel Margin="5 0 5 5">
-                    <WrapPanel>
-                        <Label Padding="7 3">Параметр1</Label>
-                        <CheckBox Margin="4">Сохранять в файл</CheckBox>
-                    </WrapPanel>
-                    <WrapPanel>
-                        <Label Padding="7 3">Параметр2</Label>
-                        <CheckBox Margin="4">Сохранять в файл</CheckBox>
-                    </WrapPanel>                    
-                </StackPanel>
-            </ScrollViewer> -->
         </StackPanel>
+        <DockPanel HorizontalAlignment="Right" Margin="0 10" VerticalAlignment="Bottom">
+            <Button Content="ОК" Width="64" Padding="3" Margin="0 5" Click="OKButton_Click" />
+            <Button Content="Отмена" Width="64" Padding="3" Margin="10 5" IsCancel="True" />
+        </DockPanel>
     </Grid>
 </local:SettingsWindow>

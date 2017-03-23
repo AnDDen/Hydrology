@@ -32,7 +32,7 @@ namespace HydrologyCore.Data
                 else
                     return DataType.ARRAY;
             }
-            if (type.IsValueType)
+            if (type.IsValueType || type == typeof(string))
                 return DataType.VALUE;
             throw new ArgumentException(string.Format("There is no supported DataType for type {0}", type.FullName));
         }

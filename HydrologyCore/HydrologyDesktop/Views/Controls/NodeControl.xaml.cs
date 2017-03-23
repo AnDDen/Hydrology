@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 
 namespace HydrologyDesktop.Views.Controls
 {
@@ -24,9 +25,11 @@ namespace HydrologyDesktop.Views.Controls
         public event EventHandler<EventArgs> SettingsButtonClick;
         public event EventHandler<EventArgs> EditButtonClick;
 
-        public bool ShowEditButton { get; set; }
+        public Visibility ShowEditButton { get; set; }
 
         private AbstractNode node;
+
+        public AbstractNode Node { get { return node; } }
 
         public string NodeName
         {
@@ -34,17 +37,54 @@ namespace HydrologyDesktop.Views.Controls
             set { node.Name = value; }
         }
 
-        public string NodeType { get; set; }        
+        private bool selected;
+
+        public bool Selected
+        {
+            get { return selected; }
+            set
+            {
+                selected = value;
+                if (selected)
+                {
+                    Border.BorderThickness = new Thickness(3);
+                }
+                else
+                {
+                    Border.BorderThickness = new Thickness(1);
+                }
+            }
+        }
+
+        public string NodeType
+        {
+            get
+            {
+                if (node is AlgorithmNode)
+                {
+                    var p = node as AlgorithmNode;
+                    return p.DisplayedTypeName;
+                }
+                else if (node is LoopNode)
+                {
+                    return UIConsts.LOOP_NODE_NAME;
+                }
+                else if (node is InitNode)
+                {
+                    return UIConsts.INIT_NODE_NAME;
+                }
+                return "";
+            }
+        }    
 
         public NodeControl(AbstractNode node)
         {
-            InitializeComponent();
             this.node = node;
-            ShowEditButton = false;
+            InitializeComponent();
+            EditButton.Visibility = Visibility.Collapsed;
             if (node is AlgorithmNode)
             {
                 var p = node as AlgorithmNode;
-                NodeType = p.DisplayedTypeName;
                 AdditionalInfo.Visibility = Visibility.Visible;
                 AdditionalInfo.Children.Add(new Label() { Content = "Параметры алгоритма", FontWeight = FontWeights.Bold });
                 foreach (var param in p.InputValues)
@@ -62,18 +102,13 @@ namespace HydrologyDesktop.Views.Controls
             }
             else if (node is LoopNode)
             {
-                var p = node as LoopNode;
-                NodeType = UIConsts.LOOP_NODE_NAME;
+                var p = node as LoopNode;                
                 AdditionalInfo.Visibility = Visibility.Visible;
                 AdditionalInfo.Children.Add(new Label()
                 {
                     Content = string.Format("{0}..{1}; {2}", p.FromValue, p.ToValue, p.Step)
                 });
-                ShowEditButton = true;
-            }
-            else if (node is InitNode)
-            {
-                NodeType = UIConsts.INIT_NODE_NAME;
+                EditButton.Visibility = Visibility.Visible;
             }
         }
 

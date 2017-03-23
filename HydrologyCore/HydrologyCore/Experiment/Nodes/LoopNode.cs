@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Xml.Linq;
 
 namespace HydrologyCore.Experiment.Nodes
 {
@@ -20,7 +21,8 @@ namespace HydrologyCore.Experiment.Nodes
             LoopBody = new NodeContainer()
             {
                 Parent = nodeContainer,
-                Path = nodeContainer.Path + "/" + name
+                Path = nodeContainer.Path + "/" + name,
+                LoopNode = this
             };
         }
 
@@ -58,6 +60,15 @@ namespace HydrologyCore.Experiment.Nodes
                     currentResults.Add(node.Name, node.Output);
                 results.Add(Value, currentResults);
             }
+        }
+
+        public override XElement ToXml()
+        {
+            return new XElement("loop", 
+                new XAttribute("name", Name), 
+                new XAttribute("from", FromValue),
+                new XAttribute("to", ToValue),
+                new XAttribute("step", Step));
         }
     }
 }
