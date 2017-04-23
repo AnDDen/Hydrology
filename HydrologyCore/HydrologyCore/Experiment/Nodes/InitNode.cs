@@ -1,6 +1,5 @@
 ﻿using CoreInterfaces;
 using CsvParser;
-using HydrologyCore.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,43 +10,40 @@ namespace HydrologyCore.Experiment.Nodes
     public class InitNode : AbstractNode
     {
         // key = filePath, value = var name
-        private Dictionary<string, string> files;
-        public IDictionary<string, string> Files { get { return files; } }
+        private Dictionary<string, string> files = new Dictionary<string, string>();
+        public IDictionary<string, string> Files => files;
 
-        public InitNode(string name, NodeContainer nodeContainer) : base(name, nodeContainer)
-        {
-            files = new Dictionary<string, string>();
-        }
+        public InitNode(string name, Block parent) : base(name, parent) { }
 
-        public override void Run()
+        public override void Run(Context ctx)
         {
-            output = new Dictionary<string, object>();
             foreach (var file in files.Keys)
             {
                 IReader reader = new CSVParser();
                 DataTable table = reader.Read(file);
                 table.TableName = files[file];
-                output.Add(files[file], table);
+                // put in context
+                Port port = outPorts.Find(p => p.Name == files[file]);
+                ctx.AddPortValue(port, table);
             }
         }
 
-        public override object GetVarValue(string name)
+        public void AddFile(string name, string path)
         {
-            return output[name];
+            files.Add(path, name);
+            outPorts.Add(new Port(this, name, null, typeof(DataTable)));
         }
 
-        public override XElement ToXml()
+        public void DeleteFile(string name)
         {
-            XElement init = new XElement("init", new XAttribute("name", Name));
-            XElement filesElem = new XElement("files");
-            init.Add(filesElem);
-            foreach (var file in files)
-            {
-                filesElem.Add(new XElement("file",
-                    new XAttribute("path", file.Key),
-                    new XAttribute("var", file.Value)));
-            }
-            return init;
+            files.Remove(name);
+            outPorts.RemoveAll(p => p.Name == name);
+        }
+
+        public void ClearFiles()
+        {
+            files.Clear();
+            outPorts.Clear();
         }
     }
 }

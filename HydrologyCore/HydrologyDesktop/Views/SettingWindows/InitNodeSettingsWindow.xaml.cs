@@ -24,12 +24,12 @@ namespace HydrologyDesktop.Views.SettingWindows
     /// </summary>
     public partial class InitNodeSettingsWindow : SettingsWindow
     {
-        public ObservableCollection<FileParemeter> Files { get; set; }
+        public ObservableCollection<FileParameter> Files { get; set; }
 
-        public InitNodeSettingsWindow(NodeContainer container) 
+        public InitNodeSettingsWindow(HydrologyCore.Experiment.Block container) 
             : this(new InitNode("", container)) { }
 
-        public InitNodeSettingsWindow(AbstractNode node)
+        public InitNodeSettingsWindow(IRunable node)
         {
             Node = node;
 
@@ -40,12 +40,12 @@ namespace HydrologyDesktop.Views.SettingWindows
 
         public void InitFiles()
         {
-            Files = new ObservableCollection<FileParemeter>();
+            Files = new ObservableCollection<FileParameter>();
             var initNode = Node as InitNode;
             foreach (var f in initNode.Files)
             {
                 if (Files.FirstOrDefault(x => x.FilePath == f.Key) == null)
-                    Files.Add(new FileParemeter(f.Key, f.Value));
+                    Files.Add(new FileParameter(f.Key, f.Value));
             }
         }
 
@@ -62,7 +62,7 @@ namespace HydrologyDesktop.Views.SettingWindows
                 {
                     string relativePath = GetRelativePath(path);
                     if (Files.FirstOrDefault(x => x.FilePath == relativePath) == null)
-                        Files.Add(new FileParemeter(relativePath, ""));
+                        Files.Add(new FileParameter(relativePath, ""));
                 }
             }
         }
@@ -81,13 +81,13 @@ namespace HydrologyDesktop.Views.SettingWindows
             return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', System.IO.Path.DirectorySeparatorChar));
         }
 
-        public override AbstractNode GetNode()
+        public override IRunable GetNode()
         {
             var initNode = Node as InitNode;
-            initNode.Files.Clear();
+            initNode.ClearFiles();
             foreach (var f in Files)
             {
-                initNode.Files.Add(f.FilePath, f.VarName);
+                initNode.AddFile(f.FilePath, f.VarName);
             }
             return Node;
         }
@@ -95,7 +95,7 @@ namespace HydrologyDesktop.Views.SettingWindows
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             Button button = sender as Button;
-            FileParemeter fileParam = button.DataContext as FileParemeter;
+            FileParameter fileParam = button.DataContext as FileParameter;
             Files.Remove(fileParam);
         }
     }

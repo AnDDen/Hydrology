@@ -7,8 +7,6 @@ using CoreInterfaces;
 using System.IO;
 using System.Reflection;
 using System.Data;
-using HydrologyCore.Experiment.Nodes;
-using HydrologyCore.Data;
 using System.ComponentModel;
 
 namespace HydrologyCore

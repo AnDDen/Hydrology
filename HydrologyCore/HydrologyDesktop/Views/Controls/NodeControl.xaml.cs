@@ -1,4 +1,5 @@
-﻿using HydrologyCore.Experiment.Nodes;
+﻿using HydrologyCore.Experiment;
+using HydrologyCore.Experiment.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -22,23 +22,16 @@ namespace HydrologyDesktop.Views.Controls
     /// </summary>
     public partial class NodeControl : UserControl
     {
-        public event EventHandler<EventArgs> SettingsButtonClick;
-        public event EventHandler<EventArgs> EditButtonClick;
+        private const string IN_PORT_STYLE_NAME = "InPortPathStyle";
+        private const string OUT_PORT_STYLE_NAME = "OutPortPathStyle";
+
+        public event EventHandler<EventArgs> ButtonClick;
 
         public Visibility ShowEditButton { get; set; }
 
-        private AbstractNode node;
-
-        public AbstractNode Node { get { return node; } }
-
-        public string NodeName
-        {
-            get { return node.Name; }
-            set { node.Name = value; }
-        }
+        public IRunable Node { get; }
 
         private bool selected;
-
         public bool Selected
         {
             get { return selected; }
@@ -56,72 +49,192 @@ namespace HydrologyDesktop.Views.Controls
             }
         }
 
+        public IDictionary<Port, Path> InPorts { get; } = new Dictionary<Port, Path>();
+        public IDictionary<Port, Path> OutPorts { get; } = new Dictionary<Port, Path>();
+
         public string NodeType
         {
             get
             {
-                if (node is AlgorithmNode)
+                if (Node is AlgorithmNode)
                 {
-                    var p = node as AlgorithmNode;
-                    return p.DisplayedTypeName;
+                    return (Node as AlgorithmNode).DisplayedTypeName;
                 }
-                else if (node is LoopNode)
+                else if (Node is LoopBlock)
                 {
                     return UIConsts.LOOP_NODE_NAME;
                 }
-                else if (node is InitNode)
+                else if (Node is Block)
+                {
+                    return UIConsts.BLOCK_NODE_NAME;
+                }
+                else if (Node is InitNode)
                 {
                     return UIConsts.INIT_NODE_NAME;
                 }
+                else if (Node is InPortNode)
+                {
+                    return UIConsts.IN_PORT_NODE_NAME;
+                }
+                else if (Node is OutPortNode)
+                {
+                    return UIConsts.OUT_PORT_NODE_NAME;
+                }
                 return "";
             }
-        }    
+        }
 
-        public NodeControl(AbstractNode node)
+        public NodeControl(IRunable node)
         {
-            this.node = node;
+            Node = node;            
             InitializeComponent();
-            EditButton.Visibility = Visibility.Collapsed;
-            if (node is AlgorithmNode)
+            NameLabel.Content = node.Name;
+            Node.NameChanged += (sender, e) =>
             {
-                var p = node as AlgorithmNode;
-                AdditionalInfo.Visibility = Visibility.Visible;
-                AdditionalInfo.Children.Add(new Label() { Content = "Параметры алгоритма", FontWeight = FontWeights.Bold });
-                foreach (var param in p.InputValues)
-                {
-                    string name = param.Key;
-                    string displayedName = p.InputInfo[name].Name;
-                    var varType = param.Value.VariableType;
-                    string valueTypeStr = VariableTypeHelper.VariableTypeToString(varType);
-                    string value = param.Value.Value;
-                    AdditionalInfo.Children.Add(new Label()
-                    {
-                        Content = string.Format("{0} = [{1}] {2}", displayedName, valueTypeStr, value)
-                    });
-                }
-            }
-            else if (node is LoopNode)
-            {
-                var p = node as LoopNode;                
-                AdditionalInfo.Visibility = Visibility.Visible;
-                AdditionalInfo.Children.Add(new Label()
-                {
-                    Content = string.Format("{0}..{1}; {2}", p.FromValue, p.ToValue, p.Step)
+                NameLabel.Content = e.Name;
+            };
+            LoadPorts();
+        }
+
+        public void LoadPorts()
+        {
+            LoadInPorts();
+            LoadOutPorts();
+        }
+
+        public StackPanel CreateToolTip(Port p)
+        {
+            StackPanel toolTip = new StackPanel();
+            // name
+            toolTip.Children.Add(new Label() {
+                Content = p.DisplayedName,
+                FontWeight = FontWeights.Bold
+            });
+            // datatype
+            toolTip.Children.Add(new Label() {
+                Content = p.DataType + " " + p.ElementType?.Name ?? "",
+                FontStyle = FontStyles.Italic,
+                FontSize = 10 });
+            // description
+            if (!string.IsNullOrWhiteSpace(p.Description))
+                toolTip.Children.Add(new Label() {
+                    Content = p.Description,
+                    FontSize = 10
                 });
-                EditButton.Visibility = Visibility.Visible;
+            return toolTip;
+        }
+
+        public void LoadInPorts()
+        {
+            InPortsControl.Children.Clear();
+            foreach (Port p in Node.InPorts)
+            {
+                if (!InPorts.ContainsKey(p))
+                    InPorts[p] = new Path() { Style = this.FindResource(IN_PORT_STYLE_NAME) as Style };
+
+                InPorts[p].ToolTip = CreateToolTip(p);
+
+                if (!p.Displayed)
+                    InPorts[p].Visibility = Visibility.Collapsed;
+                else
+                    InPorts[p].Visibility = Visibility.Visible;
+
+                InPortsControl.Children.Add(InPorts[p]);
             }
         }
 
-        private void EditButton_Click(object sender, RoutedEventArgs e)
+        public void LoadOutPorts()
         {
-            if (EditButtonClick != null)
-                EditButtonClick.Invoke(this, e);
+            OutPortsControl.Children.Clear();
+            foreach (Port p in Node.OutPorts)
+            {
+                if (!OutPorts.ContainsKey(p))
+                    OutPorts[p] = new Path() { Style = this.FindResource(OUT_PORT_STYLE_NAME) as Style };
+
+                OutPorts[p].ToolTip = CreateToolTip(p);
+
+                if (!p.Displayed)
+                    OutPorts[p].Visibility = Visibility.Collapsed;
+                else 
+                    OutPorts[p].Visibility = Visibility.Visible;
+
+                OutPortsControl.Children.Add(OutPorts[p]);
+            }
         }
 
-        private void SettingButton_Click(object sender, RoutedEventArgs e)
+        private void UserControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (SettingsButtonClick != null)
-                SettingsButtonClick.Invoke(this, e);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (ButtonClick != null)
+                ButtonClick.Invoke(this, e);
+        }
+
+        public Tuple<Port, Point> FindInPort(Point point)
+        {
+            Port p = FindPort(point, InPorts);
+            if (p != null)
+            {
+                return new Tuple<Port, Point>(p, GetInPortPoint(p));
+            }
+            return null;
+        }
+
+        public Point GetInPortPoint(Port port)
+        {
+            Path path = InPorts[port];
+            var pos = GetPosition(path);
+            Point start = new Point(pos.X, pos.Y + path.ActualHeight / 2);
+            return start;
+        }
+
+        public Tuple<Port, Point> FindOutPort(Point point)
+        {
+            Port p = FindPort(point, OutPorts);
+            if (p != null)
+            {
+                return new Tuple<Port, Point>(p, GetOutPortPoint(p));
+            }
+            return null;
+        }
+
+        public Point GetOutPortPoint(Port port)
+        {
+            Path path = OutPorts[port];
+            var pos = GetPosition(path);
+            Point end = new Point(pos.X + path.ActualWidth, pos.Y + path.ActualHeight / 2);
+            return end;
+        }
+
+        private Port FindPort(Point point, IDictionary<Port, Path> ports)
+        {
+            return ports.Keys.FirstOrDefault(p =>
+            {
+                var path = ports[p];
+                var pos = GetPosition(path);
+                double x = pos.X;
+                double y = pos.Y;
+                double w = path.ActualWidth;
+                double h = path.ActualHeight;                
+
+                return (point.X >= x && point.X <= x + w) && (point.Y >= y && point.Y <= y + h);
+            });
+        }
+
+        private Point GetPosition(Visual element)
+        {
+            var positionTransform = element.TransformToAncestor(this);
+            var areaPosition = positionTransform.Transform(new Point(0, 0));
+
+            return areaPosition;
+        }
+
+        public bool IsNodeMouseOver(Point p)
+        {
+            return p.X >= Canvas.GetLeft(this) && p.X <= Canvas.GetLeft(this) + ActualWidth
+                && p.Y >= Canvas.GetTop(this) && p.Y <= Canvas.GetTop(this) + ActualHeight;
         }
     }
 }

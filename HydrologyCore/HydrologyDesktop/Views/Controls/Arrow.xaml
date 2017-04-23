@@ -1,0 +1,13 @@
+﻿<UserControl x:Class="HydrologyDesktop.Views.Controls.Arrow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HydrologyDesktop.Views.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="20" d:DesignWidth="400">
+    <Grid x:Name="Grid" RenderTransformOrigin="0, 0" Width="300">
+        <Line x:Name="Line" X1="0" Y1="0" X2="280" Y2="0" Stroke="#FF303030" StrokeThickness="1" />
+        <Path x:Name="Cap" Data="M 0, -5 L 20, 0 L 0 5" Fill="#FF303030" HorizontalAlignment="Right" MouseDown="Cap_MouseDown"/>
+    </Grid>
+</UserControl>

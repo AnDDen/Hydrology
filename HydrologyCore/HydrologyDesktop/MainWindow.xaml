@@ -60,6 +60,13 @@
                                                 </Expander.Header>
                                                 <Expander.Content>
                                                     <StackPanel Margin="0">
+                                                        
+                                                        <Button Style="{StaticResource AlgButtonStyle}" Content="Блок" PreviewMouseDown="Button_PreviewMouseDown" 
+                                                                PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding BLOCK_NODE_DESCRIPTOR}"/>
+                                                        <Button Style="{StaticResource AlgButtonStyle}" Content="Входной параметр" PreviewMouseDown="Button_PreviewMouseDown"
+                                                                PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding IN_PORT_NODE_DESCRIPTOR}" />
+                                                        <Button Style="{StaticResource AlgButtonStyle}" Content="Выходной параметр" PreviewMouseDown="Button_PreviewMouseDown"
+                                                                PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding OUT_PORT_NODE_DESCRIPTOR}" />
                                                         <Button Style="{StaticResource AlgButtonStyle}" Content="Инициализация" PreviewMouseDown="Button_PreviewMouseDown"
                                                                 PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding INIT_NODE_DESCRIPTOR}" />
                                                         <Button Style="{StaticResource AlgButtonStyle}" Content="Цикл" PreviewMouseDown="Button_PreviewMouseDown" 

@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HydrologyCore</RootNamespace>
     <AssemblyName>HydrologyCore</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,17 +40,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Context.cs" />
+    <Compile Include="Events\NameChangedEvent.cs" />
+    <Compile Include="Experiment\Nodes\InPortNode.cs" />
+    <Compile Include="Experiment\Nodes\PortNode.cs" />
+    <Compile Include="Experiment\Nodes\OutPortNode.cs" />
+    <Compile Include="NodeContext.cs" />
     <Compile Include="Core.cs" />
-    <Compile Include="Data\DataType.cs" />
-    <Compile Include="Data\VariableType.cs" />
-    <Compile Include="Data\VariableInfo.cs" />
-    <Compile Include="Data\VariableValue.cs" />
+    <Compile Include="DataType.cs" />
+    <Compile Include="Experiment\Connection.cs" />
     <Compile Include="Experiment\Experiment.cs" />
-    <Compile Include="Experiment\NodeContainer.cs" />
+    <Compile Include="Experiment\Block.cs" />
     <Compile Include="Experiment\Nodes\AlgorithmNode.cs" />
     <Compile Include="Experiment\Nodes\AbstractNode.cs" />
     <Compile Include="Experiment\Nodes\InitNode.cs" />
-    <Compile Include="Experiment\Nodes\LoopNode.cs" />
+    <Compile Include="Experiment\Nodes\LoopBlock.cs" />
+    <Compile Include="Experiment\Port.cs" />
+    <Compile Include="Experiment\IRunable.cs" />
     <Compile Include="PluginManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

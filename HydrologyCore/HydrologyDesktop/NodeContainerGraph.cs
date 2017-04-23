@@ -14,55 +14,79 @@ namespace HydrologyDesktop
 {
     public class NodeContainerGraph
     {
-        public NodeContainer NodeContainer { get; set; }
+        public Block Block { get; set; }
 
-        public IList<NodeControl> NodeControls { get; set; }
+        public IList<NodeControl> NodeControls { get; } = new List<NodeControl>();
+
+        public IList<Arrow> Arrows { get; } = new List<Arrow>();
 
         public NodeContainerGraph Parent { get; set; }
 
-        public NodeContainerGraph(NodeContainer nodeContainer, NodeContainerGraph parent)
+        public NodeContainerGraph(Block block, NodeContainerGraph parent)
         {
-            NodeContainer = nodeContainer;
-            NodeControls = new List<NodeControl>();
+            Block = block;
+            Parent = parent;
         }
 
         public void AddNode(NodeControl node)
         {
             NodeControls.Add(node);
-            NodeContainer.AddNode(node.Node);
+            Block.AddNode(node.Node);
         }
 
         public void RemoveNode(NodeControl node)
         {
             NodeControls.Remove(node);
-            NodeContainer.RemoveNode(node.Node);
+            Block.RemoveNode(node.Node);
+        }
+
+        public void AddArrow(Arrow arrow)
+        {
+            Arrows.Add(arrow);
+        }
+
+        public void AddArrowToModel(Arrow arrow)
+        {
+            Block.Connections.Add(new Connection(arrow.From, arrow.To));
+        }
+
+        public void RemoveArrowFromModel(Arrow arrow)
+        {
+            Block.Connections.Remove(Block.Connections.SingleOrDefault(c => c.From == arrow.From && c.To == arrow.To));
+        }
+
+        public void RemoveArrow(Arrow arrow)
+        {
+            Arrows.Remove(arrow);
         }
 
         public void DisplayOnCanvas(Canvas canvas)
         {
             canvas.Children.Clear();
             foreach (var nodeControl in NodeControls)
+            {
                 canvas.Children.Add(nodeControl);
+            }
         }
 
-        public XElement ToXml(IDictionary<LoopNode, NodeContainerGraph> nodeContainerGraphs)
+        public XElement ToXml(IDictionary<LoopBlock, NodeContainerGraph> nodeContainerGraphs)
         {
             XElement elem = new XElement("nodes");
-            foreach (NodeControl node in NodeControls)
+            /* foreach (NodeControl node in NodeControls)
             {               
                 XElement nodeElem = node.Node.ToXml();
 
-                if (node.Node is LoopNode)
+                if (node.Node is LoopBlock)
                 {
                     nodeElem.Add(new XElement("loopbody", 
-                        nodeContainerGraphs[node.Node as LoopNode].ToXml(nodeContainerGraphs)));
+                        nodeContainerGraphs[node.Node as LoopBlock].ToXml(nodeContainerGraphs)));
                 }
                 elem.Add(new XElement("node",
                     new XAttribute("x", Canvas.GetLeft(node)),
                     new XAttribute("y", Canvas.GetTop(node)),
                     nodeElem
                 ));
-            }
+            } */
             return elem;
         }
     }

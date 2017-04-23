@@ -1,4 +1,5 @@
-﻿using HydrologyCore.Experiment.Nodes;
+﻿using HydrologyCore.Experiment;
+using HydrologyCore.Experiment.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,17 @@ namespace HydrologyDesktop.Views.SettingWindows
         {
             SettingsWindow window = null;
 
+            if (nodeType == typeof(Block))
+                window = new BlockSettingsWindow(container.Block);
             if (nodeType == typeof(AlgorithmNode))
-                window = new AlgorithmSettingsWindow(algorithmType, container.NodeContainer);
-            if (nodeType == typeof(LoopNode))
-                window = new LoopNodeSettingsWindow(container.NodeContainer);
+                window = new AlgorithmSettingsWindow(algorithmType, container.Block);
             if (nodeType == typeof(InitNode))
-                window = new InitNodeSettingsWindow(container.NodeContainer);
+                window = new InitNodeSettingsWindow(container.Block);
+            if (nodeType == typeof(InPortNode))
+                window = new PortNodeSettingsWindow(container.Block, true);
+            if (nodeType == typeof(OutPortNode))
+                window = new PortNodeSettingsWindow(container.Block, false);
+
             // todo
 
             if (window != null)
@@ -33,16 +39,18 @@ namespace HydrologyDesktop.Views.SettingWindows
         }
 
         // todo
-        public static SettingsWindow CreateSettingWindowForNode(AbstractNode node, Window owner)
+        public static SettingsWindow CreateSettingWindowForNode(IRunable node, Window owner)
         {
             SettingsWindow window = null;
 
+            if (node is Block)
+                window = new BlockSettingsWindow(node);
             if (node is AlgorithmNode)
                 window = new AlgorithmSettingsWindow(node);
-            if (node is LoopNode)
-                window = new LoopNodeSettingsWindow(node);
             if (node is InitNode)
                 window = new InitNodeSettingsWindow(node);
+            if (node is PortNode)
+                window = new PortNodeSettingsWindow(node);
 
             // todo
 

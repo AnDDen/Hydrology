@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CoreInterfaces;
-using HydrologyCore.Data;
 using System.IO;
 using CsvParser;
 using System.Xml.Linq;
@@ -17,56 +16,81 @@ namespace HydrologyCore.Experiment.Nodes
     {
         private Type algorithmType;
 
-        public string DisplayedTypeName
-        {
-            get
-            {
-                return algorithmType.GetCustomAttribute<NameAttribute>().Name;
-            }
-        }
+        public string DisplayedTypeName => algorithmType.GetCustomAttribute<NameAttribute>().Name;
 
-        // Input
-        private Dictionary<string, VariableInfo> inputInfo;
-        public IDictionary<string, VariableInfo> InputInfo { get { return inputInfo; } }
+        private List<Port> parameters = new List<Port>();
+        public IList<Port> Parameters => parameters;
 
-        private Dictionary<string, VariableValue> inputValues;
-        public IDictionary<string, VariableValue> InputValues { get { return inputValues; } }
+        private Dictionary<Port, object> valueParams = new Dictionary<Port, object>();
+        public IDictionary<Port, object> ValueParams => valueParams;
 
         // Output
-        private Dictionary<string, bool> saveToFile;
-        public IDictionary<string, bool> SaveToFile { get { return saveToFile; } }
+        private Dictionary<Port, bool> saveToFile;
+        public IDictionary<Port, bool> SaveToFile => saveToFile;
 
-        public AlgorithmNode(string name, Type algorithmType, NodeContainer nodeContainer) : base(name, nodeContainer)
+        public AlgorithmNode(string name, Type algorithmType, Block parent) : base(name, parent)
         {           
             this.algorithmType = algorithmType;
-            inputInfo = new Dictionary<string, VariableInfo>();
-            inputValues = new Dictionary<string, VariableValue>();
-            InitInputVariables();
-            InitOutputInfo();
+            InitInputs();
+            InitOutputs();
         }
 
-        private void InitInputVariables()
+        private void InitInputs()
         {
             foreach (PropertyInfo property in algorithmType.GetProperties())
             {
                 var attr = property.GetCustomAttribute<InputAttribute>();
                 if (attr != null)
                 {
-                    var type = property.PropertyType;
-                    inputInfo.Add(property.Name, new VariableInfo(attr.DisplayedName, attr.Description, type));
+                    Port port = new Port(this, property.Name, attr.DisplayedName, attr.Description, property.PropertyType);
+                    inPorts.Add(port);
 
-                    if (attr.DefaultValue != null)
+                    if (port.DataType == DataType.VALUE)
                     {
-                        object defVal = attr.DefaultValue;
-                        inputValues.Add(property.Name, new VariableValue(VariableType.VALUE, defVal.ToString()));
-                    }                    
+                        port.Displayed = false;
+                        parameters.Add(port);
+                        if (attr.DefaultValue != null)
+                        {
+                            valueParams.Add(port, attr.DefaultValue);
+                        }
+                    }                 
                 }
             }
         }
 
-        private void InitOutputInfo()
+        public object GetPortValue(Port port)
         {
-            saveToFile = new Dictionary<string, bool>();
+            if (valueParams.ContainsKey(port))
+                return valueParams[port];
+            return null;
+        }
+
+        public void SetPortValue(Port port, string value)
+        {
+            object v = value;
+
+            if (port.ElementType == typeof(double))
+                v = Convert.ToDouble(value);
+            else if (port.ElementType == typeof(int))
+                v = Convert.ToInt32(value);
+
+            if (valueParams.ContainsKey(port))
+                valueParams[port] = value;
+            else
+                valueParams.Add(port, value);
+        }
+
+        public void SetSaveToFile(Port port, bool isSaveToFile)
+        {
+            if (saveToFile.ContainsKey(port))
+                saveToFile[port] = isSaveToFile;
+            else
+                saveToFile.Add(port, isSaveToFile);
+        }
+
+        private void InitOutputs()
+        {
+            saveToFile = new Dictionary<Port, bool>();
             foreach (PropertyInfo property in algorithmType.GetProperties())
             {
                 var attr = property.GetCustomAttribute<OutputAttribute>();
@@ -75,75 +99,64 @@ namespace HydrologyCore.Experiment.Nodes
                     var name = attr.DisplayedName;
                     var description = attr.Description;
                     var type = property.PropertyType;
-                    outputInfo.Add(name, new VariableInfo(name, description, type));
-                    saveToFile.Add(name, true);
+                    Port port = new Port(this, property.Name, name, description, type);
+                    outPorts.Add(port);
+                    saveToFile.Add(port, true);
                 }
             }
         }
 
-        public override bool DependsOn(AbstractNode node)
-        {
-            foreach (var v in inputValues.Values)
-            {
-                if (v.VariableType != VariableType.VALUE)
-                {
-                    if (v.RefNode != null && v.RefNode.Name == node.Name)
-                        return true;
-                }
-            }
-            return false;
-        }
-
-        public override void Run()
+        public override void Run(Context ctx)
         {
             var alg = (IAlgorithm)Activator.CreateInstance(algorithmType);
-            SetInputVariables(alg);
+            SetInputVariables(alg, ctx);
             alg.Run();
-            GetOutputVariables(alg);
-            SaveOutputToFiles();
+            GetOutputVariables(alg, ctx);
+            SaveOutputToFiles(ctx);
         }
 
-        private void SetInputVariables(IAlgorithm alg)
+        private void SetInputVariables(IAlgorithm alg, Context ctx)
         {
             foreach (PropertyInfo property in algorithmType.GetProperties())
             {
                 var attr = property.GetCustomAttribute<InputAttribute>();
+                Port port = inPorts.Find(p => p.Name == property.Name);
                 if (attr != null)
                 {
-                    var value = inputValues[property.Name];
-                    property.SetValue(alg, value.GetValue(NodeContainer, property.PropertyType));
+                    var value = ctx.GetPortValue(port);
+                    // todo : convert
+                    property.SetValue(alg, value);
                 }
             }
         }
 
-        private void GetOutputVariables(IAlgorithm alg)
+        private void GetOutputVariables(IAlgorithm alg, Context ctx)
         {
-            output = new Dictionary<string, object>();
             foreach (PropertyInfo property in algorithmType.GetProperties())
             {
                 var attr = property.GetCustomAttribute<OutputAttribute>();
+                Port port = inPorts.Find(p => p.Name == property.Name);
                 if (attr != null)
                 {
                     var value = property.GetValue(alg);
-                    output.Add(property.Name, value);
+                    ctx.AddPortValue(port, value);
                 }
             }
         }
 
-        private void SaveOutputToFiles()
+        private void SaveOutputToFiles(Context ctx)
         {
             IWriter writer = new CSVWriter();
             foreach (var entity in saveToFile)
             {
-                string name = entity.Key;
+                string name = entity.Key.DisplayedName;
                 bool save = entity.Value;
                 if (save)
                 {
-                    var variableInfo = outputInfo[name];
-                    var value = GetVarValue(name);
-                    var path = NodeContainer.Path + "/" + Name + (variableInfo.DataType == DataType.DATASET ? "/" : ".csv");
+                    var value = ctx.GetPortValue(entity.Key);
+                    var path = Parent.Path + "/" + Name + (entity.Key.DataType == DataType.DATASET ? "/" : ".csv");
                     // todo : save + other datatypes
-                    if (variableInfo.DataType == DataType.DATASET)
+                    if (entity.Key.DataType == DataType.DATASET)
                     {
                         var ds = value as DataSet;
                         foreach (DataTable table in ds.Tables)
@@ -151,39 +164,13 @@ namespace HydrologyCore.Experiment.Nodes
                             writer.Write(table, path + table.TableName + ".csv");
                         }
                     }
-                    else if (variableInfo.DataType == DataType.DATATABLE)
+                    else if (entity.Key.DataType == DataType.DATATABLE)
                     {
                         var table = value as DataTable;
                         writer.Write(table, path);
                     } 
                 }
             }
-        }
-
-        public override XElement ToXml()
-        {
-            XElement algorithm = new XElement("algorithm", new XAttribute("name", Name), new XAttribute("type", algorithmType.Name));
-
-            XElement inputs = new XElement("inputs");
-            algorithm.Add(inputs);
-            foreach (var v in inputValues)
-            {
-                inputs.Add(new XElement("input", 
-                    new XAttribute("name", v.Key), 
-                    new XAttribute("varType", v.Value.VariableType),
-                    new XAttribute("varValue", v.Value.GetValueAsString())));
-            }
-
-            XElement outputs = new XElement("outputs");
-            algorithm.Add(outputs);
-            foreach (var v in saveToFile)
-            {
-                outputs.Add(new XElement("output",
-                    new XAttribute("name", v.Key),
-                    new XAttribute("saveToFile", v.Value ? "yes" : "no")));
-            }
-
-            return algorithm;
         }
     }
 }

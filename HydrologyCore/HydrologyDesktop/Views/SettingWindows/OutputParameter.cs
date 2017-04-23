@@ -1,20 +1,17 @@
-﻿using HydrologyCore.Data;
+﻿using HydrologyCore.Experiment;
 
 namespace HydrologyDesktop.Views.SettingWindows
 {
     public class OutputParameter
     {
-        public VariableInfo VarInfo { get; set; }
-
-        public string Name { get; set; }
+        public Port Port { get; set; }
 
         public bool IsSaveToFile { get; set; }
 
-        public OutputParameter(string name, VariableInfo varInfo)
+        public OutputParameter(Port port, bool saveToFile)
         {
-            Name = name;
-            VarInfo = varInfo;
-            IsSaveToFile = true;
+            Port = port;
+            IsSaveToFile = saveToFile;
         }
     }
 }

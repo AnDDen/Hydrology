@@ -1,55 +1,27 @@
-﻿using HydrologyCore.Data;
-using HydrologyCore.Experiment.Nodes;
-using System.Collections.ObjectModel;
+﻿using HydrologyCore.Experiment;
+using System.Windows;
 
 namespace HydrologyDesktop.Views.SettingWindows
 {
     public class InputParameter
     {
-        private VariableInfo varInfo;        
-        public VariableInfo VarInfo { get { return varInfo; } }
+        public Port Port { get; }
 
-        public string Name { get; set; }
+        public bool IsRef { get; set; }
 
-        public VariableValue VarValue { get; set; }
+        public Visibility ShowValue => IsRef ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility ShowDescription => string.IsNullOrWhiteSpace(Port.Description) ? Visibility.Collapsed : Visibility.Visible;
 
-        private AbstractNode node;
+        public string Value { get; set; }
 
-        public string Value
+        public IRunable Node { get; }
+
+        public InputParameter(IRunable node, Port port, bool isRef, string value)
         {
-            get { return VarValue.GetValueAsString(); }
-            set { VarValue.SetValue(node, VarValue.VariableType, value); }
-        }
-
-        public string VarType
-        {
-            get
-            {
-                return VariableTypeHelper.VariableTypeToString(VarValue.VariableType);
-            }
-            set
-            {
-                VarValue.VariableType = VariableTypeHelper.StringToVariableType(value);
-            }
-        }
-
-        private ObservableCollection<string> varTypes;
-
-        public ObservableCollection<string> VarTypes
-        {
-            get
-            {
-                return varTypes;
-            }
-        }
-
-        public InputParameter(AbstractNode node, string name, VariableInfo varInfo)
-        {
-            this.node = node;
-            Name = name;
-            varTypes = new ObservableCollection<string>(VariableTypeHelper.GetAllVariableTypeStrings());
-            this.varInfo = varInfo;
-            VarValue = new VariableValue(VariableType.VALUE);
+            Node = node;
+            Port = port;
+            IsRef = isRef;
+            Value = value;
         }
     }
 }

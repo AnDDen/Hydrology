@@ -5,36 +5,69 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HydrologyDesktop.Views.Controls"
              mc:Ignorable="d" 
-             d:DesignWidth="160"
-             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             d:DesignWidth="170"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             Width="170"
+             MouseDoubleClick="UserControl_MouseDoubleClick">
+    <UserControl.Resources>
+        <Path x:Key="in" Data="M 0 0 L 10 10 L 0 20 L 0 0" />
+        <Path x:Key="out" Data="M 20 0 L 0 10 L 20 20 L 20 0" />
+
+        <Style x:Key="OutPortPathStyle"
+               TargetType="{x:Type Path}">
+            <Setter Property="Stretch"
+                    Value="Fill" />
+            <Setter Property="Fill"
+                    Value="White" />
+            <Setter Property="Stroke"
+                    Value="#FF303030" />
+            <Setter Property="Width"
+                    Value="10" />
+            <Setter Property="Height"
+                    Value="10" />
+            <Setter Property="Margin"
+                    Value="0 3" />
+            <Setter Property="Data"
+                    Value="{Binding Data, Source={StaticResource out}}" />
+        </Style>
+        <Style x:Key="InPortPathStyle"
+               TargetType="{x:Type Path}">
+            <Setter Property="Stretch"
+                    Value="Fill" />
+            <Setter Property="Fill"
+                    Value="White" />
+            <Setter Property="Stroke"
+                    Value="#FF303030" />
+            <Setter Property="Width"
+                    Value="10" />
+            <Setter Property="Height"
+                    Value="10" />
+            <Setter Property="Margin"
+                    Value="0 3" />
+            <Setter Property="Data"
+                    Value="{Binding Data, Source={StaticResource in}}" />
+        </Style>
+    </UserControl.Resources>
+    
     <Grid>
         <Border x:Name="Border" BorderThickness="1" 
-                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" 
-                Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" 
+                BorderBrush="#FF303030" 
+                Background="White" 
                 CornerRadius="0" />
-        <StackPanel>
-            <Label Foreground="#FF303030" HorizontalAlignment="Left" VerticalAlignment="Top"
-              Margin="10 10 10 0" Padding="0 0 48 0" FontFamily="Segoe UI Semibold">
-                <TextBlock Text="{Binding NodeName}" />
-            </Label>
+        <Button Content="&#xE115;" HorizontalAlignment="Right" VerticalAlignment="Top" Width="24" Height="24" 
+                Style="{StaticResource NodeButtonStyle}"
+                FontFamily="Segoe UI Symbol" Click="Button_Click" Margin="5 5 10 5" />
+        <StackPanel VerticalAlignment="Center">
+            <Label x:Name="NameLabel" Foreground="#FF303030" HorizontalAlignment="Left" VerticalAlignment="Top"
+              Margin="20 10 20 5" Padding="0" FontFamily="Segoe UI Semibold" />
             <Label x:Name="TypeLabel" Foreground="#FF303030" HorizontalAlignment="Left" VerticalAlignment="Top"
-              Margin="10 5 10 10" Padding="0" FontSize="11" FontStyle="Italic" >
-                <TextBlock Text="{Binding NodeType}" FontWeight="Normal" />
-            </Label>            
+              Margin="20 0 20 10" Padding="0" FontSize="11" FontStyle="Italic" FontWeight="Normal" Content="{Binding NodeType}" />
         </StackPanel>
-        <WrapPanel HorizontalAlignment="Right" Margin="5">
-            <Button Content="&#xE104;" VerticalAlignment="Top" Width="24" Height="24" FontFamily="Segoe UI Symbol" 
-                    Name="EditButton"
-                    Style="{StaticResource NodeButtonStyle}" Click="EditButton_Click"/>
-            <Button Content="&#xE115;" VerticalAlignment="Top" Width="24" Height="24" FontFamily="Segoe UI Symbol" 
-                    Style="{StaticResource NodeButtonStyle}" Click="SettingButton_Click" />
-        </WrapPanel>
+
+        <!--<Path Style="{StaticResource InPortPathStyle}" />-->
+        <!--<Path Style="{StaticResource OutPortPathStyle}"/>-->
+
+        <StackPanel x:Name="InPortsControl" Width="10" HorizontalAlignment="Left" VerticalAlignment="Center" />
+        <StackPanel x:Name="OutPortsControl" Width="10" HorizontalAlignment="Right" VerticalAlignment="Center" />
     </Grid>
-    <UserControl.ToolTip>
-        <StackPanel>
-            <TextBlock FontWeight="Bold" Text="{Binding NodeName}"></TextBlock>
-            <TextBlock FontStyle="Italic" Text="{Binding NodeType}"></TextBlock>
-            <StackPanel Name="AdditionalInfo" Visibility="Hidden"/>
-        </StackPanel>
-    </UserControl.ToolTip>
 </UserControl>

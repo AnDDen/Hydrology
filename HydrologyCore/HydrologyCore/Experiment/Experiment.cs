@@ -6,35 +6,32 @@ namespace HydrologyCore.Experiment
 {
     public class Experiment
     {
-        public NodeContainer NodeContainer { get; set; }
+        public Block Block { get; set; }
 
         public string Path
         {
-            get { return NodeContainer.Path; }
-            set { NodeContainer.Path = value; }
+            get { return Block.Path; }
+            set { Block.Path = value; }
         }
         
         public Experiment()
         {
-            NodeContainer = new NodeContainer();
+            Block = new Block(null, null);
         }
 
         public void Run()
         {
-            NodeContainer.Run();
+            Context ctx = new Context();
+            Block.Run(ctx);
         }
 
         public void Run(BackgroundWorker worker)
         {
-            var count = NodeContainer.TotalNodeCount() * 2;
+            var count = Block.TotalNodeCount() * 2;
             int current = 0;
-            NodeContainer.Run(worker, count, ref current);
+            Context ctx = new Context();
+            Block.Run(ctx, worker, count, ref current);
             Core.Instance.UpdateWorker(worker, 1, 1, null);
-        }
-
-        public AbstractNode ResolveNode(string name)
-        {
-            return NodeContainer.ResolveNode(name);
         }
     }
 }

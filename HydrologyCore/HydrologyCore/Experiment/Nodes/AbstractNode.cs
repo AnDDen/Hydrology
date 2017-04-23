@@ -1,4 +1,4 @@
-﻿using HydrologyCore.Data;
+﻿using HydrologyCore.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,51 +10,47 @@ using System.Xml.Linq;
 
 namespace HydrologyCore.Experiment.Nodes
 {
-    public abstract class AbstractNode
+    public abstract class AbstractNode : IRunable
     {
-        public string Name { get; set; }
+        public event NameChangedEventHandler NameChanged;
 
-        protected List<AbstractNode> previous;
-        public IList<AbstractNode> Previous { get { return previous; } }
-
-        protected List<AbstractNode> next;
-        public IList<AbstractNode> Next { get { return next; } }
-
-        public NodeContainer NodeContainer { get; set; }
-
-        protected Dictionary<string, VariableInfo> outputInfo;
-        public IDictionary<string, VariableInfo> OutputInfo { get { return outputInfo; } }
-
-        protected Dictionary<string, object> output;
-        public IDictionary<string, object> Output { get { return output; } }
-
-        public virtual object GetVarValue(string name)
+        protected string name;
+        public virtual string Name
         {
-            var key = outputInfo.First(x => x.Value.Name == name).Key;
-            return output[key];
+            get { return name; }
+            set
+            {
+                name = value;
+                InvokeNameChanged(name);
+            }
         }
 
-        public virtual bool DependsOn(AbstractNode node) { return false; }
+        protected void InvokeNameChanged(string name)
+        {
+            NameChanged?.Invoke(this, new NameChangedEventArgs(name));
+        }
 
-        public AbstractNode(string name, NodeContainer nodeContainer)
+        public Block Parent { get; set; }
+
+        protected List<Port> inPorts = new List<Port>();
+        public IList<Port> InPorts => inPorts;
+
+        protected List<Port> outPorts = new List<Port>();
+        public IList<Port> OutPorts => outPorts;
+
+        public AbstractNode(string name, Block parent)
         {
             Name = name;
-            NodeContainer = nodeContainer;
-            previous = new List<AbstractNode>();
-            next = new List<AbstractNode>();
-            outputInfo = new Dictionary<string, VariableInfo>();
-            output = new Dictionary<string, object>();
+            Parent = parent;
         }
 
-        public abstract void Run();
+        public abstract void Run(Context ctx);
         
-        public virtual void Run(BackgroundWorker worker, int count, ref int current)
+        public virtual void Run(Context ctx, BackgroundWorker worker, int count, ref int current)
         {
             Core.Instance.UpdateWorker(worker, ++current, count, Name);
-            Run();
+            Run(ctx);
             Core.Instance.UpdateWorker(worker, ++current, count, null);
         }
-
-        public abstract XElement ToXml();
     }
 }

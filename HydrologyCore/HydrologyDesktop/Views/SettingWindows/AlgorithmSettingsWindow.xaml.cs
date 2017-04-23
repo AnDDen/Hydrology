@@ -1,5 +1,4 @@
 ﻿using CoreInterfaces;
-using HydrologyCore.Data;
 using HydrologyCore.Experiment;
 using HydrologyCore.Experiment.Nodes;
 using System;
@@ -25,67 +24,43 @@ namespace HydrologyDesktop.Views.SettingWindows
     /// </summary>
     public partial class AlgorithmSettingsWindow : SettingsWindow
     {
-        public string AlgorithmType
-        {
-            get
-            {
-                return (Node as AlgorithmNode).DisplayedTypeName;
-            }
-        }
+        public string AlgorithmType => (Node as AlgorithmNode).DisplayedTypeName;
+
+        private AlgorithmNode AlgNode => Node as AlgorithmNode;
 
         public ObservableCollection<InputParameter> InputParams { get; set; }
         public ObservableCollection<OutputParameter> OutputParams { get; set; }
 
-        public AlgorithmSettingsWindow(Type algorithmType, NodeContainer container) 
+        public AlgorithmSettingsWindow(Type algorithmType, HydrologyCore.Experiment.Block container) 
             : this(new AlgorithmNode("", algorithmType, container)) { }
 
-        public AlgorithmSettingsWindow(AbstractNode node)
+        public AlgorithmSettingsWindow(IRunable node)
         {
             Node = node;
-
-            InitParams();
-
+            InputParams = new ObservableCollection<InputParameter>(AlgNode.Parameters.Select(p => new InputParameter(node, p, p.Displayed, AlgNode.GetPortValue(p)?.ToString())));
+            OutputParams = new ObservableCollection<OutputParameter>(AlgNode.SaveToFile.Select(p => new OutputParameter(p.Key, p.Value)));
             InitializeComponent();
         }
 
-        public void InitParams()
+        public override IRunable GetNode()
         {
-            InputParams = new ObservableCollection<InputParameter>();
-            var inputs = (Node as AlgorithmNode).InputInfo;
-            var inputValues = (Node as AlgorithmNode).InputValues;
-            foreach (var input in inputs)
-            {
-                var varValue = (inputValues.ContainsKey(input.Key)) ? inputValues[input.Key] : new VariableValue(VariableType.VALUE);
-                InputParams.Add(new InputParameter(Node, input.Key, input.Value) { VarValue = varValue });
-            }
-
-            OutputParams = new ObservableCollection<OutputParameter>();
-            var outputs = (Node as AlgorithmNode).OutputInfo;
-            var outputSaveToFile = (Node as AlgorithmNode).SaveToFile;
-            foreach (var output in outputs)
-            {
-                var value = (outputSaveToFile.ContainsKey(output.Key)) ? outputSaveToFile[output.Key] : true;
-                OutputParams.Add(new OutputParameter(output.Key, output.Value) { IsSaveToFile = value });
-            }
+            ApplyParams();
+            return Node;
         }
 
         public void ApplyParams()
         {
-            foreach (var input in InputParams)
+            foreach (InputParameter p in InputParams)
             {
-                (Node as AlgorithmNode).InputValues[input.Name] = input.VarValue;
+                p.Port.Displayed = p.IsRef;
+                if (!p.IsRef)
+                    AlgNode.SetPortValue(p.Port, p.Value);
             }
 
-            foreach (var output in OutputParams)
+            foreach (OutputParameter p in OutputParams)
             {
-                (Node as AlgorithmNode).SaveToFile[output.Name] = output.IsSaveToFile;
+                AlgNode.SetSaveToFile(p.Port, p.IsSaveToFile);
             }
-        }
-
-        public override AbstractNode GetNode()
-        {
-            ApplyParams();
-            return Node;
         }
     }
 }

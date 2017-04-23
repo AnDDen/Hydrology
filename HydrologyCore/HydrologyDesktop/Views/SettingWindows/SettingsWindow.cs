@@ -1,4 +1,5 @@
-﻿using HydrologyCore.Experiment.Nodes;
+﻿using HydrologyCore.Experiment;
+using HydrologyCore.Experiment.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace HydrologyDesktop.Views.SettingWindows
 {
     public class SettingsWindow : Window
     {
-        public AbstractNode Node { get; set; }
+        public IRunable Node { get; set; }
 
-        public virtual AbstractNode GetNode()
+        public virtual IRunable GetNode()
         {
             return Node;
         }

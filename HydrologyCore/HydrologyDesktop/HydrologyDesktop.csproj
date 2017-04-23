@@ -9,11 +9,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HydrologyDesktop</RootNamespace>
     <AssemblyName>HydrologyDesktop</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -55,6 +56,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Views\Controls\Arrow.xaml.cs">
+      <DependentUpon>Arrow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ExecutorWindow.xaml.cs">
       <DependentUpon>ExecutorWindow.xaml</DependentUpon>
     </Compile>
@@ -66,18 +70,20 @@
     <Compile Include="Views\SettingWindows\AlgorithmSettingsWindow.xaml.cs">
       <DependentUpon>AlgorithmSettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SettingWindows\FileParemeter.cs" />
+    <Compile Include="Views\SettingWindows\BlockSettingsWindow.xaml.cs">
+      <DependentUpon>BlockSettingsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingWindows\FileParameter.cs" />
     <Compile Include="Views\SettingWindows\InitNodeSettingsWindow.xaml.cs">
       <DependentUpon>InitNodeSettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingWindows\InputParameter.cs" />
-    <Compile Include="Views\SettingWindows\LoopNodeSettingsWindow.xaml.cs">
-      <DependentUpon>LoopNodeSettingsWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\SettingWindows\OutputParameter.cs" />
+    <Compile Include="Views\SettingWindows\PortNodeSettingsWindow.xaml.cs">
+      <DependentUpon>PortNodeSettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingWindows\SettingsWindow.cs" />
     <Compile Include="Views\SettingWindows\SettingsWindowHelper.cs" />
-    <Compile Include="VariableTypeHelper.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -90,6 +96,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\Controls\Arrow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ExecutorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -102,11 +112,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\SettingWindows\BlockSettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\SettingWindows\InitNodeSettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\SettingWindows\LoopNodeSettingsWindow.xaml">
+    <Page Include="Views\SettingWindows\PortNodeSettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
