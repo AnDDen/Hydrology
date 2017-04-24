@@ -48,7 +48,7 @@ namespace HydrologyCore.Experiment.Nodes
             }
         }
 
-        public DataType DataType
+        public virtual DataType DataType
         {
             get { return Port.DataType; }
             set

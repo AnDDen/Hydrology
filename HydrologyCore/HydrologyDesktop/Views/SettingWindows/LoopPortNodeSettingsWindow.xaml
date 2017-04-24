@@ -1,25 +1,17 @@
-﻿<local:SettingsWindow x:Class="HydrologyDesktop.Views.SettingWindows.PortNodeSettingsWindow"
+﻿<local:SettingsWindow x:Class="HydrologyDesktop.Views.SettingWindows.LoopPortNodeSettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HydrologyDesktop.Views.SettingWindows"
         mc:Ignorable="d"
-        Title="Свойства параметра" Width="500" SizeToContent="Height" ResizeMode="NoResize"
+        Title="Свойства переменной цикла" Width="500" SizeToContent="Height" ResizeMode="NoResize"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
         <StackPanel>
             <DockPanel Margin="5 5 5 0">
                 <Label Padding="7 3 10 3" Width="70">Имя</Label>
                 <TextBox Text="{Binding PortName}" />
-            </DockPanel>
-            <DockPanel Margin="5 5 5 0">
-                <Label Padding="7 3 10 3" Width="70">Описание</Label>
-                <TextBox Text="{Binding PortDescription}" />
-            </DockPanel>
-            <DockPanel Margin="5 15 5 0">
-                <Label Padding="7 3 10 3" Width="120">Структура данных</Label>
-                <ComboBox x:Name="DataTypeComboBox" ItemsSource="{Binding DataTypes}" SelectionChanged="DataTypeComboBox_SelectionChanged"/>
             </DockPanel>
             <DockPanel Margin="5 5 5 0">
                 <Label Padding="7 3 10 3" Width="120">Тип элементов</Label>

@@ -39,7 +39,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IContext.cs" />
     <Compile Include="IAlgorithm.cs" />
     <Compile Include="InputAttribute.cs" />
     <Compile Include="IReader.cs" />

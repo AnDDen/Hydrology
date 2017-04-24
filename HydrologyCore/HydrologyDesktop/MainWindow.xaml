@@ -59,8 +59,7 @@
                                                     <TextBlock>Общие элементы</TextBlock>
                                                 </Expander.Header>
                                                 <Expander.Content>
-                                                    <StackPanel Margin="0">
-                                                        
+                                                    <StackPanel Margin="0">                                                        
                                                         <Button Style="{StaticResource AlgButtonStyle}" Content="Блок" PreviewMouseDown="Button_PreviewMouseDown" 
                                                                 PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding BLOCK_NODE_DESCRIPTOR}"/>
                                                         <Button Style="{StaticResource AlgButtonStyle}" Content="Входной параметр" PreviewMouseDown="Button_PreviewMouseDown"
@@ -71,9 +70,6 @@
                                                                 PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding INIT_NODE_DESCRIPTOR}" />
                                                         <Button Style="{StaticResource AlgButtonStyle}" Content="Цикл" PreviewMouseDown="Button_PreviewMouseDown" 
                                                                 PreviewMouseMove="Button_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" Tag="{Binding LOOP_NODE_DESCRIPTOR}"/>
-                                                        <!-- <Button Style="{StaticResource AlgButtonStyle}" Content="Запуск приложения" PreviewMouseDown="Button_PreviewMouseDown" 
-                                                                PreviewMouseMove="exportButton_PreviewMouseMove" PreviewMouseUp="Button_PreviewMouseUp" 
-                                                            BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" /> -->
                                                     </StackPanel>
                                                 </Expander.Content>
                                             </Expander>
@@ -99,6 +95,10 @@
                                     <Label VerticalAlignment="Center" Padding="10 5" FontFamily="Segoe UI Semibold" Foreground="#FF303030">
                                         <TextBlock Name="NodeContainerName"/>
                                     </Label>
+                                    <DockPanel HorizontalAlignment="Right">
+                                        <Button Content="&#xE115;" VerticalAlignment="Top" Width="30" Height="30" FontFamily="Segoe UI Symbol"
+                                                Style="{StaticResource BackButtonStyle}" Click="SettingsBtn_Click" Name="SettingsBtn" />
+                                    </DockPanel>
                                 </DockPanel>
                                 <Grid Margin="0 30 0 0">
                                     <Canvas Grid.Column="1" x:Name="Canvas" AllowDrop="True" Drop="Canvas_Drop" ClipToBounds="True" Style="{StaticResource CanvasStyle}"

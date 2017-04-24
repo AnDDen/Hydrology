@@ -78,6 +78,9 @@
       <DependentUpon>InitNodeSettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingWindows\InputParameter.cs" />
+    <Compile Include="Views\SettingWindows\LoopPortNodeSettingsWindow.xaml.cs">
+      <DependentUpon>LoopPortNodeSettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingWindows\OutputParameter.cs" />
     <Compile Include="Views\SettingWindows\PortNodeSettingsWindow.xaml.cs">
       <DependentUpon>PortNodeSettingsWindow.xaml</DependentUpon>
@@ -117,6 +120,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SettingWindows\InitNodeSettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SettingWindows\LoopPortNodeSettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

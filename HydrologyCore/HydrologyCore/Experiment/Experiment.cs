@@ -1,4 +1,5 @@
-﻿using HydrologyCore.Experiment.Nodes;
+﻿using HydrologyCore.Context;
+using HydrologyCore.Experiment.Nodes;
 using System;
 using System.ComponentModel;
 
@@ -19,17 +20,11 @@ namespace HydrologyCore.Experiment
             Block = new Block(null, null);
         }
 
-        public void Run()
-        {
-            Context ctx = new Context();
-            Block.Run(ctx);
-        }
-
         public void Run(BackgroundWorker worker)
         {
             var count = Block.TotalNodeCount() * 2;
             int current = 0;
-            Context ctx = new Context();
+            IContext ctx = new BlockContext(Block, null);
             Block.Run(ctx, worker, count, ref current);
             Core.Instance.UpdateWorker(worker, 1, 1, null);
         }

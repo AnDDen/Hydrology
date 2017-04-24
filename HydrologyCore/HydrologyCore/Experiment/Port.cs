@@ -35,12 +35,14 @@ namespace HydrologyCore.Experiment
             set
             {
                 DataType = DataTypeHelpers.GetDataType(value);
-                if (DataType == DataType.ARRAY)
+                if (DataType == DataType.VALUE)
+                    ElementType = value;
+                else if (DataType == DataType.ARRAY)
                     ElementType = value.GetElementType();
                 else if (DataType == DataType.MATRIX)
                     ElementType = value.GetElementType().GetElementType();
                 else
-                    ElementType = value;
+                    ElementType = null;
             }
         }
 
@@ -64,7 +66,6 @@ namespace HydrologyCore.Experiment
         public Port(IRunable owner, string name, string description, Type type, bool displayed) : this(owner, name, name, description, type, displayed) { }
 
         public Port(IRunable owner, string name, string description, Type type) : this(owner, name, name, description, type, true) { }
-
 
         public Port(IRunable owner, string name, string displayedName, string description, DataType dataType, Type elementType, bool displayed)
         {

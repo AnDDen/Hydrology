@@ -1,4 +1,5 @@
-﻿using HydrologyCore.Events;
+﻿using HydrologyCore.Context;
+using HydrologyCore.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,8 +17,7 @@ namespace HydrologyCore.Experiment
         IList<Port> InPorts { get; }
         IList<Port> OutPorts { get; }
 
-        void Run(Context ctx);
-        void Run(Context ctx, BackgroundWorker worker, int count, ref int current);
+        void Run(IContext ctx, BackgroundWorker worker, int count, ref int current);
 
         event NameChangedEventHandler NameChanged;
     }

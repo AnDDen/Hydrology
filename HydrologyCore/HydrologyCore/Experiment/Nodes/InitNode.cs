@@ -1,5 +1,6 @@
 ﻿using CoreInterfaces;
 using CsvParser;
+using HydrologyCore.Context;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,7 +16,7 @@ namespace HydrologyCore.Experiment.Nodes
 
         public InitNode(string name, Block parent) : base(name, parent) { }
 
-        public override void Run(Context ctx)
+        public override void Run(IContext ctx)
         {
             foreach (var file in files.Keys)
             {
@@ -24,11 +25,11 @@ namespace HydrologyCore.Experiment.Nodes
                 table.TableName = files[file];
                 // put in context
                 Port port = outPorts.Find(p => p.Name == files[file]);
-                ctx.AddPortValue(port, table);
+                ctx.SetPortValue(port, table);
             }
         }
 
-        public void AddFile(string name, string path)
+        public void AddFile(string path, string name)
         {
             files.Add(path, name);
             outPorts.Add(new Port(this, name, null, typeof(DataTable)));

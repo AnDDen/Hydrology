@@ -16,8 +16,10 @@ namespace HydrologyDesktop.Views.SettingWindows
         {
             SettingsWindow window = null;
 
+            if (nodeType == typeof(LoopBlock))
+                window = new BlockSettingsWindow(container.Block, true);
             if (nodeType == typeof(Block))
-                window = new BlockSettingsWindow(container.Block);
+                window = new BlockSettingsWindow(container.Block, false);
             if (nodeType == typeof(AlgorithmNode))
                 window = new AlgorithmSettingsWindow(algorithmType, container.Block);
             if (nodeType == typeof(InitNode))
@@ -50,7 +52,12 @@ namespace HydrologyDesktop.Views.SettingWindows
             if (node is InitNode)
                 window = new InitNodeSettingsWindow(node);
             if (node is PortNode)
-                window = new PortNodeSettingsWindow(node);
+            {
+                if (node is LoopPortNode)
+                    window = new LoopPortNodeSettingsWindow(node);
+                else
+                    window = new PortNodeSettingsWindow(node);
+            }
 
             // todo
 

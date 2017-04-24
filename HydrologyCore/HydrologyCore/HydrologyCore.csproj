@@ -40,12 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Context.cs" />
+    <Compile Include="Context\BlockContext.cs" />
+    <Compile Include="Context\IContext.cs" />
+    <Compile Include="Context\LoopContext.cs" />
+    <Compile Include="Context\NodeContext.cs" />
     <Compile Include="Events\NameChangedEvent.cs" />
     <Compile Include="Experiment\Nodes\InPortNode.cs" />
+    <Compile Include="Experiment\Nodes\LoopPortNode.cs" />
     <Compile Include="Experiment\Nodes\PortNode.cs" />
     <Compile Include="Experiment\Nodes\OutPortNode.cs" />
-    <Compile Include="NodeContext.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="DataType.cs" />
     <Compile Include="Experiment\Connection.cs" />

@@ -1,4 +1,5 @@
-﻿using HydrologyCore.Events;
+﻿using HydrologyCore.Context;
+using HydrologyCore.Events;
 using HydrologyCore.Experiment.Nodes;
 using System;
 using System.Collections.Generic;
@@ -57,30 +58,7 @@ namespace HydrologyCore.Experiment
                 Path = parent.Path + "/" + name;
         }
 
-        public virtual void Run(Context ctx)
-        {
-            IDictionary<IRunable, List<IRunable>> graph = GenerateExecutionGraph();      
-            while (graph.Keys.Count != 0)
-            {
-                var forExecute = graph.Where(x => x.Value.Count == 0).Select(x => x.Key);
-                foreach (var node in forExecute)
-                {
-                    var ports = Connections.Where(c => c.To.Owner == node).ToDictionary(c => c.To, c => c.From);
-                    foreach (var p in ports)
-                    {
-                        ctx.AddPortValue(p.Key, ctx.GetPortValue(p.Value));
-                    }
-
-                    node.Run(ctx);
-
-                    graph.Remove(node);
-                    foreach (var pair in graph)
-                        pair.Value.Remove(node);
-                }
-            }
-        }
-
-        public virtual void Run(Context ctx, BackgroundWorker worker, int count, ref int current)
+        public virtual void Run(IContext ctx, BackgroundWorker worker, int count, ref int current)
         {
             IDictionary<IRunable, List<IRunable>> graph = GenerateExecutionGraph();
             while (graph.Keys.Count != 0)
@@ -91,8 +69,12 @@ namespace HydrologyCore.Experiment
                     var ports = Connections.Where(c => c.To.Owner == node).ToDictionary(c => c.To, c => c.From);
                     foreach (var p in ports)
                     {
-                        ctx.AddPortValue(p.Key, ctx.GetPortValue(p.Value));
+                        ctx.SetPortValue(p.Key, ctx.GetPortValue(p.Value));
                     }
+
+                    IContext nodeCtx;
+                    if (node is Block)
+                        nodeCtx = ctx.GetContext(node);
 
                     node.Run(ctx, worker, count, ref current);
 

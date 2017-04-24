@@ -29,10 +29,10 @@ namespace HydrologyDesktop
         public const string NODE_DRAG_DATA_OBJECT = "NodeDescriptor";
 
         public Tuple<Type, Type> BLOCK_NODE_DESCRIPTOR => new Tuple<Type, Type>(typeof(Block), null);
+        public Tuple<Type, Type> LOOP_NODE_DESCRIPTOR => new Tuple<Type, Type>(typeof(LoopBlock), null);
         public Tuple<Type, Type> INIT_NODE_DESCRIPTOR => new Tuple<Type, Type>(typeof(InitNode), null);
         public Tuple<Type, Type> IN_PORT_NODE_DESCRIPTOR => new Tuple<Type, Type>(typeof(InPortNode), null);
-        public Tuple<Type, Type> OUT_PORT_NODE_DESCRIPTOR => new Tuple<Type, Type>(typeof(OutPortNode), null);
-        public Tuple<Type, Type> LOOP_NODE_DESCRIPTOR => new Tuple<Type, Type>(typeof(LoopBlock), null);        
+        public Tuple<Type, Type> OUT_PORT_NODE_DESCRIPTOR => new Tuple<Type, Type>(typeof(OutPortNode), null);      
 
         private IDictionary<Block, NodeContainerGraph> blockGraphs;
 
@@ -48,7 +48,7 @@ namespace HydrologyDesktop
             {
                 nodeContainer = value;
                 SetNodeContainerName();
-                SetBackButtonVisibility();
+                SetBlockButtonsVisibility();
             }
         }
 
@@ -77,12 +77,18 @@ namespace HydrologyDesktop
                 NodeContainerName.Text = UIConsts.EXPERIMENT_NAME;
         }
 
-        public void SetBackButtonVisibility()
+        public void SetBlockButtonsVisibility()
         {
             if (NodeContainer != null && NodeContainer.Block.Parent != null)
+            {
                 BackButton.Visibility = Visibility.Visible;
+                SettingsBtn.Visibility = Visibility.Visible;
+            }
             else
+            {
                 BackButton.Visibility = Visibility.Collapsed;
+                SettingsBtn.Visibility = Visibility.Collapsed;
+            }
         }
 
         public System.Windows.Forms.FolderBrowserDialog FolderDialog { get; set; }
@@ -214,7 +220,8 @@ namespace HydrologyDesktop
             nodeControl.LostMouseCapture += NodeControl_LostMouseCapture;
 
             nodeControl.ButtonClick += NodeControl_ButtonClick;
-
+            
+            NodeContainer.AddNode(nodeControl);
             Canvas.Children.Add(nodeControl);
             Canvas.SetLeft(nodeControl, pos.X);
             Canvas.SetTop(nodeControl, pos.Y);
@@ -223,9 +230,15 @@ namespace HydrologyDesktop
             {
                 var block = nodeControl.Node as Block;
                 blockGraphs.Add(block, new NodeContainerGraph(block, NodeContainer) { Parent = nodeContainer });
-            }
-
-            NodeContainer.AddNode(nodeControl);
+                NodeContainer = blockGraphs[block];
+                NodeContainer.DisplayOnCanvas(Canvas);
+                if (block is LoopBlock)
+                {
+                    LoopPortNode loopPortNode = new LoopPortNode(block.Name + "Var", "Переменная цикла", typeof(double), block);
+                    (block as LoopBlock).LoopPortNode = loopPortNode;
+                    CreateNodeControl(loopPortNode, new Point(20, 20));
+                }
+            }            
         }
 
         public void NodeControl_LostMouseCapture(object sender, MouseEventArgs e)
@@ -556,11 +569,21 @@ namespace HydrologyDesktop
             isArrow = true;
             isArrowStart = true;
         }
-
-        // todo : delete node on 'Del' key press
+        
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            
+            if (e.Key == Key.Delete)
+            {
+                NodeControl node = selected as NodeControl;
+                foreach (var arrow in NodeContainer.Arrows.Where(a => a.From.Owner == node.Node | a.To.Owner == node.Node).ToList())
+                {
+                    NodeContainer.RemoveArrow(arrow);
+                    NodeContainer.RemoveArrowFromModel(arrow);
+                    Canvas.Children.Remove(arrow);
+                }                
+                NodeContainer.RemoveNode(node);
+                Canvas.Children.Remove(node);
+            }
         }
 
         private void NewBtn_Click(object sender, RoutedEventArgs e)
@@ -708,6 +731,17 @@ namespace HydrologyDesktop
                     node.UpdateLayout();
                     UpdateArrows(node);
                 }
+            }
+        }
+
+        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var window = SettingsWindowHelper.CreateSettingWindowForNode(NodeContainer.Block, this);
+            bool? dialogResult = window.ShowDialog();
+            if (dialogResult.HasValue && dialogResult.Value)
+            {
+                window.GetNode();
+                SetNodeContainerName();
             }
         }
     }

@@ -5,10 +5,11 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CoreInterfaces;
 using System.IO;
 using CsvParser;
 using System.Xml.Linq;
+using HydrologyCore.Context;
+using CoreInterfaces;
 
 namespace HydrologyCore.Experiment.Nodes
 {
@@ -75,9 +76,9 @@ namespace HydrologyCore.Experiment.Nodes
                 v = Convert.ToInt32(value);
 
             if (valueParams.ContainsKey(port))
-                valueParams[port] = value;
+                valueParams[port] = v;
             else
-                valueParams.Add(port, value);
+                valueParams.Add(port, v);
         }
 
         public void SetSaveToFile(Port port, bool isSaveToFile)
@@ -106,7 +107,7 @@ namespace HydrologyCore.Experiment.Nodes
             }
         }
 
-        public override void Run(Context ctx)
+        public override void Run(IContext ctx)
         {
             var alg = (IAlgorithm)Activator.CreateInstance(algorithmType);
             SetInputVariables(alg, ctx);
@@ -115,7 +116,7 @@ namespace HydrologyCore.Experiment.Nodes
             SaveOutputToFiles(ctx);
         }
 
-        private void SetInputVariables(IAlgorithm alg, Context ctx)
+        private void SetInputVariables(IAlgorithm alg, IContext ctx)
         {
             foreach (PropertyInfo property in algorithmType.GetProperties())
             {
@@ -130,7 +131,7 @@ namespace HydrologyCore.Experiment.Nodes
             }
         }
 
-        private void GetOutputVariables(IAlgorithm alg, Context ctx)
+        private void GetOutputVariables(IAlgorithm alg, IContext ctx)
         {
             foreach (PropertyInfo property in algorithmType.GetProperties())
             {
@@ -139,12 +140,12 @@ namespace HydrologyCore.Experiment.Nodes
                 if (attr != null)
                 {
                     var value = property.GetValue(alg);
-                    ctx.AddPortValue(port, value);
+                    ctx.SetPortValue(port, value);
                 }
             }
         }
 
-        private void SaveOutputToFiles(Context ctx)
+        private void SaveOutputToFiles(IContext ctx)
         {
             IWriter writer = new CSVWriter();
             foreach (var entity in saveToFile)

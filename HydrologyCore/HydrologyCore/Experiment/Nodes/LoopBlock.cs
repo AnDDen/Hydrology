@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using HydrologyCore.Context;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 using static System.Convert;
@@ -7,22 +11,25 @@ using static System.Math;
 
 namespace HydrologyCore.Experiment.Nodes
 {
-    // todo : переделать в блок + алгоритм для переменной цикла
     public class LoopBlock : Block
     {
-        public double Value { get; set; }
+        public LoopPortNode LoopPortNode { get; set; }
 
         public LoopBlock(string name, Block parent) : base(name, parent)
         {
         }
 
-        public override void Run(Context ctx)
+        public override void Run(IContext ctx, BackgroundWorker worker, int count, ref int current)
         {
-            /* for (int i  = 0; i < values.Length; i++)
+            Debug.Assert(ctx is LoopContext);
+            LoopContext loopCtx = ctx as LoopContext;
+            object varArray = ctx.GetPortValue(LoopPortNode.BlockPort);
+            Array array = (Array) varArray;
+            for (int i = 0; i < array.Length; i++)
             {
-                Value = values[i];
-                base.Run(ctx);
-            } */
+                loopCtx.NextIteration(array.GetValue(i));
+                base.Run(ctx, worker, count, ref current);
+            }
         }
 
         public override int TotalNodeCount()

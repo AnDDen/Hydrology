@@ -74,6 +74,8 @@ namespace HydrologyDesktop.Views.Controls
                 }
                 else if (Node is InPortNode)
                 {
+                    if (Node is LoopPortNode)
+                        return UIConsts.LOOP_PORT_NODE_NAME;
                     return UIConsts.IN_PORT_NODE_NAME;
                 }
                 else if (Node is OutPortNode)
@@ -112,7 +114,7 @@ namespace HydrologyDesktop.Views.Controls
             });
             // datatype
             toolTip.Children.Add(new Label() {
-                Content = p.DataType + " " + p.ElementType?.Name ?? "",
+                Content = UIConsts.GetTypeName(p.DataType, p.ElementType),
                 FontStyle = FontStyles.Italic,
                 FontSize = 10 });
             // description

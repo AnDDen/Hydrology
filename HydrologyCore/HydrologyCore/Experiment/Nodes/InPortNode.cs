@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HydrologyCore.Context;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,9 +15,9 @@ namespace HydrologyCore.Experiment.Nodes
             OutPorts.Add(Port);
         }
 
-        public override void Run(Context ctx)
+        public override void Run(IContext ctx)
         {
-            ctx.AddPortValue(Port, ctx.GetPortValue(BlockPort));
+            ctx.SetPortValue(Port, ctx.GetPortValue(BlockPort));
         }
     }
 }

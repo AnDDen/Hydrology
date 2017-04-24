@@ -1,4 +1,5 @@
-﻿using HydrologyCore.Events;
+﻿using HydrologyCore.Context;
+using HydrologyCore.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -44,9 +45,9 @@ namespace HydrologyCore.Experiment.Nodes
             Parent = parent;
         }
 
-        public abstract void Run(Context ctx);
+        public abstract void Run(IContext ctx);
         
-        public virtual void Run(Context ctx, BackgroundWorker worker, int count, ref int current)
+        public virtual void Run(IContext ctx, BackgroundWorker worker, int count, ref int current)
         {
             Core.Instance.UpdateWorker(worker, ++current, count, Name);
             Run(ctx);

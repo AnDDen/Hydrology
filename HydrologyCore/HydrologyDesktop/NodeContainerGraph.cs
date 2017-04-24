@@ -67,6 +67,10 @@ namespace HydrologyDesktop
             {
                 canvas.Children.Add(nodeControl);
             }
+            foreach (var arrow in Arrows)
+            {
+                canvas.Children.Add(arrow);
+            }
         }
 
         public XElement ToXml(IDictionary<LoopBlock, NodeContainerGraph> nodeContainerGraphs)

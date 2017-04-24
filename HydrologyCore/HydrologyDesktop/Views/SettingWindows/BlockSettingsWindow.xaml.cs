@@ -1,4 +1,5 @@
 ﻿using HydrologyCore.Experiment;
+using HydrologyCore.Experiment.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,8 @@ namespace HydrologyDesktop.Views.SettingWindows
     /// </summary>
     public partial class BlockSettingsWindow : SettingsWindow
     {
-        public BlockSettingsWindow(HydrologyCore.Experiment.Block container) 
-            : this((IRunable) new HydrologyCore.Experiment.Block("", container)) { }
+        public BlockSettingsWindow(HydrologyCore.Experiment.Block container, bool isloop) 
+            : this((isloop ? new LoopBlock("", container) : new HydrologyCore.Experiment.Block("", container))) { }
 
         public BlockSettingsWindow(IRunable node)
         {
