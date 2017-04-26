@@ -23,17 +23,17 @@ namespace CoreToolbox
         }
     }
 
-    [Name("Создание массива целых чисел", "Массивы")]
+    [Name("Пустой массив целых чисел", "Массивы")]
     public class NewIntArray : NewArray<int>
     {        
     }
 
-    [Name("Создание массива вещественных чисел", "Массивы")]
+    [Name("Пустой массив вещественных чисел", "Массивы")]
     public class NewDoubleArray : NewArray<double>
     {
     }
 
-    [Name("Создание массива строк", "Массивы")]
+    [Name("Пустой массив строк", "Массивы")]
     public class NewStringArray : NewArray<string>
     {        
     }

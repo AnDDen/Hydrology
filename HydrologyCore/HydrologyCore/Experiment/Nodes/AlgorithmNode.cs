@@ -60,7 +60,7 @@ namespace HydrologyCore.Experiment.Nodes
                     {
                         port.Displayed = false;
                         parameters.Add(port);
-                        var defaultValue = Activator.CreateInstance(port.ElementType);
+                        var defaultValue = port.ElementType.IsValueType ? Activator.CreateInstance(port.ElementType) : null;
                         if (attr.DefaultValue != null)
                         {
                             defaultValue = attr.DefaultValue;
@@ -83,7 +83,7 @@ namespace HydrologyCore.Experiment.Nodes
             object v = value;
 
             if (port.ElementType == typeof(double))
-                v = Convert.ToDouble(value);
+                v = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
             else if (port.ElementType == typeof(int))
                 v = Convert.ToInt32(value);
 
@@ -152,8 +152,11 @@ namespace HydrologyCore.Experiment.Nodes
                 Port port = inPorts.Find(p => p.Name == property.Name);
                 if (attr != null)
                 {
-                    var value = ctx.GetPortValue(port);
-                    // todo : convert
+                    object value;
+                    if (ValueParams.ContainsKey(port) && !port.Displayed)
+                        value = GetPortValue(port);
+                    else
+                        value = ctx.GetPortValue(port);
                     property.SetValue(alg, value);
                 }
             }
@@ -164,7 +167,7 @@ namespace HydrologyCore.Experiment.Nodes
             foreach (PropertyInfo property in algorithmType.GetProperties())
             {
                 var attr = property.GetCustomAttribute<OutputAttribute>();
-                Port port = inPorts.Find(p => p.Name == property.Name);
+                Port port = outPorts.Find(p => p.Name == property.Name);
                 if (attr != null)
                 {
                     var value = property.GetValue(alg);

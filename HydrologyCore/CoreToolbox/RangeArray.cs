@@ -24,7 +24,7 @@ namespace CoreToolbox
 
         public void Run()
         {
-            int n = (int)Math.Truncate((StartValue - EndValue) / Step);
+            int n = (int)Math.Truncate((EndValue - StartValue) / Step) + 1;
             Array = new double[n];
             for (int i = 0; i < n; i++)
                 Array[i] = StartValue + i * Step;

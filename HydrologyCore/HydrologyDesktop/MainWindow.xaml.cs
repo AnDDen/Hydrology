@@ -698,6 +698,7 @@ namespace HydrologyDesktop
                     Arrow arrow = new Arrow(x1, y1, x2, y2);
                     arrow.From = start;
                     arrow.To = end;
+                    arrow.ArrowCapMouseDown += Arrow_ArrowCapMouseDown;
                     Canvas.Children.Add(arrow);
                     NodeContainer.AddArrow(arrow);
                     NodeContainer.AddArrowToModel(arrow);

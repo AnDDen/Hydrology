@@ -44,6 +44,13 @@
     <Compile Include="Context\IContext.cs" />
     <Compile Include="Context\LoopContext.cs" />
     <Compile Include="Context\NodeContext.cs" />
+    <Compile Include="Converters\ArrayConverter.cs" />
+    <Compile Include="Converters\ConvertersFactory.cs" />
+    <Compile Include="Converters\ConvertException.cs" />
+    <Compile Include="Converters\IConverter.cs" />
+    <Compile Include="Converters\MatrixConverter.cs" />
+    <Compile Include="Converters\NoConvert.cs" />
+    <Compile Include="Converters\ValueConverter.cs" />
     <Compile Include="Events\NameChangedEvent.cs" />
     <Compile Include="Experiment\Nodes\InPortNode.cs" />
     <Compile Include="Experiment\Nodes\LoopPortNode.cs" />

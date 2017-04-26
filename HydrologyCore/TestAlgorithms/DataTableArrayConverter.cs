@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace TestAlgorithms
 {
-    [Name("Конвертер DataTable в массив")]
+    [Name("Конвертер таблицы в массив")]
     public class DataTableArrayConverter : IAlgorithm
     {
         [Input("Таблица")]
         public DataTable Table { get; set; }
 
-        [Input("Index", "Номер столбца", 0)]
+        [Input("Index", Description = "Номер столбца")]
         public int ColumnIndex { get; set; }
 
         [Output("Массив")]

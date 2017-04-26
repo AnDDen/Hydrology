@@ -14,7 +14,9 @@ namespace HydrologyCore.Context
 
         public IDictionary<object, IList<IContext>> IterationContexts { get; } = new Dictionary<object, IList<IContext>>();
 
-        public override IList<IContext> Children => IterationContexts[CurrentVarValue];
+        private IList<IContext> children = new List<IContext>();
+
+        public override IList<IContext> Children => CurrentVarValue != null ? IterationContexts[CurrentVarValue] : children;
 
         public LoopContext(LoopBlock owner, BlockContext parentCtx) : base(owner, parentCtx)
         {
@@ -22,8 +24,26 @@ namespace HydrologyCore.Context
 
         public void NextIteration(object varValue)
         {
-            IterationContexts.Add(varValue, new List<IContext>());
+            IterationContexts.Add(varValue, CreateIterationContext());
             CurrentVarValue = varValue;
+        }
+
+        private IList<IContext> CreateIterationContext()
+        {
+            List<IContext> ctx = new List<IContext>();
+            foreach (var node in (Owner as Block).Nodes)
+            {
+                if (node is Block)
+                {
+                    if (node is LoopBlock)
+                        ctx.Add(new LoopContext(node as LoopBlock, this));
+                    else
+                        ctx.Add(new BlockContext(node as Block, this));
+                }
+                else
+                    ctx.Add(new NodeContext(node, this));
+            }
+            return ctx;
         }
 
         public object GetPortValue(object varValue, Port port)

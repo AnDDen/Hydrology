@@ -23,9 +23,13 @@ namespace TestAlgorithms
         [Input("Значение")]
         public double Value { get; set; }
 
+        [Output("Измененная таблица")]
+        public DataTable OutTable { get; set; }
+
         public void Run()
         {
             Table.Rows[RowNum][ColNum] = Value;
+            OutTable = Table;
         }
     }
 }

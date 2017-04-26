@@ -40,7 +40,13 @@ namespace HydrologyCore.Context
 
         protected object GetInput(Port port) => Inputs.ContainsKey(port) ? Inputs[port] : null;
 
-        protected void SetOutput(Port port, object value) => Outputs.Add(port, value);
+        protected void SetOutput(Port port, object value)
+        {
+            if (!Outputs.ContainsKey(port))
+                Outputs.Add(port, value);
+            else
+                Outputs[port] = value;
+        }
 
         protected object GetOutput(Port port) => Outputs.ContainsKey(port) ? Outputs[port] : null;
 
@@ -54,7 +60,7 @@ namespace HydrologyCore.Context
             }
             else
             {
-                IContext ctx = Children.FirstOrDefault(c => c.Owner == Owner);
+                IContext ctx = Children.FirstOrDefault(c => c.Owner == port.Owner);
                 if (ctx != null)
                 {
                     return ctx.GetPortValue(port);
@@ -74,7 +80,7 @@ namespace HydrologyCore.Context
             }
             else
             {
-                IContext ctx = Children.FirstOrDefault(c => c.Owner == Owner);
+                IContext ctx = Children.FirstOrDefault(c => c.Owner == port.Owner);
                 if (ctx != null)
                 {
                     ctx.SetPortValue(port, value);

@@ -1,4 +1,5 @@
 ﻿using HydrologyCore.Context;
+using HydrologyCore.Converters;
 using HydrologyCore.Events;
 using HydrologyCore.Experiment.Nodes;
 using System;
@@ -69,14 +70,19 @@ namespace HydrologyCore.Experiment
                     var ports = Connections.Where(c => c.To.Owner == node).ToDictionary(c => c.To, c => c.From);
                     foreach (var p in ports)
                     {
-                        ctx.SetPortValue(p.Key, ctx.GetPortValue(p.Value));
+                        if (p.Key.DataType != p.Value.DataType)
+                            throw new Exception($"Connected ports {p.Key.Owner.Name}.{p.Key.Name} and {p.Value.Owner.Name}.{p.Value.Name} have different data types");
+                        object value = ctx.GetPortValue(p.Value);
+                        IConverter converter = ConvertersFactory.GetConverter(p.Key.DataType);
+                        object converted = converter.Convert(value, p.Value.ElementType, p.Key.ElementType);
+                        ctx.SetPortValue(p.Key, converted);
                     }
 
-                    IContext nodeCtx;
+                    IContext nodeCtx = ctx;
                     if (node is Block)
                         nodeCtx = ctx.GetContext(node);
 
-                    node.Run(ctx, worker, count, ref current);
+                    node.Run(nodeCtx, worker, count, ref current);
 
                     graph.Remove(node);
                     foreach (var pair in graph)
@@ -87,6 +93,9 @@ namespace HydrologyCore.Experiment
         }
 
         private IDictionary<IRunable, List<IRunable>> GenerateExecutionGraph() =>
+            nodes.ToDictionary(r => r, r => Connections.Where(c => c.To.Owner == r).Select(c => c.From.Owner).ToList());
+
+        private IDictionary<IRunable, List<IRunable>> ExecutionGraphForCheck() =>
             nodes.ToDictionary(r => r, r => Connections.Where(c => c.From.Owner == r).Select(c => c.To.Owner).ToList());
 
         public Block AddNode(IRunable node)
@@ -144,6 +153,6 @@ namespace HydrologyCore.Experiment
             return false;
         }
 
-        public bool CheckForCycles() => CheckForCycles(GenerateExecutionGraph());
+        public bool CheckForCycles() => CheckForCycles(ExecutionGraphForCheck());
     }
 }
