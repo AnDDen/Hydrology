@@ -128,6 +128,7 @@ namespace HydrologyDesktop.Views.Controls
 
         public void LoadInPorts()
         {
+            InPorts.Clear();
             InPortsControl.Children.Clear();
             foreach (Port p in Node.InPorts)
             {
@@ -147,6 +148,7 @@ namespace HydrologyDesktop.Views.Controls
 
         public void LoadOutPorts()
         {
+            OutPorts.Clear();
             OutPortsControl.Children.Clear();
             foreach (Port p in Node.OutPorts)
             {
@@ -223,6 +225,31 @@ namespace HydrologyDesktop.Views.Controls
 
                 return (point.X >= x && point.X <= x + w) && (point.Y >= y && point.Y <= y + h);
             });
+        }
+
+        private Port FindPort(Point point, IDictionary<Port, Path> ports, Vector v, double d)
+        {
+            return ports.Keys.FirstOrDefault(p =>
+            {
+                var path = ports[p];
+                var pos = GetPosition(path) + v;
+                double x = pos.X;
+                double y = pos.Y;
+                double w = path.ActualWidth;
+                double h = path.ActualHeight;
+
+                return (point.X >= x - d && point.X <= x + w + d) && (point.Y >= y - d && point.Y <= y + h + d);
+            });
+        }
+
+        public Port FindInPortByPoint(Point point, Vector v, double d)
+        {
+            return FindPort(point, InPorts, v, d);
+        }
+
+        public Port FindOutPortByPoint(Point point, Vector v, double d)
+        {
+            return FindPort(point, OutPorts, v, d);
         }
 
         private Point GetPosition(Visual element)

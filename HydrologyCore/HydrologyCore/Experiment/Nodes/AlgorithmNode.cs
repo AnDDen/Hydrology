@@ -16,6 +16,7 @@ namespace HydrologyCore.Experiment.Nodes
     public class AlgorithmNode : AbstractNode
     {
         private Type algorithmType;
+        public Type AlgorithmType => algorithmType;
 
         public string DisplayedTypeName => algorithmType.GetCustomAttribute<NameAttribute>().Name;
 
@@ -29,9 +30,18 @@ namespace HydrologyCore.Experiment.Nodes
         private Dictionary<Port, bool> saveToFile;
         public IDictionary<Port, bool> SaveToFile => saveToFile;
 
+        private Dictionary<Type, Type> genericTypeValues;
+        public IDictionary<Type, Type> GenericTypeValues => genericTypeValues;
+
         public AlgorithmNode(string name, Type algorithmType, Block parent) : base(name, parent)
         {           
             this.algorithmType = algorithmType;
+
+            if (algorithmType.IsGenericTypeDefinition)
+            {
+                genericTypeValues = algorithmType.GetGenericArguments().ToDictionary(x => x, x => typeof(int));
+            }
+
             InitInputs();
             InitOutputs();
         }
@@ -50,10 +60,12 @@ namespace HydrologyCore.Experiment.Nodes
                     {
                         port.Displayed = false;
                         parameters.Add(port);
+                        var defaultValue = Activator.CreateInstance(port.ElementType);
                         if (attr.DefaultValue != null)
                         {
-                            valueParams.Add(port, attr.DefaultValue);
+                            defaultValue = attr.DefaultValue;
                         }
+                        valueParams.Add(port, defaultValue);
                     }                 
                 }
             }
@@ -107,9 +119,25 @@ namespace HydrologyCore.Experiment.Nodes
             }
         }
 
+        private IAlgorithm CreateInstance()
+        {
+            Type type = algorithmType;
+            if (algorithmType.IsGenericTypeDefinition && genericTypeValues != null)
+            {
+                Type[] typeArgs = new Type[GenericTypeValues.Keys.Count];
+                for (int i = 0; i < GenericTypeValues.Keys.Count; i++)
+                {
+                    var key = GenericTypeValues.Keys.First(x => x.GenericParameterPosition == i);
+                    typeArgs[i] = GenericTypeValues[key];
+                }
+                type = algorithmType.MakeGenericType(typeArgs);
+            }
+            return (IAlgorithm) Activator.CreateInstance(type);
+        }
+
         public override void Run(IContext ctx)
         {
-            var alg = (IAlgorithm)Activator.CreateInstance(algorithmType);
+            var alg = CreateInstance();
             SetInputVariables(alg, ctx);
             alg.Run();
             GetOutputVariables(alg, ctx);

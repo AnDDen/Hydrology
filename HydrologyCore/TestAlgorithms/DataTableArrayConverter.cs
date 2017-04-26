@@ -14,7 +14,7 @@ namespace TestAlgorithms
         [Input("Таблица")]
         public DataTable Table { get; set; }
 
-        [Input("Номер столбца", 0)]
+        [Input("Index", "Номер столбца", 0)]
         public int ColumnIndex { get; set; }
 
         [Output("Массив")]

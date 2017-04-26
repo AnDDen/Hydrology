@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HydrologyDesktop", "Hydrolo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAlgorithms", "TestAlgorithms\TestAlgorithms.csproj", "{5336B9D9-80BD-482F-9713-A0B024A50262}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreToolbox", "CoreToolbox\CoreToolbox.csproj", "{9323325F-6A16-4F2E-948F-CFE27884E724}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,11 +49,16 @@ Global
 		{5336B9D9-80BD-482F-9713-A0B024A50262}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5336B9D9-80BD-482F-9713-A0B024A50262}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5336B9D9-80BD-482F-9713-A0B024A50262}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9323325F-6A16-4F2E-948F-CFE27884E724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9323325F-6A16-4F2E-948F-CFE27884E724}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9323325F-6A16-4F2E-948F-CFE27884E724}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9323325F-6A16-4F2E-948F-CFE27884E724}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5336B9D9-80BD-482F-9713-A0B024A50262} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
+		{9323325F-6A16-4F2E-948F-CFE27884E724} = {3AD43D1A-A7B5-4285-8640-F991698940AC}
 	EndGlobalSection
 EndGlobal

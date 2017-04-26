@@ -60,10 +60,14 @@ namespace HydrologyCore
             }
         }
 
+        public Type FindByAssemblyQualifiedName(string name)
+        {
+            return AlgorithmTypes.Values.FirstOrDefault(x => x.AssemblyQualifiedName == name);
+        }
+
         private bool CheckAlgorithmType(Type algorithmType)
         {
-            // todo: добавить проверку на правильность типа (наличие необходимых атрибутов, правильность типов входных/выходных данных)
-            return true;
+            return algorithmType.GetCustomAttribute(typeof(NameAttribute)) != null;
         }
     }
 }

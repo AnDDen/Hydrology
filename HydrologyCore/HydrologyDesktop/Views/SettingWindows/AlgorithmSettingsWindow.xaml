@@ -29,12 +29,14 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="0 5">
-                                <Label Padding="7 3" FontWeight="Bold">
-                                    <TextBlock Text="{Binding Path=Port.DisplayedName}" />
-                                </Label>
-                                <Label Padding="7 0 7 5" FontStyle="Italic" FontSize="10" Visibility="{Binding Path=ShowDescription}">
-                                    <TextBlock Text="{Binding Path=Port.Description}" />
-                                </Label>
+                                <DockPanel>
+                                    <Label Padding="7 3" FontWeight="Bold">
+                                        <TextBlock Text="{Binding Path=Port.DisplayedName}" />
+                                    </Label>
+                                    <Label Padding="7 3" FontStyle="Italic" FontSize="11" Visibility="{Binding Path=ShowDescription}">
+                                        <TextBlock Text="{Binding Path=Port.Description}" />
+                                    </Label>
+                                </DockPanel>
                                 <WrapPanel Margin="0 5 0 5">
                                     <Label>Значение</Label>
                                     <TextBox Margin="5 0 0 0" Width="300" Text="{Binding Path=Value}">

@@ -20,7 +20,7 @@ namespace CoreInterfaces
             DefaultValue = defaultValue;
         }
 
-        public InputAttribute(string displayedName, object defaultValue) : this(displayedName, "", defaultValue) { }
+        public InputAttribute(string displayedName, string description) : this(displayedName, description, null) { }
 
         public InputAttribute(string displayedName) : this(displayedName, null) { }
     }

@@ -10,9 +10,12 @@ namespace CoreInterfaces
     public class NameAttribute : System.Attribute
     {
         public string Name { get; set; }
-        public NameAttribute(string name)
+        public string Package { get; set; }
+
+        public NameAttribute(string name, string package = null)
         {
             Name = name;
+            Package = package;
         }
     }
 }

@@ -18,6 +18,7 @@ using HydrologyCore.Experiment.Nodes;
 using HydrologyDesktop.Views.SettingWindows;
 using HydrologyDesktop.Views.Controls;
 using HydrologyCore.Experiment;
+using HydrologyDesktop.XmlHelpers;
 
 namespace HydrologyDesktop
 {
@@ -136,6 +137,7 @@ namespace HydrologyDesktop
 
             root = new NodeContainerGraph(experiment.Block, null);
             blockGraphs = new Dictionary<Block, NodeContainerGraph>();
+            blockGraphs.Add(experiment.Block, root);
             NodeContainer = root;
             NodeContainer.DisplayOnCanvas(Canvas);
         }
@@ -210,7 +212,7 @@ namespace HydrologyDesktop
             }
         }
 
-        public void CreateNodeControl(IRunable node, Point pos)
+        public NodeControl CreateNodeControl(IRunable node, Point pos)
         {
             NodeControl nodeControl = new NodeControl(node);
 
@@ -238,7 +240,9 @@ namespace HydrologyDesktop
                     (block as LoopBlock).LoopPortNode = loopPortNode;
                     CreateNodeControl(loopPortNode, new Point(20, 20));
                 }
-            }            
+            }
+
+            return nodeControl;
         }
 
         public void NodeControl_LostMouseCapture(object sender, MouseEventArgs e)
@@ -575,14 +579,17 @@ namespace HydrologyDesktop
             if (e.Key == Key.Delete)
             {
                 NodeControl node = selected as NodeControl;
-                foreach (var arrow in NodeContainer.Arrows.Where(a => a.From.Owner == node.Node | a.To.Owner == node.Node).ToList())
+                if (!(node.Node is LoopPortNode))
                 {
-                    NodeContainer.RemoveArrow(arrow);
-                    NodeContainer.RemoveArrowFromModel(arrow);
-                    Canvas.Children.Remove(arrow);
-                }                
-                NodeContainer.RemoveNode(node);
-                Canvas.Children.Remove(node);
+                    foreach (var arrow in NodeContainer.Arrows.Where(a => a.From.Owner == node.Node | a.To.Owner == node.Node).ToList())
+                    {
+                        NodeContainer.RemoveArrow(arrow);
+                        NodeContainer.RemoveArrowFromModel(arrow);
+                        Canvas.Children.Remove(arrow);
+                    }
+                    NodeContainer.RemoveNode(node);
+                    Canvas.Children.Remove(node);
+                }
             }
         }
 
@@ -595,106 +602,107 @@ namespace HydrologyDesktop
         {
             XDocument xDocument = XDocument.Load(path);
             NewExperiment();
-            LoadExperimentGraph(xDocument.Root);
-            LoadExperimentInputs(xDocument.Root);
+            var experimentElement = xDocument.Root;
+            experiment.Path = experimentElement.Attribute("path").Value;
+            LoadBlock(experimentElement.Element("block"));
         }
 
-        // todo : check
-        private void LoadExperimentGraph(XElement nodes)
+        private void LoadBlock(XElement blockElement)
         {
-            // read all nodes
-            /* foreach (XElement element in nodes.Elements("node"))
+            foreach (var nodeElement in blockElement.Element("nodes").Elements("node"))
             {
-                double x = double.Parse(element.Attribute("x").Value, CultureInfo.InvariantCulture);
-                double y = double.Parse(element.Attribute("y").Value, CultureInfo.InvariantCulture);
-                AbstractNode node = null;
-                if (element.Element("algorithm") != null)
+                IRunable modelNode = null;
+                NodeControl nodeControl = null;
+                string name = nodeElement.Attribute("name").Value;
+                double x = Convert.ToDouble(nodeElement.Attribute("x").Value, CultureInfo.InvariantCulture);
+                double y = Convert.ToDouble(nodeElement.Attribute("y").Value, CultureInfo.InvariantCulture);
+                if (nodeElement.Attribute("type") != null)
                 {
-                    // algorithm node
-                    XElement algorithm = element.Element("algorithm");
-                    string name = algorithm.Attribute("name").Value;
-                    string type = algorithm.Attribute("type").Value;
-                    node = new AlgorithmNode(name, PluginManager.Instance.AlgorithmTypes[type], NodeContainer.Block);
-                    if (algorithm.Element("outputs") != null)
+                    Type nodeType = Type.GetType(nodeElement.Attribute("type").Value);
+                    
+                    if (nodeType == typeof(InitNode))
+                        modelNode = new InitNode(name, NodeContainer.Block);
+                    if (nodeType == typeof(InPortNode))
+                        modelNode = new InPortNode(name, "", DataType.VALUE, typeof(int), NodeContainer.Block);
+                    if (nodeType == typeof(OutPortNode))
+                        modelNode = new OutPortNode(name, "", DataType.VALUE, typeof(int), NodeContainer.Block);
+                    if (nodeType == typeof(LoopBlock))
+                        modelNode = new LoopBlock(name, NodeContainer.Block);
+                    if (nodeType == typeof(Block))
+                        modelNode = new Block(name, NodeContainer.Block);
+
+                    if (nodeType != typeof(LoopPortNode))
                     {
-                        foreach (XElement output in algorithm.Element("outputs").Elements("output"))
-                        {
-                            (node as AlgorithmNode).SaveToFile[output.Attribute("name").Value] =
-                                output.Attribute("saveToFile").Value.ToLower() == "yes";
-                        }
+                        nodeControl = CreateNodeControl(modelNode, new Point(x, y));
+                    }
+                    else
+                    {
+                        var blockLoopPortNode = (NodeContainer.Block as LoopBlock).LoopPortNode;
+                        var loopPortNodeControl = NodeContainer.NodeControls.FirstOrDefault(c => c.Node == blockLoopPortNode);
+                        Canvas.SetLeft(loopPortNodeControl, x);
+                        Canvas.SetTop(loopPortNodeControl, y);
+                        blockLoopPortNode.Name = name;
+                        modelNode = blockLoopPortNode;
+                    }
+
+                    if (modelNode is Block)
+                    {
+                        LoadBlock(nodeElement.Element("block"));
+                        GoToParentBlock();
+                    }
+                    else
+                    {
+                        XmlSettingsDeserializer.DeserializeSettings(modelNode, nodeElement.Element("settings"));                        
                     }
                 }
-                else if (element.Element("init") != null)
+                else
                 {
-                    // init node
-                    node = new InitNode(element.Element("init").Attribute("name").Value, NodeContainer.Block);
-                    foreach (XElement file in element.Element("init").Element("files").Elements("file"))
-                    {
-                        (node as InitNode).Files.Add(file.Attribute("path").Value, file.Attribute("var").Value);
-                    }
-                }
-                else if (element.Element("loop") != null)
-                {
-                    // loop node
-                    XElement algorithm = element.Element("loop");
-                    string name = algorithm.Attribute("name").Value;
-                    double from = double.Parse(algorithm.Attribute("from").Value, CultureInfo.InvariantCulture);
-                    double to = double.Parse(algorithm.Attribute("to").Value, CultureInfo.InvariantCulture);
-                    double step = double.Parse(algorithm.Attribute("step").Value, CultureInfo.InvariantCulture);
-                    node = new LoopBlock(name, NodeContainer.Block) { FromValue = from, ToValue = to, Step = step };
-                }
-
-                if (node != null)
-                    CreateNodeControl(node, new Point(x, y));
-
-                if (node is LoopBlock)
-                {
-                    NodeContainer = blockGraphs[node as LoopBlock];
-
-                    // read loop body
-                    LoadExperimentGraph(element.Element("loop").Element("loopbody"));
-
-                    // return previous NodeContainer
-                    if (NodeContainer.Parent != null)
-                    {
-                        NodeContainer = NodeContainer.Parent;
-                        NodeContainer.DisplayOnCanvas(Canvas);
-                    }
-                }
-            } */
-        }
-
-        // todo : check
-        private void LoadExperimentInputs(XElement nodes)
-        {
-            /*
-            // read all nodes
-            foreach (XElement element in nodes.Elements("node"))
-            {
-                if (element.Element("algorithm") != null)
-                {
-                    // algorithm node
-                    XElement algorithm = element.Element("algorithm");
-                    string name = algorithm.Attribute("name").Value;
-                    AlgorithmNode node = experiment.ResolveNode(name) as AlgorithmNode;
-                    if (algorithm.Element("inputs") != null)
-                    {
-                        foreach (XElement input in algorithm.Element("inputs").Elements("input"))
-                        {
-                            VariableType varType = (VariableType)Enum.Parse(typeof(VariableType), input.Attribute("varType").Value);
-                            node.InputValues[input.Attribute("name").Value] =
-                                new VariableValue(varType);
-                            node.InputValues[input.Attribute("name").Value].SetValue(node, varType, input.Attribute("varValue").Value);
-                        }
-                    }
-                }
-                else if (element.Element("loop") != null)
-                {
-                    // loop
-                    LoadExperimentInputs(element.Element("loop").Element("loopbody"));
+                    // Algorithm
+                    Type algType = PluginManager.Instance.FindByAssemblyQualifiedName(nodeElement.Attribute("algType").Value);
+                    modelNode = new AlgorithmNode(name, algType, NodeContainer.Block);
+                    nodeControl = CreateNodeControl(modelNode, new Point(x, y));
+                    XmlSettingsDeserializer.DeserializeSettings(modelNode, nodeElement.Element("settings"));
                 }
             }
-            */
+
+            foreach (NodeControl node in NodeContainer.NodeControls)
+            {
+                node.LoadPorts();
+                node.UpdateLayout();
+            }
+
+            // todo: rework to storing as connection between ports
+            foreach (var arrowElement in blockElement.Element("arrows").Elements("arrow"))
+            {
+                double x1 = Convert.ToDouble(arrowElement.Attribute("x1").Value, CultureInfo.InvariantCulture);
+                double y1 = Convert.ToDouble(arrowElement.Attribute("y1").Value, CultureInfo.InvariantCulture);
+                double x2 = Convert.ToDouble(arrowElement.Attribute("x2").Value, CultureInfo.InvariantCulture);
+                double y2 = Convert.ToDouble(arrowElement.Attribute("y2").Value, CultureInfo.InvariantCulture);
+                Point p1 = new Point(x1, y1);
+                Point p2 = new Point(x2, y2);
+
+                Port start = null, end = null;
+                foreach (NodeControl node in NodeContainer.NodeControls)
+                {
+                    Vector v = new Vector(Canvas.GetLeft(node), Canvas.GetTop(node));
+                    if (start == null)
+                        start = node.FindOutPortByPoint(p1, v, 1);
+                    if (end == null)
+                        end = node.FindInPortByPoint(p2, v, 1);
+                    if (start != null && end != null)
+                        break;
+                }
+
+                if (start != null && end != null)
+                {
+                    Arrow arrow = new Arrow(x1, y1, x2, y2);
+                    arrow.From = start;
+                    arrow.To = end;
+                    Canvas.Children.Add(arrow);
+                    NodeContainer.AddArrow(arrow);
+                    NodeContainer.AddArrowToModel(arrow);
+                }
+            }
         }
 
         private void OpenBtn_Click(object sender, RoutedEventArgs e)
@@ -712,13 +720,11 @@ namespace HydrologyDesktop
             bool? res = saveFileDialog.ShowDialog();
             if (res.HasValue && res.Value)
             {
-                XDocument xDoc = new XDocument();
-                //xDoc.Add(root.ToXml(blockGraphs));
-                xDoc.Save(saveFileDialog.FileName);
+                new XmlSerializer(blockGraphs, experiment).Serialize().Save(saveFileDialog.FileName);
             }
         }
 
-        private void BackLoopButton_Click(object sender, RoutedEventArgs e)
+        private void GoToParentBlock()
         {
             if (NodeContainer.Parent != null)
             {
@@ -732,6 +738,11 @@ namespace HydrologyDesktop
                     UpdateArrows(node);
                 }
             }
+        }
+
+        private void BackLoopButton_Click(object sender, RoutedEventArgs e)
+        {
+            GoToParentBlock();
         }
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
