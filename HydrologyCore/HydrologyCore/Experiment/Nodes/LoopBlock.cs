@@ -15,6 +15,10 @@ namespace HydrologyCore.Experiment.Nodes
     {
         public LoopPortNode LoopPortNode { get; set; }
 
+        public override string Path => (PathPrefix ?? "") + Parent?.Path + "/" + Name ?? "" + " [" + currentValue + "]";
+
+        private object currentValue;
+
         public LoopBlock(string name, Block parent) : base(name, parent)
         {
         }
@@ -27,7 +31,8 @@ namespace HydrologyCore.Experiment.Nodes
             Array array = (Array) varArray;
             for (int i = 0; i < array.Length; i++)
             {
-                loopCtx.NextIteration(array.GetValue(i));
+                currentValue = array.GetValue(i);
+                loopCtx.NextIteration(currentValue);
                 base.Run(ctx, worker, count, ref current);
             }
         }

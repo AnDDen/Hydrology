@@ -23,7 +23,9 @@ namespace HydrologyCore.Experiment
 
         public IList<Port> OutPorts => nodes.Where(x => x is OutPortNode).Select(x => (x as OutPortNode).BlockPort).ToList();
 
-        public string Path { get; set; }
+        public string PathPrefix { get; set; }
+
+        public virtual string Path => (PathPrefix ?? "") + Parent?.Path + "/" + Name ?? "";
 
         public Block Parent { get; set; }
 
@@ -55,8 +57,6 @@ namespace HydrologyCore.Experiment
         {
             this.name = name;
             Parent = parent;
-            if (parent != null && name != null)
-                Path = parent.Path + "/" + name;
         }
 
         public virtual void Run(IContext ctx, BackgroundWorker worker, int count, ref int current)

@@ -24,7 +24,10 @@ namespace HydrologyDesktop.XmlHelpers
 
         public XDocument Serialize()
         {
-            XElement expNode = new XElement("experiment", new XAttribute("path", experiment.Path ?? ""), SerializeBlock(experiment.Block));
+            XElement expNode = new XElement("experiment", 
+                new XAttribute("path", experiment.Path ?? ""),
+                new XAttribute("dirName", experiment.Name ?? ""),
+                SerializeBlock(experiment.Block));
             return new XDocument(expNode);
         }
 

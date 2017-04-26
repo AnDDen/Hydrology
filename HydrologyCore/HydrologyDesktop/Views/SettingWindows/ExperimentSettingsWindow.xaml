@@ -1,0 +1,40 @@
+﻿<Window x:Class="HydrologyDesktop.Views.SettingWindows.ExperimentSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HydrologyDesktop.Views.SettingWindows"
+        mc:Ignorable="d"
+        Title="Настройки эксперимента" Width="500" SizeToContent="Height" ResizeMode="NoResize"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid>
+        <StackPanel>
+            <DockPanel Margin="5 5 5 0">
+                <DockPanel HorizontalAlignment="Left">
+                    <Label Padding="7 3 10 3" Width="160">Каталог для сохранения</Label>
+                    <TextBox x:Name="pathTextBox" Text="{Binding PathName}" Width="290" />
+                </DockPanel>
+                <Button HorizontalAlignment="Right" Width="25" Content="..." Click="Button_Click"/>
+            </DockPanel>
+            <DockPanel Margin="5 5 5 0">
+                <Label Padding="7 3 10 3" Width="160">Имя папки эксперимента</Label>
+                <TextBox Text="{Binding DirName}" />
+            </DockPanel>
+            <StackPanel Margin="5 5 5 0" >
+                <Label Padding="7 3 10 3" FontSize="11">Для поля "Имя папки эксперимента" можно использовать следующие макросы:</Label>
+                <DockPanel>
+                    <Label Padding="7 3 10 3" FontSize="11" FontWeight="Bold" Content="$?NOW?$" Width="100" />
+                    <Label Padding="0 3 10 3" FontSize="11" Content="Текущие дата и время" />
+                </DockPanel>
+                <DockPanel>
+                    <Label Padding="7 3 10 3" FontSize="11" FontWeight="Bold" Content="$?USERNAME?$" Width="100" />
+                    <Label Padding="0 3 10 3" FontSize="11" Content="Имя текущего пользователя" />
+                </DockPanel>
+            </StackPanel>
+            <DockPanel HorizontalAlignment="Right" Margin="0 10" VerticalAlignment="Bottom">
+                <Button Content="ОК" Width="64" Padding="3" Margin="0 5" Click="OKButton_Click" />
+                <Button Content="Отмена" Width="64" Padding="3" Margin="10 5" IsCancel="True" />
+            </DockPanel>
+        </StackPanel>
+    </Grid>
+</Window>

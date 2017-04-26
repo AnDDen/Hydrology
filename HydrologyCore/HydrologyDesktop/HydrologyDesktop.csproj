@@ -73,6 +73,9 @@
     <Compile Include="Views\SettingWindows\BlockSettingsWindow.xaml.cs">
       <DependentUpon>BlockSettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SettingWindows\ExperimentSettingsWindow.xaml.cs">
+      <DependentUpon>ExperimentSettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingWindows\FileParameter.cs" />
     <Compile Include="Views\SettingWindows\InitNodeSettingsWindow.xaml.cs">
       <DependentUpon>InitNodeSettingsWindow.xaml</DependentUpon>
@@ -118,6 +121,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SettingWindows\BlockSettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SettingWindows\ExperimentSettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

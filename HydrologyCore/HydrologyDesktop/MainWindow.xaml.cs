@@ -83,12 +83,10 @@ namespace HydrologyDesktop
             if (NodeContainer != null && NodeContainer.Block.Parent != null)
             {
                 BackButton.Visibility = Visibility.Visible;
-                SettingsBtn.Visibility = Visibility.Visible;
             }
             else
             {
                 BackButton.Visibility = Visibility.Collapsed;
-                SettingsBtn.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -604,6 +602,7 @@ namespace HydrologyDesktop
             NewExperiment();
             var experimentElement = xDocument.Root;
             experiment.Path = experimentElement.Attribute("path").Value;
+            experiment.Name = experimentElement.Attribute("dirName").Value;
             LoadBlock(experimentElement.Element("block"));
         }
 
@@ -748,12 +747,27 @@ namespace HydrologyDesktop
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            var window = SettingsWindowHelper.CreateSettingWindowForNode(NodeContainer.Block, this);
-            bool? dialogResult = window.ShowDialog();
-            if (dialogResult.HasValue && dialogResult.Value)
+            if (experiment.Block == NodeContainer.Block)
             {
-                window.GetNode();
-                SetNodeContainerName();
+                // Experiment settings
+                var window = new ExperimentSettingsWindow(experiment);
+                bool? dialogResult = window.ShowDialog();
+                if (dialogResult.HasValue && dialogResult.Value)
+                {
+                    experiment.Path = window.PathName;
+                    experiment.Name = window.DirName;
+                }
+            }
+            else
+            {
+                // Block settings
+                var window = SettingsWindowHelper.CreateSettingWindowForNode(NodeContainer.Block, this);
+                bool? dialogResult = window.ShowDialog();
+                if (dialogResult.HasValue && dialogResult.Value)
+                {
+                    window.GetNode();
+                    SetNodeContainerName();
+                }
             }
         }
     }
