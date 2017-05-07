@@ -22,7 +22,7 @@ namespace CoreToolbox
             if ((String.First() != '[') && (String.Last() != ']'))
                 throw new ArgumentException("Описание массива имеет неверный формат");
 
-            string str = String.Substring(1, String.Length - 1);
+            string str = String.Substring(1, String.Length - 2);
             string[] strElements = str.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             Array = new int[strElements.Length];
             for (int i = 0; i < strElements.Length; i++)
@@ -52,7 +52,7 @@ namespace CoreToolbox
                 if ((String.First() != '[') && (String.Last() != ']'))
                     throw new ArgumentException("Описание массива имеет неверный формат");
 
-                string str = String.Substring(1, String.Length - 1);
+                string str = String.Substring(1, String.Length - 2);
                 string[] strElements = str.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 Array = new double[strElements.Length];
                 for (int i = 0; i < strElements.Length; i++)
@@ -83,7 +83,7 @@ namespace CoreToolbox
                 if ((String.First() != '[') || (String.Last() != ']'))
                     throw new ArgumentException("Описание массива имеет неверный формат");
 
-                string str = String.Substring(1, String.Length - 1).Trim();
+                string str = String.Substring(1, String.Length - 2).Trim();
 
                 string pattern = "((\"([^\"]|(?<=\\\\)\")*\")\\s*)*";
                 Regex regex = new Regex(pattern);
