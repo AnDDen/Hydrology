@@ -1,4 +1,5 @@
 ﻿using HydrologyCore.Context;
+using HydrologyCore.Events;
 using HydrologyCore.Experiment.Nodes;
 using System;
 using System.ComponentModel;
@@ -19,10 +20,22 @@ namespace HydrologyCore.Experiment
         }
 
         public string Name { get; set; }
-        
+
+        public event NodeExecutionStartEventHandler NodeExecutionStart;
+        public event NodeStatusChangedEventHandler NodeStatusChanged;
+
+        public event ExperimentExecutedEventHandler ExperimentExecuted;
+
+        protected void InvokeExperimentExecuted(IContext ctx)
+        {
+            ExperimentExecuted?.Invoke(this, new ExperimentExecutedEventArgs(ctx));
+        }
+
         public Experiment()
         {
             Block = new Block(null, null);
+            Block.ExecutionStart += (sender, e) => { NodeExecutionStart?.Invoke(sender, e); };
+            Block.StatusChanged += (sender, e) => { NodeStatusChanged?.Invoke(sender, e); };
             Name = "Experiment.$?NOW?$";
         }
 
@@ -53,23 +66,28 @@ namespace HydrologyCore.Experiment
 
         public void Run(BackgroundWorker worker)
         {
-            Block.PathPrefix = GetPathPrefix();
-            if (!Directory.Exists(Block.PathPrefix))
-            {
-                try
-                {
-                    Directory.CreateDirectory(Block.PathPrefix);
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"Unable to create directory {Block.PathPrefix} for experiment", e);
-                }
-            }
-            var count = Block.TotalNodeCount() * 2;
-            int current = 0;
             IContext ctx = new BlockContext(Block, null);
-            Block.Run(ctx, worker, count, ref current);
-            Core.Instance.UpdateWorker(worker, 1, 1, null);
+            try
+            {
+                Block.PathPrefix = GetPathPrefix();
+                if (!Directory.Exists(Block.PathPrefix))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(Block.PathPrefix);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception($"Unable to create directory {Block.PathPrefix} for experiment", e);
+                    }
+                }          
+                Block.Run(ctx, worker);
+                Core.Instance.UpdateWorker(worker, null);
+            }
+            finally
+            {
+                InvokeExperimentExecuted(ctx);
+            }
         }
     }
 }

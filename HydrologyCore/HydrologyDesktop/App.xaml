@@ -132,7 +132,7 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Padding="{TemplateBinding Padding}" >
-                <Grid x:Name="g" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
+                <Grid x:Name="g" Background="{TemplateBinding Background}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -154,7 +154,7 @@
             <DockPanel>
                 <ToggleButton x:Name="ExpanderButton" DockPanel.Dock="Top" Template="{StaticResource ExpanderButtonTemplate}"
                       Content="{TemplateBinding Header}" IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
-                      OverridesDefaultStyle="True"/>
+                      OverridesDefaultStyle="True" Background="{TemplateBinding Background}"/>
                 <ContentPresenter x:Name="ExpanderContent" DockPanel.Dock="Bottom" Margin="0"/>
             </DockPanel>
             <ControlTemplate.Triggers>

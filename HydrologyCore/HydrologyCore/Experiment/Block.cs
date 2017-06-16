@@ -25,7 +25,7 @@ namespace HydrologyCore.Experiment
 
         public string PathPrefix { get; set; }
 
-        public virtual string Path => (PathPrefix ?? "") + Parent?.Path + "/" + Name ?? "";
+        public virtual string GetPath() => (PathPrefix ?? "") + Parent?.GetPath() + "/" + Name ?? "";
 
         public Block Parent { get; set; }
 
@@ -41,6 +41,23 @@ namespace HydrologyCore.Experiment
         }
 
         public event NameChangedEventHandler NameChanged;
+
+        public event NodeExecutionStartEventHandler ExecutionStart;
+        public event NodeStatusChangedEventHandler StatusChanged;
+
+        protected void InvokeExecutionStart(IContext ctx)
+        {
+            ctx.SetStatus(this, ExecutionStatus.EXECUTING);
+            ExecutionStart?.Invoke(this, new NodeStatusChangedEventArgs(ctx, this));
+        }
+
+        protected void ChangeStatus(IContext ctx, ExecutionStatus status, Exception error)
+        {
+            if (ctx.GetContext(this).Status != ExecutionStatus.WARNING || status != ExecutionStatus.SUCCESS)
+                ctx.SetStatus(this, status);
+            ctx.SetError(this, error);
+            StatusChanged?.Invoke(this, new NodeStatusChangedEventArgs(ctx, this));
+        }
 
         private string name;
         public string Name
@@ -59,36 +76,56 @@ namespace HydrologyCore.Experiment
             Parent = parent;
         }
 
-        public virtual void Run(IContext ctx, BackgroundWorker worker, int count, ref int current)
+        public virtual void Run(IContext ctx, BackgroundWorker worker)
         {
-            IDictionary<IRunable, List<IRunable>> graph = GenerateExecutionGraph();
-            while (graph.Keys.Count != 0)
+            if (!(this is LoopBlock))
+                InvokeExecutionStart(ctx);
+            try
             {
-                var forExecute = graph.Where(x => x.Value.Count == 0).Select(x => x.Key).ToList();
-                foreach (var node in forExecute)
+                IDictionary<IRunable, List<IRunable>> graph = GenerateExecutionGraph();
+                while (graph.Keys.Count != 0)
                 {
-                    var ports = Connections.Where(c => c.To.Owner == node).ToDictionary(c => c.To, c => c.From);
-                    foreach (var p in ports)
+                    if (worker.CancellationPending)
+                        return;
+                    var forExecute = graph.Where(x => x.Value.Count == 0).Select(x => x.Key).ToList();
+                    foreach (var node in forExecute)
                     {
-                        if (p.Key.DataType != p.Value.DataType)
-                            throw new Exception($"Connected ports {p.Key.Owner.Name}.{p.Key.Name} and {p.Value.Owner.Name}.{p.Value.Name} have different data types");
-                        object value = ctx.GetPortValue(p.Value);
-                        IConverter converter = ConvertersFactory.GetConverter(p.Key.DataType);
-                        object converted = converter.Convert(value, p.Value.ElementType, p.Key.ElementType);
-                        ctx.SetPortValue(p.Key, converted);
+                        if (worker.CancellationPending)
+                            return;
+
+                        (ctx as BlockContext).CreateContextForNode(node);
+
+                        var ports = Connections.Where(c => c.To.Owner == node).ToDictionary(c => c.To, c => c.From);
+                        foreach (var p in ports)
+                        {
+                            if (p.Key.DataType != p.Value.DataType)
+                                throw new Exception($"Connected ports {p.Key.Owner.Name}.{p.Key.Name} and {p.Value.Owner.Name}.{p.Value.Name} have different data types");
+                            object value = ctx.GetPortValue(p.Value);
+                            IConverter converter = ConvertersFactory.GetConverter(p.Key.DataType);
+                            object converted = converter.Convert(value, p.Value.ElementType, p.Key.ElementType);
+                            ctx.SetPortValue(p.Key, converted);
+                        }
+
+                        IContext nodeCtx = ctx;
+                        if (node is Block)
+                            nodeCtx = ctx.GetContext(node);
+
+                        node.Run(nodeCtx, worker);
+
+                        graph.Remove(node);
+                        foreach (var pair in graph)
+                            while (pair.Value.Contains(node))
+                                pair.Value.Remove(node);
                     }
-
-                    IContext nodeCtx = ctx;
-                    if (node is Block)
-                        nodeCtx = ctx.GetContext(node);
-
-                    node.Run(nodeCtx, worker, count, ref current);
-
-                    graph.Remove(node);
-                    foreach (var pair in graph)
-                        if (pair.Value.Contains(node))
-                            pair.Value.Remove(node);
                 }
+                if (!(this is LoopBlock))
+                    ChangeStatus(ctx, ExecutionStatus.SUCCESS, null);
+            }
+            catch (Exception e)
+            {
+                if (!(this is LoopBlock))
+                    ChangeStatus(ctx, ExecutionStatus.ERROR, e);
+                throw e;
             }
         }
 
@@ -101,6 +138,8 @@ namespace HydrologyCore.Experiment
         public Block AddNode(IRunable node)
         {
             nodes.Add(node);
+            node.ExecutionStart += (sender, e) => { ExecutionStart?.Invoke(sender, e); };
+            node.StatusChanged += (sender, e) => { StatusChanged?.Invoke(sender, e); };
             return this;
         }
 
@@ -111,17 +150,6 @@ namespace HydrologyCore.Experiment
         }
         
         public IRunable FindNode(string name) => nodes.FirstOrDefault(x => x.Name == name);
-
-        public virtual int TotalNodeCount()
-        {
-            int res = nodes.Count;
-            var blocks = nodes.Where(x => x is Block);
-            foreach (var block in blocks)
-            {
-                res += (block as Block).TotalNodeCount();
-            }
-            return res;
-        }
 
         private bool DFS(IDictionary<IRunable, List<IRunable>> graph, IRunable v, Dictionary<IRunable, int> color)
         {

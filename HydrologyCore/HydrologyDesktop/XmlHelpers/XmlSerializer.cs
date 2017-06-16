@@ -113,7 +113,7 @@ namespace HydrologyDesktop.XmlHelpers
             {
                 inputs.Add(new XElement("input",
                     new XAttribute("name", param.Key.Name),
-                    new XAttribute("value", param.Value),
+                    new XAttribute("value", param.Value ?? ""),
                     new XAttribute("isRef", param.Key.Displayed))
                 );
             }

@@ -41,13 +41,13 @@ namespace HydrologyCore
             return new Experiment.Experiment();
         }
 
-        public void UpdateWorker(BackgroundWorker worker, int current, int total, string nodeName)
+        public void UpdateWorker(BackgroundWorker worker, string nodeName)
         {
             if (worker != null)
             {
                 if (worker.WorkerReportsProgress)
                 {
-                    worker.ReportProgress(current * 100 / total, nodeName);
+                    worker.ReportProgress(0, nodeName);
                 }
             }
         }

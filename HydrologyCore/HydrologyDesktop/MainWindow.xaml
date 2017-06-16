@@ -54,7 +54,8 @@
                                 </Button> -->
                                     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Margin="0 30 0 0">
                                         <StackPanel>
-                                            <Expander IsExpanded="True" Template="{StaticResource ExpanderTemplate}">
+                                            <Expander IsExpanded="True" Template="{StaticResource ExpanderTemplate}"
+                                                      Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
                                                 <Expander.Header>
                                                     <TextBlock>Общие элементы</TextBlock>
                                                 </Expander.Header>
@@ -73,7 +74,8 @@
                                                     </StackPanel>
                                                 </Expander.Content>
                                             </Expander>
-                                            <Expander IsExpanded="True" Margin="0 0 0 5" Template="{StaticResource ExpanderTemplate}">
+                                            <Expander IsExpanded="True" Margin="0 0 0 5" Template="{StaticResource ExpanderTemplate}" 
+                                                      Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
                                                 <Expander.Header>
                                                     <TextBlock>Алгоритмы</TextBlock>
                                                 </Expander.Header>

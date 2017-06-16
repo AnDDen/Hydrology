@@ -178,30 +178,57 @@ namespace HydrologyCore.Experiment.Nodes
 
         private void SaveOutputToFiles(IContext ctx)
         {
-            IWriter writer = new CSVWriter();
-            foreach (var entity in saveToFile)
-            {
-                string name = entity.Key.DisplayedName;
-                bool save = entity.Value;
-                if (save)
+            try
+            {                
+                foreach (var entity in saveToFile)
                 {
-                    var value = ctx.GetPortValue(entity.Key);
-                    var path = Parent.Path + "/" + Name + (entity.Key.DataType == DataType.DATASET ? "/" : ".csv");
-                    // todo : save + other datatypes
-                    if (entity.Key.DataType == DataType.DATASET)
+                    string name = entity.Key.DisplayedName;
+                    bool save = entity.Value;
+                    if (save)
                     {
-                        var ds = value as DataSet;
-                        foreach (DataTable table in ds.Tables)
+                        IWriter writer = new CSVWriter();
+                        var value = ctx.GetPortValue(entity.Key);
+                        string parentPath = Parent.GetPath();
+                        if (!Directory.Exists(parentPath))
+                            Directory.CreateDirectory(parentPath);
+                        var path = parentPath + "/" + Name + (entity.Key.DataType == DataType.DATASET ? "/" : ".csv");
+                        // todo : save + other datatypes
+                        if (entity.Key.DataType == DataType.MATRIX)
                         {
-                            writer.Write(table, path + table.TableName + ".csv");
+                            var matrix = value as Array;
+                            DataTable dt = new DataTable(entity.Key.DisplayedName);
+                            for (int j = 0; j < matrix.GetLength(1); j++)
+                                dt.Columns.Add("col" + j);
+                            for (int i = 0; i < matrix.GetLength(0); i++)
+                            {
+                                var row = dt.NewRow();
+                                for (int j = 0; j < matrix.GetLength(1); j++)
+                                {
+                                    row[j] = matrix.GetValue(i, j);
+                                }
+                                dt.Rows.Add(row);
+                            }
+                            writer.Write(dt, path);
+                        }
+                        if (entity.Key.DataType == DataType.DATASET)
+                        {
+                            var ds = value as DataSet;
+                            foreach (DataTable table in ds.Tables)
+                            {
+                                writer.Write(table, path + table.TableName + ".csv");
+                            }
+                        }
+                        else if (entity.Key.DataType == DataType.DATATABLE)
+                        {
+                            var table = value as DataTable;
+                            writer.Write(table, path);
                         }
                     }
-                    else if (entity.Key.DataType == DataType.DATATABLE)
-                    {
-                        var table = value as DataTable;
-                        writer.Write(table, path);
-                    } 
                 }
+            }
+            catch (Exception e)
+            {
+                ChangeStatus(ctx, ExecutionStatus.WARNING, e);
             }
         }
     }

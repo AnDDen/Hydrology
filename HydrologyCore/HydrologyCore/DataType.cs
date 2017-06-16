@@ -26,8 +26,7 @@ namespace HydrologyCore
                 return DataType.DATATABLE;
             if (type.IsArray)
             {
-                var elemType = type.GetElementType();
-                if (elemType.IsArray)
+                if (type.GetArrayRank() == 2)
                     return DataType.MATRIX;
                 else
                     return DataType.ARRAY;
@@ -46,7 +45,7 @@ namespace HydrologyCore
                 case DataType.ARRAY:
                     return elementType.MakeArrayType();
                 case DataType.MATRIX:
-                    return elementType.MakeArrayType().MakeArrayType();
+                    return elementType.MakeArrayType(2);
                 case DataType.DATATABLE:
                     return typeof(System.Data.DataTable);
                 case DataType.DATASET:

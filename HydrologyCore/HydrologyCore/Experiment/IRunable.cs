@@ -17,8 +17,11 @@ namespace HydrologyCore.Experiment
         IList<Port> InPorts { get; }
         IList<Port> OutPorts { get; }
 
-        void Run(IContext ctx, BackgroundWorker worker, int count, ref int current);
+        void Run(IContext ctx, BackgroundWorker worker);
 
         event NameChangedEventHandler NameChanged;
+
+        event NodeExecutionStartEventHandler ExecutionStart;
+        event NodeStatusChangedEventHandler StatusChanged;
     }
 }

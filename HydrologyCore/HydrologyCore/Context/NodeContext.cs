@@ -15,6 +15,9 @@ namespace HydrologyCore.Context
         public IDictionary<Port, object> Inputs { get; } = new Dictionary<Port, object>();
         public IDictionary<Port, object> Outputs { get; } = new Dictionary<Port, object>();
 
+        public ExecutionStatus Status { get; set; } = ExecutionStatus.EXECUTING;
+        public Exception Error { get; set; } = null;
+
         public NodeContext(IRunable owner, BlockContext parentCtx)
         {
             Owner = owner;
@@ -47,6 +50,20 @@ namespace HydrologyCore.Context
             if (Owner == node)
                 return this;
             return null;
+        }
+
+        public void SetStatus(IRunable node, ExecutionStatus status)
+        {
+            if (Owner != node)
+                return;
+            Status = status;
+        }
+
+        public void SetError(IRunable node, Exception error)
+        {
+            if (Owner != node)
+                return;
+            Error = error;
         }
     }
 }

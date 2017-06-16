@@ -18,22 +18,13 @@ namespace HydrologyCore.Context
 
         public virtual IList<IContext> Children { get; } = new List<IContext>();
 
+        public ExecutionStatus Status { get; set; } = ExecutionStatus.EXECUTING;
+        public Exception Error { get; set; } = null;
+
         public BlockContext(Block owner, BlockContext parentCtx)
         {
             Owner = owner;
             ParentContext = parentCtx;
-            foreach (var node in owner.Nodes)
-            {
-                if (node is Block)
-                {
-                    if (node is LoopBlock)
-                        Children.Add(new LoopContext(node as LoopBlock, this));
-                    else
-                        Children.Add(new BlockContext(node as Block, this));
-                }
-                else
-                    Children.Add(new NodeContext(node, this));
-            }
         }
 
         protected void SetInput(Port port, object value) => Inputs.Add(port, value);
@@ -99,6 +90,41 @@ namespace HydrologyCore.Context
                     return ctx;
             }
             return null;
+        }
+
+        public void SetStatus(IRunable node, ExecutionStatus status)
+        {
+            var ctx = GetContext(node);
+            if (ctx == null)
+                return;
+            if (ctx == this)
+                Status = status;
+            else
+                ctx.SetStatus(node, status);
+        }
+
+        public void SetError(IRunable node, Exception error)
+        {
+            var ctx = GetContext(node);
+            if (ctx == null)
+                return;
+            if (ctx == this)
+                Error = error;
+            else
+                ctx.SetError(node, error);
+        }
+
+        public void CreateContextForNode(IRunable node)
+        {
+            if (node is Block)
+            {
+                if (node is LoopBlock)
+                    Children.Add(new LoopContext(node as LoopBlock, this));
+                else
+                    Children.Add(new BlockContext(node as Block, this));
+            }
+            else
+                Children.Add(new NodeContext(node, this));
         }
     }
 }

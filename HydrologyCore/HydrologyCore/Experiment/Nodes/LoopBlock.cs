@@ -15,7 +15,7 @@ namespace HydrologyCore.Experiment.Nodes
     {
         public LoopPortNode LoopPortNode { get; set; }
 
-        public override string Path => (PathPrefix ?? "") + Parent?.Path + "/" + Name ?? "" + " [" + currentValue + "]";
+        public override string GetPath() => (PathPrefix ?? "") + Parent?.GetPath() + "/" + (Name ?? "") + " [" + currentValue + "]";
 
         private object currentValue;
 
@@ -23,23 +23,31 @@ namespace HydrologyCore.Experiment.Nodes
         {
         }
 
-        public override void Run(IContext ctx, BackgroundWorker worker, int count, ref int current)
+        public override void Run(IContext ctx, BackgroundWorker worker)
         {
-            Debug.Assert(ctx is LoopContext);
-            LoopContext loopCtx = ctx as LoopContext;
-            object varArray = ctx.GetPortValue(LoopPortNode.BlockPort);
-            Array array = (Array) varArray;
-            for (int i = 0; i < array.Length; i++)
+            try
             {
-                currentValue = array.GetValue(i);
-                loopCtx.NextIteration(currentValue);
-                base.Run(ctx, worker, count, ref current);
+                InvokeExecutionStart(ctx);
+                Debug.Assert(ctx is LoopContext);
+                LoopContext loopCtx = ctx as LoopContext;
+                object varArray = ctx.GetPortValue(LoopPortNode.BlockPort);
+                Array array = (Array)varArray;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    if (worker.CancellationPending)
+                        return;
+                    currentValue = array.GetValue(i);
+                    loopCtx.NextIteration(currentValue);
+                    ChangeStatus(ctx, ExecutionStatus.NEXT_ITER, null);
+                    base.Run(ctx, worker);
+                }
+                ChangeStatus(ctx, ExecutionStatus.SUCCESS, null);
             }
-        }
-
-        public override int TotalNodeCount()
-        {
-            return base.TotalNodeCount();
+            catch (Exception e)
+            {
+                ChangeStatus(ctx, ExecutionStatus.ERROR, e);
+                throw e;
+            }
         }
     }
 }

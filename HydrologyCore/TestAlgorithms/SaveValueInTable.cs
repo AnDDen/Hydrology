@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TestAlgorithms
 {
-    [Name("Запись числа в таблицу")]
+    [Name("Запись в таблицу")]
     public class SaveValueInTable : IAlgorithm
     {
         [Input("Таблица")]
@@ -21,7 +21,7 @@ namespace TestAlgorithms
         public int ColNum { get; set; }
 
         [Input("Значение")]
-        public double Value { get; set; }
+        public string Value { get; set; }
 
         [Output("Измененная таблица")]
         public DataTable OutTable { get; set; }

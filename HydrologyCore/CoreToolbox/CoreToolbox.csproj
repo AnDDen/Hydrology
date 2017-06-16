@@ -40,10 +40,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrayStatistics.cs" />
+    <Compile Include="CopyTable.cs" />
+    <Compile Include="CreateMatrix.cs" />
+    <Compile Include="FilterTable.cs" />
+    <Compile Include="MatrixElementOperations.cs" />
+    <Compile Include="MatrixOperation.cs" />
+    <Compile Include="MatrixStatistics.cs" />
     <Compile Include="NewArray.cs" />
+    <Compile Include="NewRow.cs" />
+    <Compile Include="NewTable.cs" />
     <Compile Include="ParseArrayFromString.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PutToMatrix.cs" />
     <Compile Include="RangeArray.cs" />
+    <Compile Include="TableToMatrix.cs" />
+    <Compile Include="ValueOperations.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AlgorithmInterface\AlgorithmInterface.csproj">

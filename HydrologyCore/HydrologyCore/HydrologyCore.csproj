@@ -51,7 +51,11 @@
     <Compile Include="Converters\MatrixConverter.cs" />
     <Compile Include="Converters\NoConvert.cs" />
     <Compile Include="Converters\ValueConverter.cs" />
+    <Compile Include="Events\ExperimentExecutedEvent.cs" />
     <Compile Include="Events\NameChangedEvent.cs" />
+    <Compile Include="Events\NodeExecutionStartEvent.cs" />
+    <Compile Include="Events\NodeStatusChangedEvent.cs" />
+    <Compile Include="ExecutionStatus.cs" />
     <Compile Include="Experiment\Nodes\InPortNode.cs" />
     <Compile Include="Experiment\Nodes\LoopPortNode.cs" />
     <Compile Include="Experiment\Nodes\PortNode.cs" />

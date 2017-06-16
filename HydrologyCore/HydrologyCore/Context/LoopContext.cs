@@ -24,26 +24,8 @@ namespace HydrologyCore.Context
 
         public void NextIteration(object varValue)
         {
-            IterationContexts.Add(varValue, CreateIterationContext());
+            IterationContexts.Add(varValue, new List<IContext>());
             CurrentVarValue = varValue;
-        }
-
-        private IList<IContext> CreateIterationContext()
-        {
-            List<IContext> ctx = new List<IContext>();
-            foreach (var node in (Owner as Block).Nodes)
-            {
-                if (node is Block)
-                {
-                    if (node is LoopBlock)
-                        ctx.Add(new LoopContext(node as LoopBlock, this));
-                    else
-                        ctx.Add(new BlockContext(node as Block, this));
-                }
-                else
-                    ctx.Add(new NodeContext(node, this));
-            }
-            return ctx;
         }
 
         public object GetPortValue(object varValue, Port port)

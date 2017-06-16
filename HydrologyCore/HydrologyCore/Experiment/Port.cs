@@ -37,10 +37,8 @@ namespace HydrologyCore.Experiment
                 DataType = DataTypeHelpers.GetDataType(value);
                 if (DataType == DataType.VALUE)
                     ElementType = value;
-                else if (DataType == DataType.ARRAY)
+                else if (DataType == DataType.ARRAY || DataType == DataType.MATRIX)
                     ElementType = value.GetElementType();
-                else if (DataType == DataType.MATRIX)
-                    ElementType = value.GetElementType().GetElementType();
                 else
                     ElementType = null;
             }

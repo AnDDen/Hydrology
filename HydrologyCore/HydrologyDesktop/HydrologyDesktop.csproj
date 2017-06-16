@@ -56,9 +56,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ExecutionStatusColors.cs" />
     <Compile Include="Views\Controls\Arrow.xaml.cs">
       <DependentUpon>Arrow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ExecListItem.cs" />
     <Compile Include="Views\ExecutorWindow.xaml.cs">
       <DependentUpon>ExecutorWindow.xaml</DependentUpon>
     </Compile>

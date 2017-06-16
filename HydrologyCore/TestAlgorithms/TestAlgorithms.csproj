@@ -41,8 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArrayMeanAlgorithm.cs" />
+    <Compile Include="Clusterisation\ClusterDistance.cs" />
+    <Compile Include="Clusterisation\Fusion.cs" />
+    <Compile Include="Clusterisation\GetCluster.cs" />
+    <Compile Include="Clusterisation\Partitioning.cs" />
     <Compile Include="CreateTable.cs" />
     <Compile Include="DataTableArrayConverter.cs" />
+    <Compile Include="ModifyFlow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SaveTable.cs" />
     <Compile Include="SaveValueInTable.cs" />
